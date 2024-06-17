@@ -1,0 +1,12 @@
+{
+  "server": {
+    "host": "http://127.0.0.1",
+    "port": "5000",
+    "app": "/v1/chat/completions",
+    "type": "OpenAiCompatibleConnection",
+    "server_type": "textgen_webui",
+    "prompt_format": "Llama-v3"
+  },
+  "debug": true,
+  "description": "This config file will use a locally deploy OpenAI compatible completion endpoint."
+}

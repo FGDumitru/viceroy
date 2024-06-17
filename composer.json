@@ -1,0 +1,28 @@
+{
+  "name": "fgdumitru/viceroy",
+  "type": "library",
+  "description": "Viceroy: An LLM interactions library with an OpenAI compatible completion endpoint via PHP.",
+  "license": "MIT",
+  "homepage": "https://github.com/FGDumitru/viceroy",
+  "keywords": ["llm","openai","llama"],
+  "autoload": {
+    "psr-4": {
+      "Viceroy\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Florin Dumitru",
+      "email": "xelotx@gmail.com"
+    }
+  ],
+  "require": {
+    "guzzlehttp/guzzle": "^7.7",
+    "php": ">=8.0.0"
+  },
+  "config": {
+    "allow-plugins": {
+      "php-http/discovery": true
+    }
+  }
+}
