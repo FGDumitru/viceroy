@@ -2,22 +2,26 @@
 
 namespace Viceroy\Core;
 
+use Exception;
+
 class RolesManager {
 
   private array $roles = [];
+  
 
   /**
    * @throws \Exception
    */
   public function __construct(string $system = NULL) {
     if (!is_null($system)) {
+      $this->systemMessage = $system;
       $this->addMessage('system', $system);
     }
   }
 
   public function addMessage(string $role, string $message): static {
     if ('system' == $role && !empty($this->roles)) {
-      throw new \Exception("The system message MUST be the first message!");
+      throw new Exception("The system message MUST be the first message!");
     }
 
     $this->roles[] = ['role' => $role, 'content' => $message];

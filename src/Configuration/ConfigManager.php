@@ -2,6 +2,8 @@
 
 namespace Viceroy\Configuration;
 
+use Exception;
+
 class ConfigManager {
 
   private $guzzleOptions = [];
@@ -14,6 +16,14 @@ class ConfigManager {
     $this->configObjects = $configObjects;
   }
 
+  public function getJsonPrompt() {
+    if (empty($this->promptContent)) {
+      $this->processJsonPromptBlueprint();
+    }
+
+    return $this->promptContent;
+  }
+
   private function processJsonPromptBlueprint() {
     $serverType = $this->configObjects->getServerConfigKey('server_type');
 
@@ -24,21 +34,14 @@ class ConfigManager {
     if (file_exists($prompt)) {
       $this->promptContent = json_decode(file_get_contents($prompt), TRUE);
       if (is_null($this->promptContent)) {
-        throw new \Exception("Prompt file {$prompt} is NOT a valid JSON file.");
+        throw new Exception("Prompt file {$prompt} is NOT a valid JSON file.");
       }
     }
     else {
-      throw new \Exception("Prompt settings not found: $prompt");
+      throw new Exception("Prompt settings not found: $prompt");
     }
 
     $this->promptContent['messages'] = [];
   }
 
-  public function getJsonPrompt() {
-    if (empty($this->promptContent)) {
-      $this->processJsonPromptBlueprint();
-    }
-
-    return $this->promptContent;
-  }
 }

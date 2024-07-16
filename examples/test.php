@@ -6,17 +6,27 @@ use Viceroy\Connections\OpenAiCompatibleConnection;
 
 $test = new OpenAiCompatibleConnection();
 $test->getRolesManager()->clearMessages()->setSystemMessage('You are a helpful LLM that responds to user queries in great detail.');
-$test->getRolesManager()->addMessage('user','What is the result of 4+4? Respond only with the result.');
+try {
+  $test->getRolesManager()
+    ->addMessage('user', 'What is the capital of Romania?');
+}
+catch (Exception $e) {
+  var_dump($e->getMessage());
+  die(1);
+}
 
-//$configData = $test->getConfiguration()->getFullConfigData();
-//$configData['server']['host'] = 'http://192.168.0.115';
-//$test->getConfiguration()->setFullConfigData($configData);
+var_dump($test->health());
 
+//die;
+$tokens = $test->tokenize('This is a test!');
+var_dump($tokens);
+
+if ($tokens) {
+  $det = $test->detokenize($tokens);
+  var_dump($det);
+}
 
 $raspuns = $test->queryPost();
 echo $raspuns->getLlmResponseRole() . ': ' . $raspuns->getLlmResponse();
-
-
-
-
-
+$content = $raspuns->getRawContent();
+var_dump(json_decode($content));

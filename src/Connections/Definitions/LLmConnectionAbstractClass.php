@@ -2,12 +2,11 @@
 
 namespace Viceroy\Connections\Definitions;
 
+use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\RequestException;
 use Viceroy\Configuration\ConfigManager;
-use Viceroy\Core\Request;
-use GuzzleHttp\Client as GuzzleClient;
-use Psr\Http\Message\ResponseInterface;
 use Viceroy\Configuration\ConfigObjects;
+use Viceroy\Core\Request;
 use Viceroy\Core\Response;
 use Viceroy\Core\RolesManager;
 
@@ -33,7 +32,10 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
     $this->request = new Request($this->configuration);
 
     $this->rolesManager = new RolesManager();
+  }
 
+  function createGuzzleConnection() {
+    $this->guzzleObject = new GuzzleClient();
   }
 
   public function setConnection(GuzzleClient $guzzleObject) {
@@ -44,8 +46,41 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
     return $this->guzzleObject;
   }
 
-  function createGuzzleConnection() {
-    $this->guzzleObject = new GuzzleClient();
+  public function getRequest(): Request {
+    return $this->request;
+  }
+
+  public function getRolesManager(): RolesManager {
+    return $this->rolesManager;
+  }
+
+  public function tokenize(string $sentence) {
+    $uri = $this->getServerUri('tokenize');
+
+    try {
+      $response = $this->guzzleObject->post($uri, [
+        'json' => ['content' => $sentence],
+        'headers' => ['Content-Type' => 'application/json'],
+      ]);
+    }
+    catch (\Exception $e) {
+      echo($e->getMessage());
+      return FALSE;
+    }
+
+    $tokensJsonResponse = $response->getBody()->getContents();
+
+    $tokens = json_decode($tokensJsonResponse)->tokens;
+
+    return $tokens;
+  }
+
+  private function getServerUri(string $verb) {
+    $uri = $this->getConfiguration()->getServerConfigKey('host');
+    $uri .= ':' . $this->getConfiguration()->getServerConfigKey('port');
+    $uri .= $this->getConfiguration()->getServerConfigKey($verb);
+
+    return $uri;
   }
 
   public function getConfiguration(): ConfigObjects {
@@ -56,37 +91,43 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
     $this->configuration = $configuration;
   }
 
-  public function getRequest(): Request {
-    return $this->request;
+  public function health() {
+    $uri = $this->getServerUri('health');
+    try {
+      $response = $this->guzzleObject->get($uri);
+    }
+    catch (\Exception $e) {
+      echo($e->getMessage());
+      return FALSE;
+    }
+
+    var_dump($response->getBody()->getContents());
+    return TRUE;
   }
 
-  public function getRolesManager(): RolesManager {
-    return $this->rolesManager;
-  }
-
-  public function queryPost(array $promptJson = []): Response {
-
+  public function detokenize(array $promptJson) {
     if (empty($promptJson)) {
       $promptJson = $this->createGuzzleRequest();
     }
 
-    $uri = $this->getConfiguration()->getServerConfigKey('host');
-    $uri .= ':' . $this->getConfiguration()->getServerConfigKey('port');
-    $uri .= $this->getConfiguration()->getServerConfigKey('app');
-
-    $guzzleRequest = [
-      'json' => $promptJson,
-      'headers' => ['Content-Type' => 'application/json'],
-    ];
+    $uri = $this->getServerUri('detokenize');
 
     try {
-      $response = $this->guzzleObject->post($uri, $guzzleRequest);
-
-    } catch (RequestException $e) {
-      $response = $e->getResponse();
+      $response = $this->guzzleObject->post($uri, [
+        'json' => ['tokens' => $promptJson],
+        'headers' => ['Content-Type' => 'application/json'],
+      ]);
+    }
+    catch (\Exception $e) {
+      echo($e->getMessage());
+      return FALSE;
     }
 
-    return new Response($response);
+    $tokensJsonResponse = $response->getBody()->getContents();
+
+    $tokens = json_decode($tokensJsonResponse)->content;
+
+    return $tokens;
   }
 
   private function createGuzzleRequest(): array {
@@ -97,6 +138,28 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
     $promptJson['messages'] = $this->rolesManager->getMessages();
 
     return $promptJson;
+  }
+
+  public function queryPost(array $promptJson = []): Response {
+    if (empty($promptJson)) {
+      $promptJson = $this->createGuzzleRequest();
+    }
+
+    $uri = $this->getServerUri('completions');
+
+    $guzzleRequest = [
+      'json' => $promptJson,
+      'headers' => ['Content-Type' => 'application/json'],
+    ];
+
+    try {
+      $response = $this->guzzleObject->post($uri, $guzzleRequest);
+    }
+    catch (RequestException $e) {
+      $response = $e->getResponse();
+    }
+
+    return new Response($response);
   }
 
 }

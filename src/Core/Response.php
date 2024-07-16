@@ -10,22 +10,17 @@ class Response {
 
   private $contents = NULL;
 
-  public function __construct(ResponseInterface $response){
+  public function __construct(ResponseInterface $response) {
     $this->response = $response;
   }
 
-  public function getRawResponse(){
+  public function getRawResponse() {
     return $this->response;
   }
 
   public function getLlmResponse() {
     $choice = $this->getChoice();
     return $choice['content'];
-  }
-
-  public function getLlmResponseRole() {
-    $choice = $this->getChoice();
-    return $choice['role'];
   }
 
   private function getChoice() {
@@ -40,6 +35,15 @@ class Response {
     }
 
     return $this->contents;
+  }
+
+  public function getLlmResponseRole() {
+    $choice = $this->getChoice();
+    return $choice['role'];
+  }
+
+  public function getRawContent() {
+    return $this->getContent();
   }
 
 }
