@@ -31,10 +31,12 @@ $response = $llmConnection->queryPost();
 
 if ($response) {
   echo $response->getLlmResponseRole() . ': ' . $response->getLlmResponse();
-  $content = $response->getRawContent();
-
+  
+  $content = $response->getLlmResponse();
+  $timer = $llmConnection->getLastQueryMicrotime();
+  
   // Test the output for model sanity.
-  if (strpos(strtolower($content), 'no')) {
+  if (strpos(strtolower($content), '[no]')) {
     echo "\nThe LLM responded correctly!\n";
   }
   else {

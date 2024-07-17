@@ -148,10 +148,10 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
       'headers' => ['Content-Type' => 'application/json'],
     ];
 
-    $timer = microtime();
+    $timer = microtime(TRUE);
     try {
       $response = $this->guzzleObject->post($uri, $guzzleRequest);
-      $this->queryTime = microtime() - $timer;
+      $this->queryTime = microtime(TRUE) - $timer;
     }
     catch (GuzzleException $e) {
       $this->queryTime = NULL;
@@ -162,7 +162,7 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
   }
   
   public function getLastQueryMicrotime() {
-    return $this->queryTime;
+    return round($this->queryTime,4);
   }
 
 }
