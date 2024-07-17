@@ -11,8 +11,4 @@ class OpenAiCompatibleConnection extends LLmConnectionAbstractClass {
     parent::__construct($config);
   }
 
-  public function connect() {
-    // TODO: Implement connect() method.
-  }
-
 }

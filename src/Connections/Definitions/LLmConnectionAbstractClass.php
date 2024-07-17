@@ -3,7 +3,7 @@
 namespace Viceroy\Connections\Definitions;
 
 use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\GuzzleException;
 use Viceroy\Configuration\ConfigManager;
 use Viceroy\Configuration\ConfigObjects;
 use Viceroy\Core\Request;
@@ -17,6 +17,8 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
   private ConfigObjects $configuration;
 
   private ConfigManager $configManager;
+  
+  private ?float $queryTime = NULL;
 
   private Request $request;
 
@@ -54,7 +56,7 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
     return $this->rolesManager;
   }
 
-  public function tokenize(string $sentence) {
+  public function tokenize(string $sentence): bool|array {
     $uri = $this->getServerUri('tokenize');
 
     try {
@@ -64,7 +66,6 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
       ]);
     }
     catch (\Exception $e) {
-      echo($e->getMessage());
       return FALSE;
     }
 
@@ -91,21 +92,19 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
     $this->configuration = $configuration;
   }
 
-  public function health() {
+  public function health(): bool {
     $uri = $this->getServerUri('health');
     try {
       $response = $this->guzzleObject->get($uri);
     }
-    catch (\Exception $e) {
-      echo($e->getMessage());
+    catch (GuzzleException $e) {
       return FALSE;
     }
 
-    var_dump($response->getBody()->getContents());
     return TRUE;
   }
 
-  public function detokenize(array $promptJson) {
+  public function detokenize(array $promptJson): string|bool {
     if (empty($promptJson)) {
       $promptJson = $this->createGuzzleRequest();
     }
@@ -119,15 +118,12 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
       ]);
     }
     catch (\Exception $e) {
-      echo($e->getMessage());
       return FALSE;
     }
 
     $tokensJsonResponse = $response->getBody()->getContents();
 
-    $tokens = json_decode($tokensJsonResponse)->content;
-
-    return $tokens;
+    return json_decode($tokensJsonResponse)->content;
   }
 
   private function createGuzzleRequest(): array {
@@ -140,7 +136,7 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
     return $promptJson;
   }
 
-  public function queryPost(array $promptJson = []): Response {
+  public function queryPost(array $promptJson = []): Response|bool {
     if (empty($promptJson)) {
       $promptJson = $this->createGuzzleRequest();
     }
@@ -152,14 +148,21 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
       'headers' => ['Content-Type' => 'application/json'],
     ];
 
+    $timer = microtime();
     try {
       $response = $this->guzzleObject->post($uri, $guzzleRequest);
+      $this->queryTime = microtime() - $timer;
     }
-    catch (RequestException $e) {
-      $response = $e->getResponse();
+    catch (GuzzleException $e) {
+      $this->queryTime = NULL;
+      return FALSE;
     }
 
     return new Response($response);
+  }
+  
+  public function getLastQueryMicrotime() {
+    return $this->queryTime;
   }
 
 }
