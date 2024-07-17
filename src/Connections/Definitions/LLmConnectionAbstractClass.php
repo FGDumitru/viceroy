@@ -2,6 +2,7 @@
 
 namespace Viceroy\Connections\Definitions;
 
+use Exception;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
 use Viceroy\Configuration\ConfigManager;
@@ -65,7 +66,7 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
         'headers' => ['Content-Type' => 'application/json'],
       ]);
     }
-    catch (\Exception $e) {
+    catch (Exception $e) {
       return FALSE;
     }
 
@@ -117,7 +118,7 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
         'headers' => ['Content-Type' => 'application/json'],
       ]);
     }
-    catch (\Exception $e) {
+    catch (Exception $e) {
       return FALSE;
     }
 

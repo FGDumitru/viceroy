@@ -31,16 +31,16 @@ $response = $llmConnection->queryPost();
 
 if ($response) {
   echo $response->getLlmResponseRole() . ': ' . $response->getLlmResponse();
-  
+
   $content = $response->getLlmResponse();
   $timer = $llmConnection->getLastQueryMicrotime();
-  
+
   // Test the output for model sanity.
   if (strpos(strtolower($content), '[no]')) {
     echo "\nThe LLM responded correctly!\n";
   }
   else {
-    echo "\nThe LLM did NOT responded correctly!\n";
+    echo "\nThe LLM has NOT responded correctly!\n";
   }
 
   echo 'Query time: ' . $llmConnection->getLastQueryMicrotime() . " ms.\n";
