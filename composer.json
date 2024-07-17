@@ -4,7 +4,7 @@
   "description": "Viceroy: An LLM interactions library with an OpenAI compatible completion endpoint via PHP.",
   "license": "MIT",
   "homepage": "https://github.com/FGDumitru/viceroy",
-  "keywords": ["llm","openai","llama"],
+  "keywords": ["llm","openai","llama","llama.cpp"],
   "autoload": {
     "psr-4": {
       "Viceroy\\": "src/"
