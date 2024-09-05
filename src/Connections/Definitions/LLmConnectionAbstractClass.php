@@ -93,7 +93,7 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
     $this->configuration = $configuration;
   }
 
-  public function health(): bool {
+  public function health(): bool|\GuzzleHttp\Psr7\Response {
     $uri = $this->getServerUri('health');
     try {
       $response = $this->guzzleObject->get($uri);
@@ -102,7 +102,7 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
       return FALSE;
     }
 
-    return TRUE;
+    return $response;
   }
 
   public function detokenize(array $promptJson): string|bool {
@@ -164,6 +164,10 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
   
   public function getLastQueryMicrotime() {
     return round($this->queryTime,4);
+  }
+
+  public function getParameterValue($param) {
+
   }
 
 }

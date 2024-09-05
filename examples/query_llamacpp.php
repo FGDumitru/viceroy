@@ -18,8 +18,10 @@ $llmConnection->getRolesManager()
 
 // Query the model as a User.
 try {
+  $queryString = 'Is the number 9.11 larger than 9.9? Respond only with either [YES] or [NO].';
+  echo $queryString . "\n";
   $llmConnection->getRolesManager()
-    ->addMessage('user', 'Is the number 9.11 larger than 9.9? Respond only with either [YES] or [NO].');
+    ->addMessage('user', $queryString);
 }
 catch (Exception $e) {
   echo($e->getMessage());
@@ -36,7 +38,7 @@ if ($response) {
   $timer = $llmConnection->getLastQueryMicrotime();
 
   // Test the output for model sanity.
-  if (strpos(strtolower($content), '[no]')) {
+  if (str_contains(strtolower($content), '[no]')) {
     echo "\nThe LLM responded correctly!\n";
   }
   else {
