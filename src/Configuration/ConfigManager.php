@@ -2,9 +2,10 @@
 
 namespace Viceroy\Configuration;
 
-use Exception;
+use Viceroy\Connections\Traits\LLMDefaultParametersTrait;
 
 class ConfigManager {
+  use LLMDefaultParametersTrait;
 
   private $guzzleOptions = [];
 
@@ -25,22 +26,7 @@ class ConfigManager {
   }
 
   private function processJsonPromptBlueprint() {
-    $serverType = $this->configObjects->getServerConfigKey('server_type');
-
-    if (!str_contains($serverType, DIRECTORY_SEPARATOR)) {
-      $prompt = __DIR__ . "/../../Blueprints/$serverType/prompt.json";
-    }
-
-    if (file_exists($prompt)) {
-      $this->promptContent = json_decode(file_get_contents($prompt), TRUE);
-      if (is_null($this->promptContent)) {
-        throw new Exception("Prompt file {$prompt} is NOT a valid JSON file.");
-      }
-    }
-    else {
-      throw new Exception("Prompt settings not found: $prompt");
-    }
-
+    $this->promptContent = $this->readParameters();
     $this->promptContent['messages'] = [];
   }
 

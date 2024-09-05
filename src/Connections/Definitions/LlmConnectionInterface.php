@@ -9,7 +9,7 @@ interface LlmConnectionInterface {
   /**
    * @return bool
    */
-  public function health(): bool;
+  public function health(): bool|\GuzzleHttp\Psr7\Response;
 
   /**
    * @param string $sentence
