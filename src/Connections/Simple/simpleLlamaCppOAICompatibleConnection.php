@@ -33,7 +33,6 @@ class simpleLlamaCppOAICompatibleConnection extends llamacppOAICompatibleConnect
 
     // Query the model as a User.
     try {
-      echo $queryString . "\n";
       $this->llmConnection->getRolesManager()
         ->addMessage('user', $queryString);
     }
