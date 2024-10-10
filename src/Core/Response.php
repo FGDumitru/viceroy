@@ -10,26 +10,32 @@ class Response {
 
   private $contents = NULL;
 
+  /**
+   * @param \Psr\Http\Message\ResponseInterface $response
+   */
   public function __construct(ResponseInterface $response) {
     $this->response = $response;
   }
 
-  public function getRawResponse() {
+  public function getRawResponse(): ResponseInterface {
     return $this->response;
   }
 
-  public function getLlmResponse() {
+  /**
+   * @return mixed
+   */
+  public function getLlmResponse(): mixed {
     $choice = $this->getChoice();
     return $choice['content'];
   }
 
-  private function getChoice() {
+  private function getChoice(): mixed {
     $content = json_decode($this->getContent(), TRUE);
     $choices = $content['choices'];
     return $choices[0]['message'];
   }
 
-  private function getContent() {
+  private function getContent(): string {
     if (is_null($this->contents)) {
       $this->contents = $this->response->getBody()->getContents();
     }
@@ -37,12 +43,12 @@ class Response {
     return $this->contents;
   }
 
-  public function getLlmResponseRole() {
+  public function getLlmResponseRole(): mixed {
     $choice = $this->getChoice();
     return $choice['role'];
   }
 
-  public function getRawContent() {
+  public function getRawContent(): string {
     return $this->getContent();
   }
 

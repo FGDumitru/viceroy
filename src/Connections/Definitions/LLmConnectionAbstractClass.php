@@ -170,4 +170,19 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
 
   }
 
+  public function clear() {
+    $this->getRolesManager()->clearMessages();
+  }
+
+  public function setSystemMessage($systemMessage) {
+    $this->getRolesManager()->setSystemMessage($systemMessage);
+  }
+
+  public function query($query) {
+  $this->getRolesManager()->addUserMessage($query);
+  $response = $this->queryPost();
+  $this->getRolesManager()->addAssistantMessage($response->getLlmResponse());
+  return $response->getLlmResponse();
+  }
+
 }

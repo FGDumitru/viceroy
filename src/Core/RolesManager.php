@@ -7,7 +7,8 @@ use Exception;
 class RolesManager {
 
   private array $roles = [];
-  
+  private $userRoleLable = 'User';
+  private $assistantRoleLable = 'Assistant';
 
   /**
    * @throws \Exception
@@ -17,6 +18,14 @@ class RolesManager {
       $this->systemMessage = $system;
       $this->addMessage('system', $system);
     }
+  }
+
+  public function addUserMessage($string) {
+    $this->addMessage($this->userRoleLable, $string);
+  }
+
+  public function addAssistantMessage($string) {
+    $this->addMessage($this->assistantRoleLable, $string);
   }
 
   public function addMessage(string $role, string $message): static {
