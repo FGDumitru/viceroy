@@ -17,16 +17,16 @@ class ConfigManager {
     $this->configObjects = $configObjects;
   }
 
-  public function getJsonPrompt() {
+  public function getJsonPrompt($promptType) {
     if (empty($this->promptContent)) {
-      $this->processJsonPromptBlueprint();
+      $this->processJsonPromptBlueprint($promptType);
     }
 
     return $this->promptContent;
   }
 
-  private function processJsonPromptBlueprint() {
-    $this->promptContent = $this->readParameters();
+  private function processJsonPromptBlueprint($promptType) {
+    $this->promptContent = $this->readParameters($promptType);
     $this->promptContent['messages'] = [];
   }
 

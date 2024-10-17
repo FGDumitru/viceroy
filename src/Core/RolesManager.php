@@ -3,12 +3,13 @@
 namespace Viceroy\Core;
 
 use Exception;
+use stdClass;
 
 class RolesManager {
 
   private array $roles = [];
-  private $userRoleLable = 'User';
-  private $assistantRoleLable = 'Assistant';
+  private $userRoleLable = 'user';
+  private $assistantRoleLable = 'assistant';
 
   /**
    * @throws \Exception
@@ -38,8 +39,25 @@ class RolesManager {
     return $this;
   }
 
-  public function getMessages(): array {
-    return $this->roles;
+  public function getMessages($promptType): array {
+    if ($promptType == 'llamacpp') {
+      return $this->roles;
+    };
+
+    if ($promptType == 'groqApi') {
+      $roles = $this->roles;
+//      var_dump($roles);
+
+      $data = [];
+      foreach ($roles as $role) {
+        $data[] = (object) $role;
+      }
+
+//      var_dump($data);
+//      die;
+      return $data;
+    };
+
   }
 
   public function setMessages(array $messages): static {

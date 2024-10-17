@@ -7,8 +7,8 @@ use Viceroy\Connections\Definitions\LLmConnectionAbstractClass;
 
 class OpenAiCompatibleConnection extends LLmConnectionAbstractClass {
 
-  public function __construct(ConfigObjects $config = NULL) {
-    parent::__construct($config);
+  public function __construct(...$params) {
+    parent::__construct(...$params);
   }
 
 }

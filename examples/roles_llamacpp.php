@@ -4,11 +4,17 @@ require_once '../vendor/autoload.php';
 
 use Viceroy\Connections\llamacppOAICompatibleConnection;
 
+$useGrok = TRUE;
+
 $llmConnection = new llamacppOAICompatibleConnection();
 
-// Check the endpoint health.
-if (!$llmConnection->health()) {
-  die('The LLM health status is not valid! Check the server connection.');
+if ($useGrok && $authorization = getenv('GrokAPI')) {
+  echo "\n\tUsing Grok API\n";
+  $llmConnection->setEndpointTypeToGroqAPI();
+  $llmConnection->setLLMmodelName('llama-3.2-90b-vision-preview');
+  $llmConnection->setBearedToken($authorization);
+} else {
+  echo "\n\tUsing default API.\n";
 }
 
 // Add a system message (if the model supports it).
@@ -22,7 +28,15 @@ $response = $llmConnection->query($userQuery);
 echo 'assistant: ' . $response . PHP_EOL;
 
 // Now ask an additional question.
-$queryString = 'Also, what is the sum of the number of letter from each animal\'s name? Respond using a JSON object with the "result" key.';
+$queryString = 'Also, what is the sum of the number of letters from each animal\'s name? Respond using a single value inside a JSON object, in the "result" key.';
+echo "\nuser: $queryString\n";
+$response = $llmConnection->query($queryString);
+
+// This is the second LLM response.
+echo 'assistant: ' . $response . PHP_EOL;
+
+// Now ask an additional question.
+$queryString = 'Actually... I need you to to translate into Romanian my original question.';
 echo "\nuser: $queryString\n";
 $response = $llmConnection->query($queryString);
 

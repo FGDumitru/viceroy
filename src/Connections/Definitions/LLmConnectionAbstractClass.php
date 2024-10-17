@@ -21,9 +21,33 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
   
   private ?float $queryTime = NULL;
 
+  private string $model = 'localLLM';
+
   private Request $request;
 
   private RolesManager $rolesManager;
+
+  public $guzzleParametersFormationCallback;
+
+  public $promptType = 'llamacpp';
+
+  private $endpointUri = '';
+
+  public function getEndpointUri(): string {
+    return $this->endpointUri;
+  }
+
+  public function setEndpointUri(string $endpointUri): LLmConnectionAbstractClass {
+    $this->endpointUri = $endpointUri;
+    return $this;
+  }
+
+  private $bearedToken = '';
+
+  public function setBearedToken(string $bearedToken): LLmConnectionAbstractClass {
+    $this->bearedToken = $bearedToken;
+    return $this;
+  }
 
   function __construct(ConfigObjects $config = NULL) {
     if (is_null($config)) {
@@ -78,6 +102,11 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
   }
 
   private function getServerUri(string $verb) {
+
+    if (!empty($this->endpointUri)) {
+      return $this->endpointUri;
+    }
+
     $uri = $this->getConfiguration()->getServerConfigKey('host');
     $uri .= ':' . $this->getConfiguration()->getServerConfigKey('port');
     $uri .= $this->getConfiguration()->getServerConfigKey($verb);
@@ -130,10 +159,10 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
   private function createGuzzleRequest(): array {
     $configManager = new ConfigManager($this->configuration);
 
-    $promptJson = $configManager->getJsonPrompt();
+    $promptJson = $configManager->getJsonPrompt($this->promptType);
 
-    $promptJson['messages'] = $this->rolesManager->getMessages();
-
+    $promptJson['messages'] = $this->rolesManager->getMessages($this->promptType);
+    $promptJson['model'] = $this->model;
     return $promptJson;
   }
 
@@ -145,16 +174,31 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
     $uri = $this->getServerUri('completions');
 
     $guzzleRequest = [
+      'model' => $this->model,
       'json' => $promptJson,
       'headers' => ['Content-Type' => 'application/json'],
     ];
 
+    if (!empty($this->bearedToken)) {
+      $guzzleRequest['headers']['Authorization'] = 'Bearer ' . $this->bearedToken;
+    }
+
+    if (is_callable($this->guzzleParametersFormationCallback)) {
+     [$uri,$guzzleRequest] = call_user_func($this->guzzleParametersFormationCallback, $uri, $guzzleRequest);
+    }
+
+//    var_dump($guzzleRequest);
+//    die;
+
+
     $timer = microtime(TRUE);
     try {
       $response = $this->guzzleObject->post($uri, $guzzleRequest);
+//      var_dump($response);
       $this->queryTime = microtime(TRUE) - $timer;
     }
     catch (GuzzleException $e) {
+      var_dump($e);
       $this->queryTime = NULL;
       return FALSE;
     }
@@ -183,6 +227,20 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
   $response = $this->queryPost();
   $this->getRolesManager()->addAssistantMessage($response->getLlmResponse());
   return $response->getLlmResponse();
+  }
+
+  public function setEndpointTypeToLlamaCpp(){
+    $this->promptType = 'llamacpp';
+    $this->setEndpointUri('');
+  }
+
+  public function setEndpointTypeToGroqAPI() {
+    $this->promptType = 'groqApi';
+    $this->setEndpointUri('https://api.groq.com/openai/v1/chat/completions');
+  }
+
+  public function setLLMmodelName($modelName) {
+    $this->model = $modelName;
   }
 
 }
