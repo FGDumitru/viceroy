@@ -39,25 +39,23 @@ class RolesManager {
     return $this;
   }
 
-  public function getMessages($promptType): array {
+  public function getMessages($promptType = 'llamacpp'): array|null {
     if ($promptType == 'llamacpp') {
       return $this->roles;
     };
 
     if ($promptType == 'groqApi') {
       $roles = $this->roles;
-//      var_dump($roles);
 
       $data = [];
       foreach ($roles as $role) {
         $data[] = (object) $role;
       }
 
-//      var_dump($data);
-//      die;
       return $data;
     };
 
+    return null;
   }
 
   public function setMessages(array $messages): static {
