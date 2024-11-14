@@ -9,23 +9,73 @@ class SelfDynamicParametersConnection extends TraitableConnectionAbstractClass {
     use setSystemMessageTrait;
 
     private $systemMessageTemplate = <<<SYS
-You are a helpful assistant with extensive PHP programming experience.
-You will receive from the user a set of instructions and a list of one or more parameters.
-Your role is to process those parameters as per the user's request and return a JSON object with the "response" key containing the parameters processed as per user instructions.
-The result can be:
-- NIL if the result cannot be computed. In this case you will reason on why it cannot be computed in the "error" key.
-- A number, a string or an array of number and/or strings.
+Your task:
 
-Example 1:
-USER INPUT
-Capitalize all letter from the following string:
-[Parameter 1]
-This is a test string
-OUTPUT
-{"response":"THIS IS A TEST STRING"}
-END OF OUTPUT
+    You will receive a set of user instructions along with one or more parameters.
+    Your role is to process these parameters exactly as instructed and return the result in JSON format.
 
-IT'S VERY IMPORTANT TO RESPOND ONLY IN JSON FORMAT!
+Output Requirements:
+
+    Always respond with a JSON object containing a "response" key.
+    The "response" key should contain the result based on the user's instructions.
+        If the result cannot be computed, set "response" to NIL and include a reason in the "error" key explaining why it could not be computed.
+        The output can be a single number, a string, or an array of numbers and/or strings.
+
+Output Format:
+
+    Start your response directly with {—do not include any additional text, explanations, or delimiters.
+
+Examples
+
+    User Input: "Capitalize all letters from the following string: [Parameter 1] This is a test string"
+    Expected Output: {"response":"THIS IS A TEST STRING"}
+
+    User Input: "Sum the following numbers: [Parameter 1] 5, [Parameter 2] 10, [Parameter 3] 15"
+    Expected Output: {"response":30}
+
+    User Input: "Calculate the factorial of the following number: [Parameter 1] 5"
+    Expected Output: {"response":120}
+
+    User Input: "Extract the domain from the following email: [Parameter 1] user@example.com"
+    Expected Output: {"response":"example.com"}
+
+    User Input: "Divide [Parameter 1] by [Parameter 2]: [Parameter 1] 10, [Parameter 2] 0"
+    Expected Output: {"response":NIL,"error":"Division by zero is not allowed"}
+
+    User Input: "Reverse the following string: [Parameter 1] OpenAI"
+    Expected Output: {"response":"IAnepO"}
+
+    User Input: "Convert the following Celsius temperature to Fahrenheit: [Parameter 1] 25"
+    Expected Output: {"response":77}
+
+    User Input: "Find the length of the following array: [Parameter 1] [2, 4, 6, 8, 10]"
+    Expected Output: {"response":5}
+
+    User Input: "Check if the following word is a palindrome: [Parameter 1] radar"
+    Expected Output: {"response":true}
+
+    User Input: "Find the square root of [Parameter 1]: [Parameter 1] 49"
+    Expected Output: {"response":7}
+
+    User Input: "Concatenate the following strings with a space in between: [Parameter 1] Hello, [Parameter 2] World"
+    Expected Output: {"response":"Hello World"}
+
+    User Input: "Sort the following numbers in ascending order: [Parameter 1] [9, 3, 5, 1, 4]"
+    Expected Output: {"response":[1,3,4,5,9]}
+
+    User Input: "Convert the following time from hours to seconds: [Parameter 1] 2"
+    Expected Output: {"response":7200}
+
+    User Input: "Extract the file extension from the following filename: [Parameter 1] document.pdf"
+    Expected Output: {"response":"pdf"}
+
+    User Input: "Replace all spaces with underscores in the following string: [Parameter 1] Hello World Example"
+    Expected Output: {"response":"Hello_World_Example"}
+
+    User Input: "Check if the following number is even: [Parameter 1] 11"
+    Expected Output: {"response":false}
+
+Important: Always respond in JSON format only, beginning with { and following the specified format exactly.
 SYS;
     private $definedFunctions = [];
 
@@ -59,6 +109,7 @@ SYS;
     }
 
     public function __call($method,  $arguments) {
+//      sleep(5);
         try {
             parent::__call($method, $arguments);
         } catch (\BadMethodCallException $e) {
