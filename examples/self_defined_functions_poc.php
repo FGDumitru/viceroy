@@ -26,15 +26,18 @@ $llm->addNewFunction('wordsToArrayAllCaps', 'Convert the text in each parameter 
 
 $llm->addNewFunction('reverseWordsOrder', 'Reverse the order of words in the provided text parameter.');
 
-$llm->addNewFunction('translate', 'Translate the text in the second parameter into the target language specified by the language code in the first parameter.');
+$llm->addNewFunction('translate', 'Translate the text in the second parameter into the target language specified by the language code in the first parameter. Do you best to figure out the input and output languages and do not output anything other than the translation.');
 
 $llm->addNewFunction('validEmail', 'Check if the email address provided in the first parameter is valid. Return TRUE for a valid email or FALSE if it is invalid.');
 
-
 $llm->addNewFunction('leetSpeak', 'Transform the following parameters into l33t speak.');
+$llm->addNewFunction('reverseString', 'Reverse the string in the first parameter');
 
-echo $llm->leetSpeak('Hello world!');
+
+echo $llm->reverseString('This is a Very Interestring string and idea!');
 //die;
+
+echo $llm->leetSpeak('Hello world!') . PHP_EOL; // H3ll0 w0rld!
 
 // Usage examples for dynamic functions (non-chained, direct result).
 echo $llm->adunare(5,4) . PHP_EOL; // 9
@@ -45,11 +48,11 @@ echo $llm->countWords('This is a simple test','some additional words here') . PH
 echo $llm->reverseWordsOrder('This is a simple test') . PHP_EOL; // test simple a is This
 
 echo $llm->translate('romanian', 'What else is new?') . PHP_EOL; // Ce mai e nou?
-echo $llm->translate('RO', 'La pomme est rouge.') . PHP_EOL; // Marul este rosu
+echo $llm->translate('ROmanian', 'La pomme est rouge.') . PHP_EOL; // Marul este rosu
 echo $llm->translate('french', 'Mărul este galben.') . PHP_EOL; // La pomme est jaune.
-echo $llm->translate('English language', 'सेब लाल है।') . PHP_EOL; // The apple is red
+echo $llm->translate('English', 'सेब लाल है।') . PHP_EOL; // The apple is red
 
-print_r($llm->wordsToArrayAllCaps('This is a simple test')) . PHP_EOL;
+print_r($llm->wordsToArrayAllCaps('This is a simple test'). PHP_EOL);
 
 var_dump($llm->validEmail('un test@k'));
 var_dump($llm->validEmail('un_test@k.com'));

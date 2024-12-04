@@ -73,7 +73,7 @@ class RolesManager {
     return $this;
   }
 
-  public function clearMessages(): static {
+  public function clearMessages() {
     $this->roles = [];
     return $this;
   }

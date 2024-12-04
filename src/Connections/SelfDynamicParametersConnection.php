@@ -8,7 +8,7 @@ use Viceroy\Connections\Traits\setSystemMessageTrait;
 class SelfDynamicParametersConnection extends TraitableConnectionAbstractClass {
     use setSystemMessageTrait;
 
-    private $systemMessageTemplate = <<<SYS
+    private string $systemMessageTemplate = <<<SYS
 Your task:
 
     You will receive a set of user instructions along with one or more parameters.
@@ -75,14 +75,14 @@ Examples
     User Input: "Check if the following number is even: [Parameter 1] 11"
     Expected Output: {"response":false}
 
-Important: Always respond in JSON format only, beginning with { and following the specified format exactly.
+Important: Always respond in JSON format only, beginning with {, ending with } and following the specified format exactly.
 SYS;
-    private $definedFunctions = [];
+    private array $definedFunctions = [];
 
     private $lastResponse = NULL;
-    private $useLastResponse = FALSE;
+    private bool $useLastResponse = FALSE;
 
-    private $chainMode = FALSE;
+    private bool $chainMode = FALSE;
 
     public function setSystem(string $systemMessage): void
     {
@@ -90,7 +90,8 @@ SYS;
         $this->setSystemMessageTrait($this->systemMessageTemplate);
     }
 
-    public function getSystem() {
+    public function getSystem(): string
+    {
         return $this->getSystemMessage();
     }
 
@@ -100,38 +101,39 @@ SYS;
         $this->setSystem($this->systemMessageTemplate);
     }
 
-    public function addNewFunction(string $functionName, string $definition): void {
+    public function addNewFunction(string $functionName, string $definition): SelfDynamicParametersConnection
+    {
         $this->definedFunctions[$functionName] = $definition;
-    }
-
-    public function andThen() {
-        $this->useLastResponse = TRUE;
+        return $this;
     }
 
     public function __call($method,  $arguments) {
-//      sleep(5);
         try {
             parent::__call($method, $arguments);
         } catch (\BadMethodCallException $e) {
             if (isset($this->definedFunctions[$method])) {
+
+                if (!$this->useLastResponse) {
+                    $this->connection->getRolesManager()->clearMessages();
+                }
+
                 $this->connection->getRolesManager()->setSystemMessage($this->systemMessageTemplate);
 
-                $functionCommands = $this->definedFunctions[$method] . '\n\n';
+                $functionCommands = $this->definedFunctions[$method] . "\n\n";
 
                 if ($this->useLastResponse && !is_null($this->lastResponse)) {
                     $arguments = array_merge([$this->lastResponse], $arguments);
                 }
 
                 foreach ($arguments as $index => $argument) {
-                    $encodedArgument = json_encode($argument);
                     $argumentType = get_debug_type($argument);
-                    $functionCommands .= "[PARAMETER $index of type $argumentType]\n $encodedArgument\n\n";
+                    $functionCommands .= "[PARAMETER $index of type $argumentType]\n $argument\n\n";
                 }
 
-//                echo "\n\n\tREQUEST: $functionCommands\n\n";
+                echo "\n\n\tREQUEST: $functionCommands\n\n";
                 $resultRaw = $this->connection->query($functionCommands);
 
-//                echo "RESPONSE: $resultRaw\n\n";
+                echo "RESPONSE: $resultRaw\n\n";
 
                 $jsonParsedResult = json_decode($resultRaw, true);
 
