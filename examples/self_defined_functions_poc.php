@@ -5,6 +5,7 @@ require_once '../vendor/autoload.php';
 use Viceroy\Connections\SelfDynamicParametersConnection;
 
 $llm = new SelfDynamicParametersConnection();
+$llm->setConnectionTimeout(0);
 
 $useGrok = FALSE;
 if ($useGrok && $authorization = getenv('GrokAPI')) {
@@ -52,7 +53,7 @@ echo $llm->translate('ROmanian', 'La pomme est rouge.') . PHP_EOL; // Marul este
 echo $llm->translate('french', 'Mărul este galben.') . PHP_EOL; // La pomme est jaune.
 echo $llm->translate('English', 'सेब लाल है।') . PHP_EOL; // The apple is red
 
-print_r($llm->wordsToArrayAllCaps('This is a simple test'). PHP_EOL);
+var_dump($llm->wordsToArrayAllCaps('This is a simple test'));
 
 var_dump($llm->validEmail('un test@k'));
 var_dump($llm->validEmail('un_test@k.com'));

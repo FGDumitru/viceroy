@@ -101,6 +101,10 @@ SYS;
         $this->setSystem($this->systemMessageTemplate);
     }
 
+    public function setConnectionTimeout(int $timeout) {
+        $this->connection->setGuzzleConnectionTimeout($timeout);
+    }
+
     public function addNewFunction(string $functionName, string $definition): SelfDynamicParametersConnection
     {
         $this->definedFunctions[$functionName] = $definition;

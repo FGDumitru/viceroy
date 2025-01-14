@@ -6,6 +6,9 @@ use Viceroy\Connections\llamacppOAICompatibleConnection;
 
 $llmConnection = new llamacppOAICompatibleConnection();
 
+// Timeout usage example, wait 5 minutes before timing out.
+$llmConnection->setGuzzleConnectionTimeout(300);
+
 // Check the endpoint health.
 if (!$llmConnection->health()) {
   die('The LLM health status is not valid!');
