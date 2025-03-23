@@ -7,6 +7,7 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
 use Viceroy\Configuration\ConfigManager;
 use Viceroy\Configuration\ConfigObjects;
+use Viceroy\Connections\SelfDynamicParametersConnection;
 use Viceroy\Core\Request;
 use Viceroy\Core\Response;
 use Viceroy\Core\RolesManager;
@@ -35,6 +36,11 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface
     public $promptType = 'llamacpp';
 
     private $endpointUri = '';
+
+    /**
+     * @var Response
+     */
+    private $response;
 
     public function getEndpointUri(): string
     {
@@ -229,7 +235,9 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface
             return FALSE;
         }
 
-        return new Response($response);
+        $this->response = new Response($response);
+
+        return $this->response;
     }
 
     public function getLastQueryMicrotime()
@@ -255,9 +263,18 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface
     public function query($query)
     {
         $this->getRolesManager()->addUserMessage($query);
-        $response = $this->queryPost();
-        $this->getRolesManager()->addAssistantMessage($response->getLlmResponse());
-        return $response->getLlmResponse();
+        $this->response = $this->queryPost();
+        $this->getRolesManager()->addAssistantMessage($this->response->getLlmResponse());
+        return $this->response->getLlmResponse();
+    }
+
+    public function getResponse() {
+        return $this->response;
+    }
+
+    public function getThinkContent(): string
+    {
+        return $this->response->getThinkContent();
     }
 
     public function setEndpointTypeToLlamaCpp()
@@ -292,6 +309,38 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface
         $currentOptions = $this->getGuzzleCustomOptions();
         $this->setGuzzleCustomOptions(array_merge($currentOptions, ['timeout' => $timeout]));
         return $this;
+    }
+
+    public function getAvailableModels() {
+        $uri = $this->getServerUri('models') ?? '/v1/models';
+
+        try {
+
+            $guzzleOptions = [
+                'headers' => ['Content-Type' => 'application/json'],
+                'timeout' => 0,
+            ];
+
+            $guzzleOptions = array_merge($guzzleOptions, $this->getGuzzleCustomOptions());
+
+
+            $response = $this->guzzleObject->get($uri, $guzzleOptions);
+        } catch (Exception $e) {
+            return FALSE;
+        }
+
+        $models = json_decode($response->getBody()->getContents(), TRUE);
+
+        if (isset($models['data'])) {
+            $data = $models['data'];
+            $models = [];
+            foreach ($data as $model) {
+                $models[] = $model['id'];
+            }
+        }
+
+        return $models;
+
     }
 
 }

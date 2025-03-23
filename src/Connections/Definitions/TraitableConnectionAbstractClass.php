@@ -45,6 +45,14 @@ class TraitableConnectionAbstractClass
         };
     }
 
+    public function getThinkContent(): string {
+        return $this->connection->getThinkContent();
+    }
+
+    public function getModels() {
+        return $this->connection->getAvailableModels();
+    }
+
     public function __call($method, $arguments)
     {
         if (method_exists($this->connection->getBaseInstance(),$method)) {

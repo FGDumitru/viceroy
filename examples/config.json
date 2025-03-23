@@ -1,12 +1,14 @@
 {
   "server": {
     "host": "http://127.0.0.1",
-    "port": "5000",
+    "port": "8855",
     "completions": "/v1/chat/completions",
     "tokenize": "/tokenize",
     "detokenize": "/detokenize",
-    "health": "/health",
+    "health": "/v1/health",
+    "models": "/v1/models",
     "server_type": "llamacpp",
+    "use_llama-swap": true,
     "type": "OpenAiCompatibleConnection"
   },
   "debug": true,

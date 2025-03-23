@@ -16,7 +16,7 @@ Your task:
 
 Output Requirements:
 
-    Always respond with a JSON object containing a "response" key.
+    Always respond with a JSON object containing a "response" key. DO NOT OUTPUT anything else after the JSON object has finished printing.
     The "response" key should contain the result based on the user's instructions.
         If the result cannot be computed, set "response" to NIL and include a reason in the "error" key explaining why it could not be computed.
         The output can be a single number, a string, or an array of numbers and/or strings.
@@ -40,7 +40,7 @@ Examples
     Expected Output: {"response":"example.com"}
 
     User Input: "Divide [Parameter 1] by [Parameter 2]: [Parameter 1] 10, [Parameter 2] 0"
-    Expected Output: {"response":NIL,"error":"Division by zero is not allowed"}
+    Expected Output: {"response":NIL,"error":"Division by zero is not allowed"}<end of output>
 
     User Input: "Reverse the following string: [Parameter 1] OpenAI"
     Expected Output: {"response":"IAnepO"}
@@ -75,7 +75,7 @@ Examples
     User Input: "Check if the following number is even: [Parameter 1] 11"
     Expected Output: {"response":false}
 
-Important: Always respond in JSON format only, beginning with {, ending with } and following the specified format exactly.
+Important: Always respond in JSON format only, beginning with {, ending with } and following the specified format exactly. Do not output anything else after you finish outputting the JSON object (IMPORTANT!).
 SYS;
     private array $definedFunctions = [];
 
@@ -109,6 +109,11 @@ SYS;
     {
         $this->definedFunctions[$functionName] = $definition;
         return $this;
+    }
+
+    public function getThinkContent(): string
+    {
+        return $this->connection->getThinkContent();
     }
 
     public function __call($method,  $arguments) {
@@ -178,6 +183,5 @@ SYS;
     public function getLastResponse() {
         return $this->lastResponse;
     }
-
 
 }

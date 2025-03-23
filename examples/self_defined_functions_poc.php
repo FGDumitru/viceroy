@@ -5,6 +5,13 @@ require_once '../vendor/autoload.php';
 use Viceroy\Connections\SelfDynamicParametersConnection;
 
 $llm = new SelfDynamicParametersConnection();
+
+$models = $llm->getModels();
+sort($models);
+$models = array_reverse($models);
+
+$modelId = 'Qwen_QwQ-32B-Q8_0';
+
 $llm->setConnectionTimeout(0);
 
 $useGrok = FALSE;
@@ -15,6 +22,7 @@ if ($useGrok && $authorization = getenv('GrokAPI')) {
   $llm->setBearedToken($authorization);
 } else {
   echo "\n\tUsing default API.\n";
+  $llm->setLLMmodelName($modelId);
 }
 
 
