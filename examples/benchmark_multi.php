@@ -7,20 +7,25 @@ $llmConnection = new llamacppOAICompatibleConnection();
 $llmConnection->setGuzzleConnectionTimeout(PHP_INT_MAX);
 
 $results = [];
-$benchmarkIniFile = 'benchmark.ini';
+$benchmarkJsonFile = 'benchmark_runs.json'; // Changed from INI to JSON
 $resetBenchmark = in_array('--reset', $argv);
 $filterModels = [];
+$totalRequiredAnswersPerQuestion = 1;
+$requiredCorrectAnswers = 1;
 
-
-// Parse --model parameters
+// Parse command-line parameters
 foreach ($argv as $arg) {
     if (str_starts_with($arg, '--model=')) {
-        $filterModels[] = substr($arg, 8); // Extract the model pattern
+        $filterModels[] = substr($arg, 8);
+    } elseif (str_starts_with($arg, '--total-required-answers=')) {
+        $totalRequiredAnswersPerQuestion = (int) substr($arg, strlen('--total-required-answers='));
+    } elseif (str_starts_with($arg, '--required-correct-answers=')) {
+        $requiredCorrectAnswers = (int) substr($arg, strlen('--required-correct-answers='));
     }
 }
 
 // DEBUG
-//$filterModels = ['*qwen*'];
+//$filterModels = ['*qwen*1M*'];
 
 // Debug output for --model parameter
 if (!empty($filterModels)) {
@@ -110,35 +115,38 @@ function validateResponse($entry, $response) {
     return false;
 }
 
-function loadBenchmarkIni() {
-    global $benchmarkIniFile;
-    if (!file_exists($benchmarkIniFile)) {
+function loadBenchmarkJson() {
+    global $benchmarkJsonFile;
+    if (!file_exists($benchmarkJsonFile)) {
         return [];
     }
-    return parse_ini_file($benchmarkIniFile, true);
+    $jsonData = file_get_contents($benchmarkJsonFile);
+    $data = json_decode($jsonData, true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        die("\033[1;31mError decoding benchmark runs: " . json_last_error_msg() . "\033[0m\n");
+    }
+    return $data;
 }
 
-function saveBenchmarkIni($data) {
-    global $benchmarkIniFile;
-    $content = '';
-    foreach ($data as $model => $questions) {
-        $content .= "[$model]\n";
-        foreach ($questions as $qIndex => $result) {
-            $content .= "$qIndex=" . json_encode($result) . "\n";
-        }
-        $content .= "\n";
-    }
-    file_put_contents($benchmarkIniFile, $content);
+function saveBenchmarkJson($data) {
+    global $benchmarkJsonFile;
+    $jsonData = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    file_put_contents($benchmarkJsonFile, $jsonData);
 }
 
 // ======================= Main Execution =======================
-if ($resetBenchmark && file_exists($benchmarkIniFile)) {
-    unlink($benchmarkIniFile);
+if ($resetBenchmark && file_exists($benchmarkJsonFile)) {
+    unlink($benchmarkJsonFile);
 }
 
-$benchmarkIniData = loadBenchmarkIni();
+$benchmarkJsonData = loadBenchmarkJson(); // Renamed from $benchmarkIniData
 
 $models = $llmConnection->getAvailableModels();
+
+if (empty($models)) {
+    echo "\n\tError retrieving models list. \n";
+    die(1);
+}
 
 // Reorganize DeepSeek models
 [$deepseek, $others] = array_reduce($models, function($carry, $model) {
@@ -181,110 +189,104 @@ foreach ($models as $modelIndex => $model) {
     $modelStartTime = $startTime;
 
     foreach ($benchmarkData as $qIndex => $entry) {
+
         $currentQuestion++;
         prepareQuestion($entry);
 
+        $questionString = $benchmarkData[$qIndex]['q'];
 
+        echo "\nQuestion: " . $questionString . "\n";
 
-        // Check if already answered
-        if (isset($benchmarkIniData[$model][$qIndex])) {
-            echo "\n\033[1mQuestion $currentQuestion/$totalQuestions | Model $model\033[0m\n";
-            $question = $benchmarkData[$qIndex]['q'];
-            echo "\t$question\n\n";
+        $existingAttempts = $benchmarkJsonData[$model][$qIndex] ?? []; // Now uses JSON data
+        $numAttempts = count($existingAttempts);
+        $remainingAttempts = $totalRequiredAnswersPerQuestion - $numAttempts;
 
-            $result = json_decode($benchmarkIniData[$model][$qIndex], true);
-            $isCorrect = $result['correct'];
-            $content = $result['response'];
-            $reasoning = $result['reasoning'] ?? '';
-            $responseTime = $result['response_time'] ?? 0;
+        if ($numAttempts >= $totalRequiredAnswersPerQuestion) {
+            $correctAttempts = count(array_filter($existingAttempts, fn($a) => $a['correct']));
+            $isCorrectOverall = $correctAttempts >= $requiredCorrectAnswers;
+            echo "\nExpected response: " . json_encode($entry['answers']);
+            echo "\nProvided response: " . $existingAttempts[0]['response'] . "\n";
+
         } else {
+            // We need a sleep in order to not lock up the GPU
             sleep(2);
-            // Display progress
-            $progress = generateProgressBar(
-                $currentQuestion,
-                $totalQuestions,
-                $correctCount,
-                $currentQuestion - $correctCount - 1
-            );
 
-            // Calculate time passed and ETA for the current model
-            $currentTime = microtime(true);
-            $timePassed = $currentTime - $modelStartTime;
+            for ($i = 0; $i < $remainingAttempts; $i++) {
+                // Display progress
+                $done = $correctCount + $incorrectCount;
+                $progress = generateProgressBar(
+                    $currentQuestion,
+                    $totalQuestions,
+                    $correctCount,
+                    $incorrectCount
+                );
 
-            if ($currentQuestion > 1) {
-                $averageTimePerQuestion = $timePassed / ($currentQuestion - 1);
-            } else {
-                $averageTimePerQuestion = 0;
-            }
+                $currentTime = microtime(true);
+                $timePassed = $currentTime - $modelStartTime;
+                $averageTimePerQuestion = $done > 0 ? $timePassed / $done : 0;
+                $eta = $averageTimePerQuestion * ($totalQuestions - $done);
 
-            $remainingQuestions = $totalQuestions - $currentQuestion + 1;
-            $eta = $averageTimePerQuestion * $remainingQuestions;
-
-            echo "\n\033[1mQuestion $currentQuestion/$totalQuestions | Model $model\033[0m\n";
-            echo "Prompt: {$entry['full_prompt']}\n";
-            echo "Progress: $progress\n";
-            echo "Time Passed: " . gmdate("H:i:s", $timePassed) . "\n";
-            echo "ETA: " . gmdate("H:i:s", $eta) . "\n";
-
-            $question = "Please answer the following question and encapsulate your final answer between <response> and </response> tags.\n\n" . $entry['full_prompt'];
-
-            try {
-                $llmConnection->getRolesManager()
-                    ->clearMessages()
-                    ->setSystemMessage('Answer concisely and accurately.')
-                    ->addMessage('user', $question);
-
-                $response = $llmConnection->queryPost();
-                $content = trim($response->getLlmResponse());
+                echo "\n\033[1mQuestion $currentQuestion/$totalQuestions | Model $model\033[0m\n";
+                echo "Progress: $progress\n";
+                echo "Time Passed: " . gmdate("H:i:s", $timePassed) . "\n";
+                echo "ETA: " . gmdate("H:i:s", $eta) . "\n";
 
                 try {
+                    $llmConnection->getRolesManager()
+                        ->clearMessages()
+                        ->setSystemMessage('Answer concisely and accurately.')
+                        ->addMessage('user', "Please answer the following question and encapsulate your final answer between <response> and </response> tags.\n\n{$entry['full_prompt']}");
+
+                    $response = $llmConnection->queryPost();
+                    $content = trim($response->getLlmResponse());
                     $reasoning = $llmConnection->getThinkContent();
+                    $isCorrect = validateResponse($entry, $content);
+                    $responseTime = $llmConnection->getLastQueryMicrotime();
                 } catch (Exception $e) {
+                    $content = 'ERROR: ' . $e->getMessage();
                     $reasoning = '';
+                    $isCorrect = false;
+                    $responseTime = 0;
                 }
 
-            } catch (Exception $e) {
-                $content = 'ERROR: ' . $e->getMessage();
-                $reasoning = '';
+                $existingAttempts[] = [
+                    'response' => $content,
+                    'correct' => $isCorrect,
+                    'reasoning' => empty($reasoning) ? '""' : $reasoning,
+                    'response_time' => $responseTime
+                ];
+
+                // After updating attempts
+                $benchmarkJsonData[$model][$qIndex] = $existingAttempts;
+                saveBenchmarkJson($benchmarkJsonData); // Save to JSON after each attempt
+                //
+
+                $status = $isCorrect ? '👍' : '🚫';
+                echo "\n\t### Attempt " . ($numAttempts + $i + 1) . "/$totalRequiredAnswersPerQuestion $status\n";
+                echo "\tResponse: $content\n";
             }
 
-            $isCorrect = validateResponse($entry, $content);
-            $responseTime = $llmConnection->getLastQueryMicrotime();
-
-            // Save result
-            $benchmarkIniData[$model][$qIndex] = json_encode([
-                'response' => $content,
-                'correct' => $isCorrect,
-                'reasoning' => $reasoning,
-                'response_time' => $responseTime
-            ]);
-            saveBenchmarkIni($benchmarkIniData);
+            $correctAttempts = count(array_filter($existingAttempts, fn($a) => $a['correct']));
+            $isCorrectOverall = $correctAttempts >= $requiredCorrectAnswers;
         }
 
-        if ($isCorrect) {
+        if ($isCorrectOverall) {
             $correctCount++;
         } else {
             $incorrectCount++;
         }
 
-        $correctAnswer = $isCorrect ? 'a correct 👍 ' : 'an incorrect 🚫 ';
-        echo "\n\t ###  LLM gave $correctAnswer response: {$content} ### \n\n\t ### Correct count now: $correctCount Incorrect count now: $incorrectCount ###\n\n";
+        echo "\t### Question result: " . ($isCorrectOverall ? '👍 CORRECT' : '🚫 INCORRECT') . " ($correctAttempts/$totalRequiredAnswersPerQuestion correct attempts) ###\n";
+        echo "\tCurrent time: " . date('Y-m-d H:i:s') . "\n\n";
 
-        // Store results
         $modelResults[] = [
             'question' => $entry['q'],
-            'type' => $entry['type'],
-            'response' => $content,
-            'correct' => $isCorrect,
-            'expected' => $entry['answers'],
-            'options' => $entry['shuffled_options'] ?? null,
-            'reasoning' => $reasoning,
-            'response_time' => $responseTime
+            'attempts' => $existingAttempts,
+            'overall_correct' => $isCorrectOverall,
+            'correct_attempts' => $correctAttempts,
+            'required_attempts' => $totalRequiredAnswersPerQuestion,
+            'required_correct' => $requiredCorrectAnswers
         ];
-
-        // Clear previous progress line
-        echo "\033[1A\033[K"; // Move up and clear line
-        //sleep(1);
     }
 
     // Final model summary
@@ -304,3 +306,82 @@ foreach ($models as $modelIndex => $model) {
 // Save results
 file_put_contents('benchmark_results.json', json_encode($results, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 echo "\n\033[1;32mBenchmark complete! Results saved to benchmark_results.json\033[0m\n";
+
+
+// ======================= Statistics Generation =======================
+$totalQuestions = count($benchmarkData);
+$csvFile = 'benchmark_stats.csv';
+
+// Prepare CSV header
+$csvHeader = [
+    'Model',
+    'Total Time (s)',
+    'Avg Time per Answer (s)',
+    'Correct Answers',
+    'Incorrect Answers',
+    'Correct Percentage'
+];
+
+// Prepare CSV content and terminal output
+$csvLines = [implode("\t", $csvHeader)];
+$terminalOutput = "\n\033[1;36m=== Benchmark Summary ===\033[0m\n";
+
+foreach ($results as $model => $modelData) {
+    $totalTime = 0;
+    $totalAttempts = 0;
+
+    foreach ($modelData['details'] as $question) {
+        foreach ($question['attempts'] as $attempt) {
+            $totalTime += $attempt['response_time'];
+            $totalAttempts++;
+        }
+    }
+
+    $avgTime = $totalAttempts > 0 ? $totalTime / $totalAttempts : 0;
+    $correct = $modelData['score'];
+    $incorrect = $totalQuestions - $correct;
+    $percentage = $totalQuestions > 0 ? ($correct / $totalQuestions) * 100 : 0;
+
+    // Format numbers
+    $totalTimeFmt = number_format($totalTime, 2);
+    $avgTimeFmt = number_format($avgTime, 2);
+    $percentageFmt = number_format($percentage, 1) . '%';
+
+    // Add to CSV
+    $csvLines[] = implode("\t", [
+        $model,
+        $totalTimeFmt,
+        $avgTimeFmt,
+        $correct,
+        $incorrect,
+        $percentageFmt
+    ]);
+
+    // Add to terminal output
+    $terminalOutput .= sprintf(
+        "\033[1;33m%-40s\033[0m %8ss  %8ss  %3d/%-3d  %6s\n",
+        $model,
+        $totalTimeFmt,
+        $avgTimeFmt,
+        $correct,
+        $totalQuestions,
+        $percentageFmt
+    );
+}
+
+// Save CSV file
+file_put_contents($csvFile, implode(PHP_EOL, $csvLines));
+
+// Display terminal summary
+echo $terminalOutput;
+echo "\033[1;36mStatistics saved to $csvFile\033[0m\n";
+
+// Update benchmark results with expected answers
+$finalResults = json_decode(file_get_contents('benchmark_results.json'), true);
+foreach ($finalResults as $model => &$modelResults) {
+    foreach ($modelResults['details'] as $idx => &$detail) {
+        $detail['expected'] = $benchmarkData[$idx]['answers'];
+    }
+}
+file_put_contents('benchmark_results.json', json_encode($finalResults, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+echo "\033[1;36mUpdated benchmark_results.json with expected answers\033[0m\n";

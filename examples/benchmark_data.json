@@ -645,7 +645,8 @@
     "q": "What is the formula for rest mass energy equivalence?",
     "instruction": "Use standard variables.",
     "answers": [
-      "E=mc\u00b2"
+      "E=mc\u00b2",
+      "E=mc^2"
     ]
   },
   {
@@ -1412,7 +1413,7 @@
     "q": "What was the key length of the first RSA encryption?",
     "instruction": "Provide the numerical answer in bits.",
     "answers": [
-      "129"
+      "512"
     ]
   }
 ]
