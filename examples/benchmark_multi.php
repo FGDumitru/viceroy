@@ -107,8 +107,17 @@ function validateResponse($entry, $response) {
     }, $entry['answers']);
 
     foreach ($processedAnswers as $pa) {
-        if (str_contains($clean, $pa)) {
-            return true;
+        $c = intval($clean);
+
+        if ($c == $clean) {
+            // this LLM response is a numeric number, we need to strict check it
+            if ($clean == $pa) {
+                return true;
+            }
+        } else {
+            if (str_contains($clean, $pa)) {
+                return true;
+            }
         }
     }
 
@@ -194,8 +203,13 @@ foreach ($models as $modelIndex => $model) {
         prepareQuestion($entry);
 
         $questionString = $benchmarkData[$qIndex]['q'];
-
-        echo "\nQuestion: " . $questionString . "\n";
+        $instructionString = $benchmarkData[$qIndex]['instruction'];
+        $options = json_encode($entry['shuffled_options'] ?? null);
+        $expectedAnswer = implode(' || ',$benchmarkData[$qIndex]['answers']);
+        echo "\nQuestion #$currentQuestion: " . $questionString . "\nInstruction: " . $instructionString . "\nExpected answer: [" . $expectedAnswer . "]\n";
+        if ('null' !== $options) {
+            echo "Options: $options\n";
+        }
 
         $existingAttempts = $benchmarkJsonData[$model][$qIndex] ?? []; // Now uses JSON data
         $numAttempts = count($existingAttempts);
@@ -235,7 +249,7 @@ foreach ($models as $modelIndex => $model) {
                     $llmConnection->getRolesManager()
                         ->clearMessages()
                         ->setSystemMessage('Answer concisely and accurately.')
-                        ->addMessage('user', "Please answer the following question and encapsulate your final answer between <response> and </response> tags.\n\n{$entry['full_prompt']}");
+                        ->addMessage('user', "Please answer the following question and encapsulate your final answer between <response> and </response> tags.\nE.G. <response>Your answer to the question here</response>\n\n{$entry['full_prompt']}");
 
                     $response = $llmConnection->queryPost();
                     $content = trim($response->getLlmResponse());
@@ -276,7 +290,7 @@ foreach ($models as $modelIndex => $model) {
             $incorrectCount++;
         }
 
-        echo "\t### Question result: " . ($isCorrectOverall ? '👍 CORRECT' : '🚫 INCORRECT') . " ($correctAttempts/$totalRequiredAnswersPerQuestion correct attempts) ###\n";
+        echo "\t### Question result: " . ($isCorrectOverall ? '👍 CORRECT' : '🚫 INCORRECT') . " ($correctCount correct and $incorrectCount incorrect ) ###\n";
         echo "\tCurrent time: " . date('Y-m-d H:i:s') . "\n\n";
 
         $modelResults[] = [
@@ -287,6 +301,8 @@ foreach ($models as $modelIndex => $model) {
             'required_attempts' => $totalRequiredAnswersPerQuestion,
             'required_correct' => $requiredCorrectAnswers
         ];
+
+
     }
 
     // Final model summary
