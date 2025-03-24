@@ -223,7 +223,7 @@ foreach ($models as $modelIndex => $model) {
 
         } else {
             // We need a sleep in order to not lock up the GPU
-            sleep(2);
+            // sleep(2);
 
             for ($i = 0; $i < $remainingAttempts; $i++) {
                 // Display progress
