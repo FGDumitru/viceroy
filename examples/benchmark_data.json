@@ -1,0 +1,1418 @@
+[
+  {
+    "type": "direct",
+    "q": "What is the capital of France?",
+    "instruction": "Provide the name of the city only, without punctuation.",
+    "answers": [
+      "Paris"
+    ]
+  },
+  {
+    "type": "mcq",
+    "q": "Which of the following numbers are prime?",
+    "instruction": "Select two options. Provide your answer as comma-separated letters.",
+    "answers": [
+      "b",
+      "d"
+    ],
+    "options": {
+      "a": "15",
+      "b": "7",
+      "c": "21",
+      "d": "3"
+    }
+  },
+  {
+    "type": "translation",
+    "q": "Translate \"Good morning\" into Romanian.",
+    "instruction": "Provide only the translation, without quotation marks or punctuation.",
+    "answers": [
+      "Bun\u0103 diminea\u021ba"
+    ]
+  },
+  {
+    "type": "math",
+    "q": "Solve the following expression: 15 \u00d7 4 \u00f7 5.",
+    "instruction": "Provide the answer as a single numeric value.",
+    "answers": [
+      "12"
+    ]
+  },
+  {
+    "type": "science",
+    "q": "What is the chemical symbol for gold?",
+    "instruction": "Use the standard notation from the periodic table.",
+    "answers": [
+      "Au"
+    ]
+  },
+  {
+    "type": "mcq",
+    "q": "Which of the following are valid programming languages?",
+    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "answers": [
+      "a",
+      "c",
+      "d"
+    ],
+    "options": {
+      "a": "Python",
+      "b": "HTML",
+      "c": "JavaScript",
+      "d": "Java",
+      "e": "CSS"
+    }
+  },
+  {
+    "type": "grammar",
+    "q": "What is the past tense of the verb \"swim\"?",
+    "instruction": "Provide a single word as your answer.",
+    "answers": [
+      "swam"
+    ]
+  },
+  {
+    "type": "translation",
+    "q": "Translate the word \"book\" into Spanish.",
+    "instruction": "Provide a single word as your answer.",
+    "answers": [
+      "libro"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "If you are facing North and turn 270\u00b0 clockwise, which direction are you now facing?",
+    "instruction": "Provide the cardinal direction only.",
+    "answers": [
+      "west"
+    ]
+  },
+  {
+    "type": "culture",
+    "q": "Who is the author of \"Romeo and Juliet\"?",
+    "instruction": "Provide the last name only.",
+    "answers": [
+      "Shakespeare"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "Person A says, \"B is a knight.\" Person B says, \"We are different types.\" (Knights always tell the truth, and knaves always lie.) What are A and B?",
+    "instruction": "Answer as \"A,B\" by only using the terms \"knight\" or \"knave\".",
+    "answers": [
+      "knave,knave"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "Which of the following is a tautology: (1) (A \u2227 \u00acA) \u2228 B, (2) A \u2192 (B \u2228 \u00acB), or (3) (A \u2228 B) \u2227 \u00acA?",
+    "instruction": "Provide the number of the correct formula (1, 2, or 3).",
+    "answers": [
+      "2"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "Using a 3-liter and a 5-liter jug, what is the minimum number of steps required to measure exactly 4 liters of water?",
+    "instruction": "Provide the minimum number of steps as a single digit.",
+    "answers": [
+      "6"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the next letter in the sequence: O, T, T, F, F, S, S, ___?",
+    "instruction": "Provide a single uppercase letter.",
+    "answers": [
+      "E"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the minimum number of moves required to solve the Tower of Hanoi puzzle with 5 disks?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "31"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "If (P \u2228 Q) \u2227 \u00acQ is true, what can be concluded?",
+    "instruction": "Provide the answer using logical symbols. Answer using an unescaped string. Or a single letter.",
+    "answers": [
+      "P"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "How many squares are there on a standard chessboard?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "204"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "You meet three people: X says, \"Y is lying,\" Y says, \"Z is lying,\" and Z says, \"All of us are lying.\" How many of them are telling the truth?",
+    "instruction": "Provide a number between 0 and 3.",
+    "answers": [
+      "1"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is \u00ac(A \u2227 B) equivalent to, according to De Morgan's laws?",
+    "instruction": "Provide the answer using logical symbols.",
+    "answers": [
+      "\u00acA \u2228 \u00acB"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the minimum number of colors required to paint adjacent US states differently on a map?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "4"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "If 1=5, 2=25, 3=325, and 4=4325, what does 5 equal?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "54325"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "How many distinct arrangements of the letters ABCDEFG are possible if A and B must be separated?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "3600"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "Which of the following is NOT a paradox: Liar Paradox, Barber Paradox, Sorites Paradox, or Modus Ponens?",
+    "instruction": "Provide the name of the correct option.",
+    "answers": [
+      "Modus Ponens"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What type of statement is A \u2227 \u00acA?",
+    "instruction": "Provide the term for this type of statement.",
+    "answers": [
+      "contradiction"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "In a group of 7 people, what is the minimum number of people who must share the same first letter of their names?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "2"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the next number in the sequence: 1, 11, 21, 1211, 111221, ___?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "312211"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the minimum number of weighings required to find a heavy ball among 12 identical-looking balls using a balance scale?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "3"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "If A\u2192B is true and \u00acB is true, what can be concluded?",
+    "instruction": "Provide the answer using logical symbols.",
+    "answers": [
+      "\u00acA"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "How many trailing zeros are there in 100 factorial (100!)?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "24"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "In a truth table with 4 variables, how many possible combinations of truth values are there?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "16"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the probability of rolling a sum of 9 or higher with two standard six-sided dice?",
+    "instruction": "Provide the answer as a simplified fraction.",
+    "answers": [
+      "5\/18",
+      "dfrac{5}{18}"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "How many distinct ways can the letters in the word \"LOGIC\" be arranged?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "120"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the contrapositive of the statement \"If X, then Y\"?",
+    "instruction": "Provide the answer using logical symbols.",
+    "answers": [
+      "\u00acY \u2192 \u00acX"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "How many distinct binary trees can be formed with 3 nodes?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "5"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "Which of the following is NOT a logical connective: NAND, XOR, TAU, or NOR?",
+    "instruction": "Provide the term that is not a logical connective.",
+    "answers": [
+      "TAU"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the minimum number of cuts required to divide a cube into 64 smaller cubes of equal size?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "9"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "If everyone at a party shakes hands exactly once with every other person, how many handshakes will occur among 10 people?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "45"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the ternary XOR of 121 and 202?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "110"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "How many prime numbers less than or equal to 100 end with the digit 3?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "7"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "Which of the following is NOT satisfiable: (1) (A\u2228B)\u2227\u00acA, (2) (A\u2192B)\u2227A\u2227\u00acB, or (3) (A\u2227B)\u2228(\u00acA\u2227\u00acB)?",
+    "instruction": "Provide the number of the correct formula (1, 2, or 3).",
+    "answers": [
+      "2"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the 4-bit Gray code representation of the decimal number 7?",
+    "instruction": "Provide the 4-bit binary answer.",
+    "answers": [
+      "0100"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "In how many ways can 8 queens be placed on a standard chessboard such that no two queens attack each other?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "92"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "Which of the following sets of logical operators is functionally complete: (1) {NAND}, (2) {XOR, AND}, or (3) {IMPLIES}?",
+    "instruction": "Provide the number of the correct set (1, 2, or 3).",
+    "answers": [
+      "1"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What area of mathematics does Hilbert's 24th problem concern?",
+    "instruction": "Provide the name of the field. Use only two words without any article",
+    "answers": [
+      "proof theory"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the Ramsey number R(3,3)?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "6"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "Which logical fallacy is committed in the following argument: \"If P then Q; Q; therefore P\"?",
+    "instruction": "Provide the name of the fallacy.",
+    "answers": [
+      "affirming consequent",
+      "affirming the consequent"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "How many distinct Hamiltonian cycles are there in the complete graph K5?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "12"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the Sierpi\u0144ski number in base 2?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "78557"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "Which of the following problems is decidable: Halting Problem, Post Correspondence Problem, or Presburger Arithmetic?",
+    "instruction": "Provide the name of the decidable problem.",
+    "answers": [
+      "Presburger Arithmetic"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the Church numeral representation of the number 2 in lambda calculus?",
+    "instruction": "Provide the answer in \u03bb-notation.",
+    "answers": [
+      "\u03bbf.\u03bbx.f(f x)"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the smallest non-abelian simple group?",
+    "instruction": "Provide the mathematical name of the group. Your response should include only ASCII characters.",
+    "answers": [
+      "A5"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "Which G\u00f6del number represents the symbol \"0\"?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "1"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What are the first 8 digits of the Kolakoski sequence starting with 1, 2?",
+    "instruction": "Provide the first 8 digits as a continuous string.",
+    "answers": [
+      "12211212"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "Which of the following problems is NP-complete: Traveling Salesman Problem, Factoring, or Graph Isomorphism?",
+    "instruction": "Provide the name of the NP-complete problem.",
+    "answers": [
+      "Traveling Salesman Problem",
+      "TSP"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the level of regular grammars in the Chomsky hierarchy?",
+    "instruction": "Provide the type number (I, II, III, or IV).",
+    "answers": [
+      "III"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "How many axioms are there in Zermelo-Fraenkel set theory (ZFC)?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "9"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "Which is stronger: \u0141ukasiewicz logic or intuitionistic logic?",
+    "instruction": "Provide the name of the stronger logic.",
+    "answers": [
+      "\u0141ukasiewicz"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the Busy Beaver number \u03a3(3)?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "6"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "Which of the following is NOT a property of Boolean algebra: Idempotent, Absorption, or Transposition?",
+    "instruction": "Provide the term that is not a property.",
+    "answers": [
+      "Transposition"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the Lindenbaum-Tarski algebra of propositional logic?",
+    "instruction": "Provide the name of the algebraic structure.",
+    "answers": [
+      "Boolean algebra"
+    ]
+  },
+  {
+    "type": "physics",
+    "q": "What is the SI unit of magnetic flux?",
+    "instruction": "Provide the full name with proper capitalization.",
+    "answers": [
+      "Weber"
+    ]
+  },
+  {
+    "type": "mcq",
+    "q": "Which of the following numbers are prime?",
+    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "answers": [
+      "a",
+      "d",
+      "f"
+    ],
+    "options": {
+      "a": "101",
+      "b": "207",
+      "c": "301",
+      "d": "179",
+      "e": "423",
+      "f": "131"
+    }
+  },
+  {
+    "type": "history",
+    "q": "Who was the first female Prime Minister of the United Kingdom?",
+    "instruction": "Provide the last name only.",
+    "answers": [
+      "Thatcher"
+    ]
+  },
+  {
+    "type": "chemistry",
+    "q": "How many valence electrons does phosphorus have?",
+    "instruction": "Provide a single digit as your answer.",
+    "answers": [
+      "5"
+    ]
+  },
+  {
+    "type": "math",
+    "q": "What is the integral of e\u02e3 dx from 0 to 1?",
+    "instruction": "Provide the answer in terms of e.",
+    "answers": [
+      "e-1"
+    ]
+  },
+  {
+    "type": "mcq",
+    "q": "Which of the following are layers of the TCP\/IP model?",
+    "instruction": "Select four options. Provide your answer as comma-separated letters.",
+    "answers": [
+      "a",
+      "c",
+      "d",
+      "f"
+    ],
+    "options": {
+      "a": "Application",
+      "b": "Presentation",
+      "c": "Transport",
+      "d": "Internet",
+      "e": "Session",
+      "f": "Link"
+    }
+  },
+  {
+    "type": "literature",
+    "q": "What is the original title of \"War and Peace\" in Russian?",
+    "instruction": "Provide the transliterated Cyrillic title.",
+    "answers": [
+      "Voyna i mir"
+    ]
+  },
+  {
+    "type": "biology",
+    "q": "What enzyme breaks down hydrogen peroxide?",
+    "instruction": "Provide the technical term.",
+    "answers": [
+      "catalase"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the minimum number of swaps required to sort the array [3,1,4,2] in ascending order?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "2"
+    ]
+  },
+  {
+    "type": "astronomy",
+    "q": "What is the apparent magnitude of Sirius?",
+    "instruction": "Provide the numerical value to one decimal place.",
+    "answers": [
+      "-1.5"
+    ]
+  },
+  {
+    "type": "mcq",
+    "q": "Which of the following are valid HTTP request methods?",
+    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "answers": [
+      "a",
+      "c",
+      "e"
+    ],
+    "options": {
+      "a": "PUT",
+      "b": "QUERY",
+      "c": "DELETE",
+      "d": "FETCH",
+      "e": "PATCH"
+    }
+  },
+  {
+    "type": "geography",
+    "q": "Which country has the longest coastline in the world?",
+    "instruction": "Provide the full country name.",
+    "answers": [
+      "Canada"
+    ]
+  },
+  {
+    "type": "music",
+    "q": "Who composed \"The Rite of Spring\"?",
+    "instruction": "Provide the last name only.",
+    "answers": [
+      "Stravinsky"
+    ]
+  },
+  {
+    "type": "math",
+    "q": "What are the eigenvalues of the matrix [[2,1],[1,2]]?",
+    "instruction": "Provide the eigenvalues as comma-separated integers.",
+    "answers": [
+      "1,3"
+    ]
+  },
+  {
+    "type": "physics",
+    "q": "What is the formula for rest mass energy equivalence?",
+    "instruction": "Use standard variables.",
+    "answers": [
+      "E=mc\u00b2"
+    ]
+  },
+  {
+    "type": "mcq",
+    "q": "Which of the following are monotheistic religions?",
+    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "answers": [
+      "a",
+      "d",
+      "e"
+    ],
+    "options": {
+      "a": "Sikhism",
+      "b": "Hinduism",
+      "c": "Shinto",
+      "d": "Islam",
+      "e": "Judaism"
+    }
+  },
+  {
+    "type": "computer_science",
+    "q": "What is the time complexity of merge sort?",
+    "instruction": "Provide the answer in Big O notation.",
+    "answers": [
+      "O(n log n)"
+    ]
+  },
+  {
+    "type": "law",
+    "q": "How many amendments are there to the US Constitution?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "27"
+    ]
+  },
+  {
+    "type": "chemistry",
+    "q": "What is the hybridization of the carbon atom in CH\u2084?",
+    "instruction": "Use the sp notation.",
+    "answers": [
+      "sp\u00b3"
+    ]
+  },
+  {
+    "type": "literature",
+    "q": "What is the original language of \"One Hundred Years of Solitude\"?",
+    "instruction": "Provide the name of the language.",
+    "answers": [
+      "Spanish"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the minimum number of NAND gates required to construct an XOR gate?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "4"
+    ]
+  },
+  {
+    "type": "economics",
+    "q": "What is the formula for GDP using the expenditure approach?",
+    "instruction": "Use standard components.",
+    "answers": [
+      "C+I+G+(X-M)"
+    ]
+  },
+  {
+    "type": "mcq",
+    "q": "Which of the following are vector quantities?",
+    "instruction": "Select two options. Provide your answer as comma-separated letters.",
+    "answers": [
+      "b",
+      "d"
+    ],
+    "options": {
+      "a": "Temperature",
+      "b": "Angular momentum",
+      "c": "Energy",
+      "d": "Magnetic field"
+    }
+  },
+  {
+    "type": "biology",
+    "q": "What molecule carries genetic instructions in living organisms?",
+    "instruction": "Provide the full name.",
+    "answers": [
+      "Deoxyribonucleic acid"
+    ]
+  },
+  {
+    "type": "art",
+    "q": "Who is the artist of \"The Persistence of Memory\"?",
+    "instruction": "Provide the last name only.",
+    "answers": [
+      "Dal\u00ed",
+      "Dali"
+    ]
+  },
+  {
+    "type": "math",
+    "q": "How many groups of order 4 are there, up to isomorphism?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "2"
+    ]
+  },
+  {
+    "type": "mcq",
+    "q": "Which of the following are valid SQL data types?",
+    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "answers": [
+      "a",
+      "c",
+      "e"
+    ],
+    "options": {
+      "a": "BLOB",
+      "b": "LOOP",
+      "c": "DECIMAL",
+      "d": "WHILE",
+      "e": "VARCHAR"
+    }
+  },
+  {
+    "type": "linguistics",
+    "q": "How many grammatical cases are there in Russian nouns?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "6"
+    ]
+  },
+  {
+    "type": "physics",
+    "q": "What is the quantum number for orbital angular momentum?",
+    "instruction": "Provide the lowercase letter.",
+    "answers": [
+      "l"
+    ]
+  },
+  {
+    "type": "history",
+    "q": "What was the name of the first satellite launched into space?",
+    "instruction": "Provide the full name.",
+    "answers": [
+      "Sputnik 1"
+    ]
+  },
+  {
+    "type": "computer_science",
+    "q": "In which year was the first version of the HTML standard published?",
+    "instruction": "Provide the year.",
+    "answers": [
+      "1993"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the next term in the sequence: 2, 3, 5, 7, 11, ___?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "13"
+    ]
+  },
+  {
+    "type": "philosophy",
+    "q": "Who is the author of \"Thus Spoke Zarathustra\"?",
+    "instruction": "Provide the last name only.",
+    "answers": [
+      "Nietzsche"
+    ]
+  },
+  {
+    "type": "chemistry",
+    "q": "What is the common name for sodium hydroxide?",
+    "instruction": "Provide the two-word answer.",
+    "answers": [
+      "caustic soda"
+    ]
+  },
+  {
+    "type": "mcq",
+    "q": "Which of the following are NP-hard problems?",
+    "instruction": "Select two options. Provide your answer as comma-separated letters.",
+    "answers": [
+      "a",
+      "d"
+    ],
+    "options": {
+      "a": "Traveling Salesman",
+      "b": "Linear Programming",
+      "c": "Binary Search",
+      "d": "Graph Coloring"
+    }
+  },
+  {
+    "type": "geology",
+    "q": "What is the hardness of diamond on the Mohs scale?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "10"
+    ]
+  },
+  {
+    "type": "math",
+    "q": "How many perfect squares are there that are less than or equal to 100?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "10"
+    ]
+  },
+  {
+    "type": "medicine",
+    "q": "What is the normal human body temperature in degrees Celsius?",
+    "instruction": "Provide the numerical answer to one decimal place.",
+    "answers": [
+      "36.5"
+    ]
+  },
+  {
+    "type": "mcq",
+    "q": "Which of the following are programming paradigms?",
+    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "answers": [
+      "a",
+      "c",
+      "e"
+    ],
+    "options": {
+      "a": "Functional",
+      "b": "Declarative",
+      "c": "Object-oriented",
+      "d": "Iterative",
+      "e": "Logic"
+    }
+  },
+  {
+    "type": "economics",
+    "q": "What is the formula for the money multiplier?",
+    "instruction": "Use the reserve ratio (r) in your answer.",
+    "answers": [
+      "1\/r",
+      "\\frac{1}{r}"
+    ]
+  },
+  {
+    "type": "biology",
+    "q": "How many chromosomes are present in human gametes?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "23"
+    ]
+  },
+  {
+    "type": "computer_science",
+    "q": "What was the name of the first computer virus?",
+    "instruction": "Provide the full name.",
+    "answers": [
+      "Elk Cloner"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the minimum number of comparisons required to sort 5 elements?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "7"
+    ]
+  },
+  {
+    "type": "astronomy",
+    "q": "Which galaxy contains our solar system?",
+    "instruction": "Provide the proper name.",
+    "answers": [
+      "Milky Way"
+    ]
+  },
+  {
+    "type": "mcq",
+    "q": "Which of the following are Greek letters?",
+    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "answers": [
+      "b",
+      "d",
+      "e"
+    ],
+    "options": {
+      "a": "Zeta",
+      "b": "Omega",
+      "c": "Beta",
+      "d": "Lambda",
+      "e": "Psi"
+    }
+  },
+  {
+    "type": "physics",
+    "q": "What is the value of the vacuum permeability (\u03bc\u2080) in henries per meter (H\/m)?",
+    "instruction": "Provide the value in scientific notation.",
+    "answers": [
+      "4\u03c0\u00d710\u207b\u2077",
+      "4π×10−7",
+      "4\\\\u03c0 x 10^-7",
+      "{4\\\\u03c0 \\\\times 10^{-7}"
+    ]
+  },
+  {
+    "type": "literature",
+    "q": "What is the original language of \"Anna Karenina\"?",
+    "instruction": "Provide the name of the language.",
+    "answers": [
+      "Russian"
+    ]
+  },
+  {
+    "type": "math",
+    "q": "How many Platonic solids are there?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "5"
+    ]
+  },
+  {
+    "type": "chemistry",
+    "q": "What is the oxidation state of oxygen in O\u2082?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "0"
+    ]
+  },
+  {
+    "type": "mcq",
+    "q": "Which of the following are valid CSS positioning values?",
+    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "answers": [
+      "a",
+      "c",
+      "e"
+    ],
+    "options": {
+      "a": "relative",
+      "b": "center",
+      "c": "fixed",
+      "d": "middle",
+      "e": "absolute"
+    }
+  },
+  {
+    "type": "history",
+    "q": "Who designed the first programmable computer?",
+    "instruction": "Provide the full name.",
+    "answers": [
+      "Charles Babbage"
+    ]
+  },
+  {
+    "type": "biology",
+    "q": "What is the scientific name for humans?",
+    "instruction": "Provide the answer in binomial nomenclature.",
+    "answers": [
+      "Homo sapiens"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the minimum number of moves required to solve the Tower of Hanoi puzzle with 6 disks?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "63"
+    ]
+  },
+  {
+    "type": "computer_science",
+    "q": "What was the first high-level programming language?",
+    "instruction": "Provide the full name.",
+    "answers": [
+      "Fortran"
+    ]
+  },
+  {
+    "type": "geography",
+    "q": "What is the name of the deepest ocean trench?",
+    "instruction": "Provide the proper name.",
+    "answers": [
+      "Mariana Trench"
+    ]
+  },
+  {
+    "type": "mcq",
+    "q": "Which of the following are valid HTTP status codes?",
+    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "answers": [
+      "b",
+      "d",
+      "f"
+    ],
+    "options": {
+      "a": "299",
+      "b": "418",
+      "c": "503",
+      "d": "451",
+      "e": "600",
+      "f": "307"
+    }
+  },
+  {
+    "type": "physics",
+    "q": "What is the formula for the Heisenberg uncertainty principle?",
+    "instruction": "Use \u0394 notation in your answer.",
+    "answers": [
+      "\u0394x\u0394p \u2265 \u0127\/2"
+    ]
+  },
+  {
+    "type": "art",
+    "q": "Who was the architect of the Fallingwater house?",
+    "instruction": "Provide the last name only.",
+    "answers": [
+      "Wright"
+    ]
+  },
+  {
+    "type": "math",
+    "q": "What is the sum of the interior angles of a convex pentagon?",
+    "instruction": "Provide the numerical answer in degrees.",
+    "answers": [
+      "540"
+    ]
+  },
+  {
+    "type": "linguistics",
+    "q": "How many official languages are there in Switzerland?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "4"
+    ]
+  },
+  {
+    "type": "mcq",
+    "q": "Which of the following are trigonometric identities?",
+    "instruction": "Select two options. Provide your answer as comma-separated letters.",
+    "answers": [
+      "a",
+      "c"
+    ],
+    "options": {
+      "a": "sin\u00b2\u03b8 + cos\u00b2\u03b8 = 1",
+      "b": "tan\u03b8 = sin\u03b8\/cos\u03b8",
+      "c": "sin(2\u03b8) = 2sin\u03b8cos\u03b8",
+      "d": "log(ab) = loga + logb"
+    }
+  },
+  {
+    "type": "economics",
+    "q": "Who is considered the founder of modern economics?",
+    "instruction": "Provide the last name only.",
+    "answers": [
+      "Smith"
+    ]
+  },
+  {
+    "type": "biology",
+    "q": "What are the monomers of proteins?",
+    "instruction": "Provide the technical term.",
+    "answers": [
+      "amino acids"
+    ]
+  },
+  {
+    "type": "computer_science",
+    "q": "In which year was the first version of Python released?",
+    "instruction": "Provide the year.",
+    "answers": [
+      "1991"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "How many surjective functions are there from set A to set B, where |A|=5 and |B|=3?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "150"
+    ]
+  },
+  {
+    "type": "chemistry",
+    "q": "What is the pH of a 0.1M HCl solution?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "1"
+    ]
+  },
+  {
+    "type": "mcq",
+    "q": "Which of the following are design patterns?",
+    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "answers": [
+      "b",
+      "d",
+      "e"
+    ],
+    "options": {
+      "a": "Double Check",
+      "b": "Singleton",
+      "c": "Reverse Proxy",
+      "d": "Observer",
+      "e": "Factory"
+    }
+  },
+  {
+    "type": "history",
+    "q": "Who was the first emperor of a unified China?",
+    "instruction": "Provide the full name.",
+    "answers": [
+      "Qin Shi Huang"
+    ]
+  },
+  {
+    "type": "physics",
+    "q": "Which particle mediates the electromagnetic force?",
+    "instruction": "Provide the technical term.",
+    "answers": [
+      "photon"
+    ]
+  },
+  {
+    "type": "math",
+    "q": "What is the value of the golden ratio (\u03c6) to three decimal places?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "1.618"
+    ]
+  },
+  {
+    "type": "geography",
+    "q": "What is the largest desert in the world by area?",
+    "instruction": "Provide the proper name.",
+    "answers": [
+      "Antarctica"
+    ]
+  },
+  {
+    "type": "mcq",
+    "q": "Which of the following are principles of object-oriented programming (OOP)?",
+    "instruction": "Select four options. Provide your answer as comma-separated letters.",
+    "answers": [
+      "a",
+      "b",
+      "d",
+      "e"
+    ],
+    "options": {
+      "a": "Encapsulation",
+      "b": "Inheritance",
+      "c": "Recursion",
+      "d": "Polymorphism",
+      "e": "Abstraction"
+    }
+  },
+  {
+    "type": "literature",
+    "q": "What is the original language of \"The Divine Comedy\"?",
+    "instruction": "Provide the name of the language.",
+    "answers": [
+      "Italian"
+    ]
+  },
+  {
+    "type": "biology",
+    "q": "How many cranial nerves are there in humans?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "12"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the minimum number of NAND gates required to construct a half-adder?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "5"
+    ]
+  },
+  {
+    "type": "computer_science",
+    "q": "What was the name of the first web browser?",
+    "instruction": "Provide the full name.",
+    "answers": [
+      "WorldWideWeb"
+    ]
+  },
+  {
+    "type": "chemistry",
+    "q": "Which element has the highest electronegativity?",
+    "instruction": "Provide the chemical symbol.",
+    "answers": [
+      "F"
+    ]
+  },
+  {
+    "type": "mcq",
+    "q": "Which of the following are machine learning algorithms?",
+    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "answers": [
+      "a",
+      "c",
+      "e"
+    ],
+    "options": {
+      "a": "Random Forest",
+      "b": "Bubble Sort",
+      "c": "SVM",
+      "d": "A* Search",
+      "e": "K-Means"
+    }
+  },
+  {
+    "type": "physics",
+    "q": "What is the value of the Planck constant (h)?",
+    "instruction": "Provide the value in scientific notation (J\u00b7s).",
+    "answers": [
+      "6.626\u00d710\u207b\u00b3\u2074"
+    ]
+  },
+  {
+    "type": "history",
+    "q": "Who was the first woman in space?",
+    "instruction": "Provide the full name.",
+    "answers": [
+      "Valentina Tereshkova"
+    ]
+  },
+  {
+    "type": "math",
+    "q": "How many faces does an icosahedron have?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "20"
+    ]
+  },
+  {
+    "type": "geography",
+    "q": "What is the largest freshwater lake in the world by volume?",
+    "instruction": "Provide the proper name.",
+    "answers": [
+      "Baikal"
+    ]
+  },
+  {
+    "type": "mcq",
+    "q": "Which of the following are programming languages?",
+    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "answers": [
+      "b",
+      "d",
+      "e"
+    ],
+    "options": {
+      "a": "Sass",
+      "b": "Rust",
+      "c": "JSON",
+      "d": "Go",
+      "e": "Kotlin"
+    }
+  },
+  {
+    "type": "linguistics",
+    "q": "How many noun classes are there in Swahili?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "18"
+    ]
+  },
+  {
+    "type": "biology",
+    "q": "What is the scientific study of fungi called?",
+    "instruction": "Provide the technical term.",
+    "answers": [
+      "mycology"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the minimum number of clues required for a valid Sudoku puzzle?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "17"
+    ]
+  },
+  {
+    "type": "computer_science",
+    "q": "What was the first version of the HTTP protocol?",
+    "instruction": "Provide the version number.",
+    "answers": [
+      "0.9"
+    ]
+  },
+  {
+    "type": "chemistry",
+    "q": "What is the common name for ascorbic acid?",
+    "instruction": "Provide a single word as your answer.",
+    "answers": [
+      "VitaminC"
+    ]
+  },
+  {
+    "type": "mcq",
+    "q": "Which of the following are sorting algorithms?",
+    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "answers": [
+      "a",
+      "c",
+      "e"
+    ],
+    "options": {
+      "a": "QuickSort",
+      "b": "BFS",
+      "c": "MergeSort",
+      "d": "Dijkstra",
+      "e": "HeapSort"
+    }
+  },
+  {
+    "type": "physics",
+    "q": "What is the value of gravitational acceleration (g) on Earth?",
+    "instruction": "Provide the value in m\/s\u00b2 to one decimal place.",
+    "answers": [
+      "9.8"
+    ]
+  },
+  {
+    "type": "literature",
+    "q": "Who is the author of \"The Brothers Karamazov\"?",
+    "instruction": "Provide the last name only.",
+    "answers": [
+      "Dostoevsky"
+    ]
+  },
+  {
+    "type": "math",
+    "q": "What is the value of Euler's totient function \u03c6(12)?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "4"
+    ]
+  },
+  {
+    "type": "history",
+    "q": "What was the name of the first programmable electronic computer?",
+    "instruction": "Provide the acronym name.",
+    "answers": [
+      "ENIAC"
+    ]
+  },
+  {
+    "type": "logic",
+    "q": "What is the minimum number of edges in a spanning tree for a graph with 8 nodes?",
+    "instruction": "Provide the numerical answer.",
+    "answers": [
+      "7"
+    ]
+  },
+  {
+    "type": "computer_science",
+    "q": "What was the key length of the first RSA encryption?",
+    "instruction": "Provide the numerical answer in bits.",
+    "answers": [
+      "129"
+    ]
+  }
+]
