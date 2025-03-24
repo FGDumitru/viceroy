@@ -13,8 +13,16 @@ $filterModels = [];
 $totalRequiredAnswersPerQuestion = 1;
 $requiredCorrectAnswers = 1;
 
+$debug = FALSE;
+
 // Parse command-line parameters
 foreach ($argv as $arg) {
+
+    if ($arg == '--debug') {
+        $debug = TRUE;
+    }
+
+
     if (str_starts_with($arg, '--model=')) {
         $filterModels[] = substr($arg, 8);
     } elseif (str_starts_with($arg, '--total-required-answers=')) {
@@ -24,8 +32,11 @@ foreach ($argv as $arg) {
     }
 }
 
+
 // DEBUG
-//$filterModels = ['*qwen*1M*'];
+if ($debug) {
+    $filterModels = ['*qwen*1M*'];
+}
 
 // Debug output for --model parameter
 if (!empty($filterModels)) {
@@ -42,6 +53,11 @@ $benchmarkDataJson = file_get_contents($benchmarkDataFile);
 $benchmarkData = json_decode($benchmarkDataJson, true);
 if (json_last_error() !== JSON_ERROR_NONE) {
     die("\033[1;31mError decoding benchmark data: " . json_last_error_msg() . "\033[0m\n");
+}
+
+if ($debug) {
+    // keep only 5 questions
+    $benchmarkData = array_slice($benchmarkData, 0, 5);
 }
 
 $totalQuestions = count($benchmarkData);
