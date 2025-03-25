@@ -328,12 +328,12 @@ foreach ($models as $modelIndex => $model) {
                 }
 
                 $existingAttempts[] = [
-                    'verbose' => $verboseResponse ?? '',
                     'response' => $content,
                     'correct' => $isCorrect,
                     'reasoning' => empty($reasoning) ? '""' : $reasoning,
                     'response_time' => $responseTime,
                     "question_no" => $currentQuestion,
+                    'verbose' => json_encode($verboseResponse ?? ''),
                 ];
 
                 // After updating attempts

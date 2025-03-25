@@ -457,7 +457,7 @@
   {
     "type": "logic",
     "q": "What is the level of regular grammars in the Chomsky hierarchy?",
-    "instruction": "Provide the type roman number (I, II, III, or IV).",
+    "instruction": "Provide the type number (using roman numerals).",
     "answers": [
       "III"
     ]
