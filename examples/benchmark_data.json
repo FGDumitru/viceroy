@@ -106,7 +106,7 @@
   {
     "type": "logic",
     "q": "Which of the following is a tautology: (1) (A \u2227 \u00acA) \u2228 B, (2) A \u2192 (B \u2228 \u00acB), or (3) (A \u2228 B) \u2227 \u00acA?",
-    "instruction": "Provide the number of the correct formula (1, 2, or 3).",
+    "instruction": "Provide the number of the correct formula (1, 2, or 3) as a single digit without any other characters.",
     "answers": [
       "2"
     ]
@@ -261,7 +261,9 @@
     "instruction": "Provide the answer as a simplified fraction.",
     "answers": [
       "5\/18",
-      "dfrac{5}{18}"
+      "10\/36",
+      "frac{5}{18}",
+      "frac{10}{36}"
     ]
   },
   {
@@ -275,7 +277,7 @@
   {
     "type": "logic",
     "q": "What is the contrapositive of the statement \"If X, then Y\"?",
-    "instruction": "Provide the answer using logical symbols.",
+    "instruction": "Provide the answer only by using logical symbols without any explanations inside the response tags.",
     "answers": [
       "\u00acY \u2192 \u00acX"
     ]

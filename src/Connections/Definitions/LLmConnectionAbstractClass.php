@@ -7,7 +7,6 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
 use Viceroy\Configuration\ConfigManager;
 use Viceroy\Configuration\ConfigObjects;
-use Viceroy\Connections\SelfDynamicParametersConnection;
 use Viceroy\Core\Request;
 use Viceroy\Core\Response;
 use Viceroy\Core\RolesManager;
@@ -165,7 +164,7 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface
     public function detokenize(array $promptJson): string|bool
     {
         if (empty($promptJson)) {
-            $promptJson = $this->createGuzzleRequest();
+            $promptJson = $this->getDefaultParameters();
         }
 
         $uri = $this->getServerUri('detokenize');
@@ -190,7 +189,7 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface
         return json_decode($tokensJsonResponse)->content;
     }
 
-    private function createGuzzleRequest(): array
+    public function getDefaultParameters(): array
     {
         $configManager = new ConfigManager($this->configuration);
 
@@ -204,7 +203,7 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface
     public function queryPost(array $promptJson = []): Response|bool
     {
         if (empty($promptJson)) {
-            $promptJson = $this->createGuzzleRequest();
+            $promptJson = $this->getDefaultParameters();
         }
 
         $uri = $this->getServerUri('completions');
