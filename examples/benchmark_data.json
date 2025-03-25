@@ -697,7 +697,7 @@
   },
   {
     "type": "logic",
-    "q": "What is the first Sierpi\u0144ski number in base 2?",
+    "q": "What is the first Sierpi\u0144ski number represented in base 2?",
     "instruction": "Provide the numerical answer.",
     "answers": [
       "78557",

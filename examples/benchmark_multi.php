@@ -179,7 +179,6 @@ if (empty($models)) {
     return $carry;
 }, [[], []]);
 
-usort($deepseek, fn($a, $b) => (stripos($a, '2bit') ? 1 : -1));
 
 sort($others);
 
