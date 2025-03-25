@@ -61,11 +61,11 @@
     "type": "mcq",
     "q": "Please answer the following question in Drupal 10 context. Which are valid cache contexts in Drupal 10?",
     "instruction": "Provide your answer as comma-separated letters.",
-    "answers": ["b", "d", "e"],
+    "answers": ["b", "c" ,"d", "e"],
     "options": {
       "a": "node.author",
       "b": "user.roles",
-      "c": "request.path",
+      "c": "url.path",
       "d": "language",
       "e": "theme",
       "f": "database"
@@ -274,7 +274,7 @@
     "type": "mcq",
     "q": "What is the correct return type for a hook_help() implementation in Drupal 10?",
     "instruction": "Provide your answer as comma-separated letters.",
-    "answers": ["a", "b"],
+    "answers": ["a"],
     "options": {
       "a": "string",
       "b": "array",
