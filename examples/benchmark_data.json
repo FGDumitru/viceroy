@@ -1,4 +1,303 @@
 [
+
+  {
+    "type": "mcq",
+    "q": "Please answer the following question in Drupal 10 context. What is the minimum PHP version requirement for Drupal 10?",
+    "instruction": "Provide your answer as comma-separated letters.",
+    "answers": ["c"],
+    "options": {
+      "a": "7.4",
+      "b": "8.0",
+      "c": "8.1",
+      "d": "8.2",
+      "e": "9.0"
+    },
+    "tag": "Drupal 10"
+  },
+  {
+    "type": "mcq",
+    "q": "Please answer the following question in Drupal 10 context. Which Symfony components are required by Drupal 10 core?",
+    "instruction": "Provide your answer as comma-separated letters.",
+    "answers": ["a", "c", "e"],
+    "options": {
+      "a": "HttpKernel",
+      "b": "SwiftMailer",
+      "c": "DependencyInjection",
+      "d": "Assetic",
+      "e": "Routing",
+      "f": "Form"
+    },
+    "tag": "Drupal 10"
+  },
+  {
+    "type": "mcq",
+    "q": "Please answer the following question in Drupal 10 context. What is the base class for custom block plugins?",
+    "instruction": "Provide your answer as comma-separated letters.",
+    "answers": ["d"],
+    "options": {
+      "a": "BlockPlugin",
+      "b": "BlockBasePlugin",
+      "c": "Drupal\\Core\\Plugin\\BlockBase",
+      "d": "Drupal\\Core\\Block\\BlockBase",
+      "e": "BlockPluginBase"
+    },
+    "tag": "Drupal 10"
+  },
+  {
+    "type": "mcq",
+    "q": "Please answer the following question in Drupal 10 context. What is the fully qualified class name for the base block plugin in Drupal 10?",
+    "instruction": "Provide your answer as comma-separated letters.",
+    "answers": ["a"],
+    "options": {
+      "a": "Drupal\\Core\\Block\\BlockBase",
+      "b": "Drupal\\Core\\Block\\BlockPluginBase",
+      "c": "Drupal\\Core\\Plugin\\BlockBase",
+      "d": "Drupal\\Block\\BlockBase",
+      "e": "Drupal\\Core\\Block\\BaseBlock"
+    },
+    "tag": "Drupal 10"
+  },
+  {
+    "type": "mcq",
+    "q": "Please answer the following question in Drupal 10 context. Which are valid cache contexts in Drupal 10?",
+    "instruction": "Provide your answer as comma-separated letters.",
+    "answers": ["b", "d", "e"],
+    "options": {
+      "a": "node.author",
+      "b": "user.roles",
+      "c": "request.path",
+      "d": "language",
+      "e": "theme",
+      "f": "database"
+    },
+    "tag": "Drupal 10"
+  },
+  {
+    "type": "mcq",
+    "q": "Please answer the following question in Drupal 10 context. What is the service ID for the entity type manager?",
+    "instruction": "Provide your answer as comma-separated letters.",
+    "answers": ["c"],
+    "options": {
+      "a": "entity.manager",
+      "b": "entity_manager",
+      "c": "entity_type.manager",
+      "d": "entity_type_manager",
+      "e": "core.entity_manager"
+    },
+    "tag": "Drupal 10"
+  },
+  {
+    "type": "mcq",
+    "q": "Please answer the following question in Drupal 10 context. Which Twig function handles translation in templates?",
+    "instruction": "Provide your answer as comma-separated letters.",
+    "answers": ["a"],
+    "options": {
+      "a": "t",
+      "b": "trans",
+      "c": "translate",
+      "d": "i18n",
+      "e": "locale"
+    },
+    "tag": "Drupal 10"
+  },
+  {
+    "type": "mcq",
+    "q": "Please answer the following question in Drupal 10 context. Which are valid plugin types in Drupal 10?",
+    "instruction": "Provide your answer as comma-separated letters.",
+    "answers": ["a", "d", "e"],
+    "options": {
+      "a": "FieldWidget",
+      "b": "EntityQuery",
+      "c": "Service",
+      "d": "Block",
+      "e": "Mail",
+      "f": "Controller"
+    },
+    "tag": "Drupal 10"
+  },
+  {
+    "type": "mcq",
+    "q": "Please answer the following question in Drupal 10 context. Which event is fired before entity saving?",
+    "instruction": "Provide your answer as comma-separated letters.",
+    "answers": ["d"],
+    "options": {
+      "a": "EntitySaveEvent",
+      "b": "PreEntitySave",
+      "c": "EntityPresaveEvent",
+      "d": "Drupal\\Core\\Entity\\EntityPreSaveEvent",
+      "e": "Core\\Entity\\PreSaveEvent"
+    },
+    "tag": "Drupal 10"
+  },
+  {
+    "type": "mcq",
+    "q": "Please answer the following question in Drupal 10 context. Which namespace contains core migration plugins?",
+    "instruction": "Provide your answer as comma-separated letters.",
+    "answers": ["b"],
+    "options": {
+      "a": "Drupal\\migrate\\Plugin\\Migration",
+      "b": "Drupal\\migrate\\Plugin\\migrate",
+      "c": "Drupal\\core\\Migrate\\Plugin",
+      "d": "Drupal\\migration\\Plugin",
+      "e": "Drupal\\migrate_drupal\\Plugin"
+    },
+    "tag": "Drupal 10"
+  },
+  {
+    "type": "mcq",
+    "q": "Please answer the following question in Drupal 10 context. Which interface is used for config.factory injection?",
+    "instruction": "Provide your answer as comma-separated letters.",
+    "answers": ["c"],
+    "options": {
+      "a": "ConfigFactory",
+      "b": "ConfigInterface",
+      "c": "Drupal\\Core\\Config\\ConfigFactoryInterface",
+      "d": "Config\\FactoryInterface",
+      "e": "Drupal\\Config\\ConfigFactory"
+    },
+    "tag": "Drupal 10"
+  },
+  {
+    "type": "mcq",
+    "q": "Please answer the following question in Drupal 10 context. Which are valid cache bins?",
+    "instruction": "Provide your answer as comma-separated letters.",
+    "answers": ["a", "c", "e"],
+    "options": {
+      "a": "render",
+      "b": "session",
+      "c": "dynamic_page_cache",
+      "d": "entity_query",
+      "e": "discovery",
+      "f": "database"
+    },
+    "tag": "Drupal 10"
+  },
+  {
+    "type": "mcq",
+    "q": "Please answer the following question in Drupal 10 context. What is the base theme class?",
+    "instruction": "Provide your answer as comma-separated letters.",
+    "answers": ["d"],
+    "options": {
+      "a": "BaseTheme",
+      "b": "ThemeBase",
+      "c": "Drupal\\Theme\\BaseTheme",
+      "d": "Drupal\\Core\\Theme\\ThemeBase",
+      "e": "Core\\Theme\\Base"
+    },
+    "tag": "Drupal 10"
+  },
+  {
+    "type": "mcq",
+    "q": "Please answer the following question in Drupal 10 context. Where should custom modules be placed?",
+    "instruction": "Provide your answer as comma-separated letters.",
+    "answers": ["b"],
+    "options": {
+      "a": "sites/all/modules",
+      "b": "modules/custom",
+      "c": "core/modules",
+      "d": "modules/contrib",
+      "e": "app/modules"
+    },
+    "tag": "Drupal 10"
+  },
+  {
+    "type": "mcq",
+    "q": "Please answer the following question in Drupal 10 context. What is the modern replacement for the deprecated drupal_set_message() function?",
+    "instruction": "Provide your answer as comma-separated letters.",
+    "answers": ["e"],
+    "options": {
+      "a": "->message()->add()",
+      "b": "->flash()->set()",
+      "c": "->messenger->add()",
+      "d": "->addMessage()",
+      "e": "->messenger()->addMessage()"
+    },
+    "tag": "Drupal 10"
+  },
+  {
+    "type": "mcq",
+    "q": "Please answer the following question in Drupal 10 context. What is the base class for custom service providers in Drupal 10?",
+    "instruction": "Provide your answer as a single letter.",
+    "answers": ["c"],
+    "options": {
+      "a": "Drupal\\Core\\DependencyInjection\\BaseServiceProvider",
+      "b": "ContainerAware",
+      "c": "Drupal\\Core\\DependencyInjection\\ServiceProviderBase",
+      "d": "ServiceProviderInterface",
+      "e": "Drupal\\Services\\ProviderBase"
+    },
+    "tag": "Drupal 10"
+  },
+  {
+    "type": "mcq",
+    "q": "How is a lazy service declared in Drupal 10's services.yml file?",
+    "instruction": "Provide your answer as comma-separated letters.",
+    "answers": ["a"],
+    "options": {
+      "a": "lazy: true",
+      "b": "lazy_load: true",
+      "c": "lazy_service: true",
+      "d": "load_lazy: true",
+      "e": "service_lazy: true"
+    },
+    "tag": "Drupal 10"
+  },
+  {
+    "type": "mcq",
+    "q": "What is the service ID for the current user service in Drupal 10?",
+    "instruction": "Provide your answer as comma-separated letters.",
+    "answers": ["a"],
+    "options": {
+      "a": "current_user",
+      "b": "user.current",
+      "c": "user",
+      "d": "session.user",
+      "e": "user.service"
+    },
+    "tag": "Drupal 10"
+  },
+  {
+    "type": "mcq",
+    "q": "What is the correct way to create a SELECT query using Drupal 10's database API?",
+    "instruction": "Provide your answer as comma-separated letters.",
+    "answers": ["a"],
+    "options": {
+      "a": "\\Drupal::database()->select()",
+      "b": "\\Drupal::database()->query()",
+      "c": "\\Drupal::database()->execute()",
+      "d": "\\Drupal::database()->selectQuery()",
+      "e": "\\Drupal::database()->sql()"
+    },
+    "tag": "Drupal 10"
+  },
+  {
+    "type": "mcq",
+    "q": "What is the correct return type for a hook_help() implementation in Drupal 10?",
+    "instruction": "Provide your answer as comma-separated letters.",
+    "answers": ["a", "b"],
+    "options": {
+      "a": "string",
+      "b": "array",
+      "c": "boolean",
+      "d": "object",
+      "e": "null"
+    },
+    "tag": "Drupal 10"
+  },
+  {
+    "type": "mcq",
+    "q": "What is the Twig template naming convention for a node article template in Drupal 10?",
+    "instruction": "Provide your answer as comma-separated letters.",
+    "answers": ["a"],
+    "options": {
+      "a": "node--article.html.twig",
+      "b": "article-node.html.twig",
+      "c": "node-article.html.twig",
+      "d": "node--article.twig",
+      "e": "article.html.twig"
+    },
+    "tag": "Drupal 10"
+  },
   {
     "type": "direct",
     "q": "What is the capital of France?",
@@ -145,7 +444,7 @@
   },
   {
     "type": "logic",
-    "q": "How many squares are there on a standard chessboard?",
+    "q": "How many squares are there on a standard chessboard? Consider squares of all sizes.",
     "instruction": "Provide the numerical answer.",
     "answers": [
       "204"
@@ -577,6 +876,7 @@
     "instruction": "Provide the transliterated Cyrillic title.",
     "answers": [
       "Voyna i mir",
+      "Voina i mir",
       "Война и мир"
     ]
   },
@@ -593,7 +893,7 @@
     "q": "What is the minimum number of swaps required to sort the array [3,1,4,2] in ascending order?",
     "instruction": "Provide the numerical answer.",
     "answers": [
-      "2"
+      "3"
     ]
   },
   {
@@ -921,7 +1221,15 @@
     "q": "What was the name of the first computer virus?",
     "instruction": "Provide the full name.",
     "answers": [
-      "Elk Cloner"
+      "Creeper"
+    ]
+  },
+  {
+    "type": "computer_science",
+    "q": "What was the name of the first computer anti-virus?",
+    "instruction": "Provide the full name.",
+    "answers": [
+      "Reaper"
     ]
   },
   {
@@ -943,9 +1251,11 @@
   {
     "type": "mcq",
     "q": "Which of the following are Greek letters?",
-    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "instruction": "Provide your answer as comma-separated letters.",
     "answers": [
+      "a",
       "b",
+      "c",
       "d",
       "e"
     ],
@@ -954,7 +1264,9 @@
       "b": "Omega",
       "c": "Beta",
       "d": "Lambda",
-      "e": "Psi"
+      "e": "Psi",
+      "f": "Kapa",
+      "g": "Ou"
     }
   },
   {
@@ -965,7 +1277,8 @@
       "4\u03c0\u00d710\u207b\u2077",
       "4π×10−7",
       "4\\\\u03c0 x 10^-7",
-      "{4\\\\u03c0 \\\\times 10^{-7}"
+      "{4\\\\u03c0 \\\\times 10^{-7}",
+      "4π×10^-7"
     ]
   },
   {
@@ -1055,13 +1368,13 @@
     "q": "Which of the following are valid HTTP status codes?",
     "instruction": "Select three options. Provide your answer as comma-separated letters.",
     "answers": [
-      "b",
+      "c",
       "d",
       "f"
     ],
     "options": {
       "a": "299",
-      "b": "418",
+      "b": "916",
       "c": "503",
       "d": "451",
       "e": "600",
@@ -1103,9 +1416,10 @@
   {
     "type": "mcq",
     "q": "Which of the following are trigonometric identities?",
-    "instruction": "Select two options. Provide your answer as comma-separated letters.",
+    "instruction": "Provide your answer as comma-separated letters.",
     "answers": [
       "a",
+      "b",
       "c"
     ],
     "options": {
@@ -1289,7 +1603,8 @@
       "6.626\u00d710\u207b\u00b3\u2074",
       "6.626\u00d710-34",
       "6.62607015\u00d710\u207b\u00b3\u2074",
-      "6.62607015\u00d710-34"
+      "6.62607015\u00d710-34",
+      "6.62607015×10^-34"
     ]
   },
   {
@@ -1336,7 +1651,7 @@
   },
   {
     "type": "linguistics",
-    "q": "How many noun classes are there in Swahili?",
+    "q": "How many noun classes are there in Swahili? Include the historical/archaic noun classes as well.",
     "instruction": "Provide the numerical answer.",
     "answers": [
       "18"
