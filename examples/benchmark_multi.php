@@ -10,6 +10,8 @@ $results = [];
 $benchmarkJsonFile = 'benchmark_runs.json'; // Changed from INI to JSON
 $resetBenchmark = in_array('--reset', $argv);
 $filterModels = [];
+$ignoredModels = [];
+
 $totalRequiredAnswersPerQuestion = 1;
 $requiredCorrectAnswers = 1;
 
@@ -29,13 +31,17 @@ foreach ($argv as $arg) {
         $totalRequiredAnswersPerQuestion = (int) substr($arg, strlen('--total-required-answers='));
     } elseif (str_starts_with($arg, '--required-correct-answers=')) {
         $requiredCorrectAnswers = (int) substr($arg, strlen('--required-correct-answers='));
+    } elseif (str_starts_with($arg, '--ignore=')) {
+        $ignoredModels[] = substr($arg, 9);
     }
 }
 
 
 // DEBUG
 if ($debug) {
-    $filterModels = ['*qwen*1M*'];
+    $filterModels = ['*qwen*'];
+    $ignoredModels = ['*qwq*'];
+
 }
 
 // Debug output for --model parameter
@@ -186,6 +192,7 @@ $models = array_merge($others, $deepseek);
 
 // Main benchmark loop
 foreach ($models as $modelIndex => $model) {
+
     // Apply model filtering
     if (!empty($filterModels)) {
         $match = false;
@@ -197,6 +204,21 @@ foreach ($models as $modelIndex => $model) {
         }
         if (!$match) {
             echo "\n\033[1;33mSkipping model (does not match filter): $model\033[0m\n";
+            continue;
+        }
+    }
+
+    // Apply model filtering
+    if (!empty($ignoredModels)) {
+        $match = false;
+        foreach ($ignoredModels as $filter) {
+            if (fnmatch(strtolower($filter), strtolower($model))) {
+                $match = true;
+                break;
+            }
+        }
+        if ($match) {
+            echo "\n\033[1;33mIgnoring model (matched filter): $model\033[0m\n";
             continue;
         }
     }
