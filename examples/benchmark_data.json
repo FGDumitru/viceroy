@@ -279,7 +279,8 @@
     "q": "What is the contrapositive of the statement \"If X, then Y\"?",
     "instruction": "Provide the answer only by using logical symbols without any explanations inside the response tags.",
     "answers": [
-      "\u00acY \u2192 \u00acX"
+      "\u00acY \u2192 \u00acX",
+      "\\(\\neg Y \\rightarrow \\neg X\\)"
     ]
   },
   {
@@ -316,10 +317,10 @@
   },
   {
     "type": "logic",
-    "q": "What is the ternary XOR of 121 and 202?",
+    "q": "Please calculate the result of the following operation: 10222⊙11021 (ternary xor).",
     "instruction": "Provide the numerical answer.",
     "answers": [
-      "110"
+      "21210"
     ]
   },
   {
@@ -397,10 +398,11 @@
   },
   {
     "type": "logic",
-    "q": "What is the Sierpi\u0144ski number in base 2?",
+    "q": "What is the first Sierpi\u0144ski number in base 2?",
     "instruction": "Provide the numerical answer.",
     "answers": [
-      "10011010101111001"
+      "78557",
+      "10011001011011101"
     ]
   },
   {
@@ -455,7 +457,7 @@
   {
     "type": "logic",
     "q": "What is the level of regular grammars in the Chomsky hierarchy?",
-    "instruction": "Provide the type number (I, II, III, or IV).",
+    "instruction": "Provide the type roman number (I, II, III, or IV).",
     "answers": [
       "III"
     ]

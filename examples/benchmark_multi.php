@@ -307,9 +307,12 @@ foreach ($models as $modelIndex => $model) {
                         $reasoning = '';
                         $isCorrect = false;
                         $responseTime = 0;
+                        $verboseResponse = '';
                     } else {
                         $content = trim($response->getLlmResponse());
                         $rawContent = json_decode($llmConnection->getResponse()->getRawContent(), TRUE);
+
+                        $verboseResponse = $rawContent['__verbose'];
                         echo json_encode($rawContent['timings']) . "\n";
                         $reasoning = $llmConnection->getThinkContent();
                         $isCorrect = validateResponse($entry, $content);
@@ -325,10 +328,12 @@ foreach ($models as $modelIndex => $model) {
                 }
 
                 $existingAttempts[] = [
+                    'verbose' => $verboseResponse ?? '',
                     'response' => $content,
                     'correct' => $isCorrect,
                     'reasoning' => empty($reasoning) ? '""' : $reasoning,
-                    'response_time' => $responseTime
+                    'response_time' => $responseTime,
+                    "question_no" => $currentQuestion,
                 ];
 
                 // After updating attempts
