@@ -3,7 +3,7 @@
   {
     "type": "mcq",
     "q": "Please answer the following question in Drupal 10 context. What is the minimum PHP version requirement for Drupal 10?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": ["c"],
     "options": {
       "a": "7.4",
@@ -17,7 +17,7 @@
   {
     "type": "mcq",
     "q": "Please answer the following question in Drupal 10 context. Which Symfony components are required by Drupal 10 core?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": ["a", "c", "e"],
     "options": {
       "a": "HttpKernel",
@@ -32,7 +32,7 @@
   {
     "type": "mcq",
     "q": "Please answer the following question in Drupal 10 context. What is the base class for custom block plugins?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": ["d"],
     "options": {
       "a": "BlockPlugin",
@@ -46,7 +46,7 @@
   {
     "type": "mcq",
     "q": "Please answer the following question in Drupal 10 context. What is the fully qualified class name for the base block plugin in Drupal 10?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": ["a"],
     "options": {
       "a": "Drupal\\Core\\Block\\BlockBase",
@@ -60,7 +60,7 @@
   {
     "type": "mcq",
     "q": "Please answer the following question in Drupal 10 context. Which are valid cache contexts in Drupal 10?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": ["b", "c" ,"d", "e"],
     "options": {
       "a": "node.author",
@@ -75,7 +75,7 @@
   {
     "type": "mcq",
     "q": "Please answer the following question in Drupal 10 context. What is the service ID for the entity type manager?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": ["c"],
     "options": {
       "a": "entity.manager",
@@ -89,7 +89,7 @@
   {
     "type": "mcq",
     "q": "Please answer the following question in Drupal 10 context. Which Twig function handles translation in templates?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": ["a"],
     "options": {
       "a": "t",
@@ -103,7 +103,7 @@
   {
     "type": "mcq",
     "q": "Please answer the following question in Drupal 10 context. Which are valid plugin types in Drupal 10?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": ["a", "d", "e"],
     "options": {
       "a": "FieldWidget",
@@ -118,7 +118,7 @@
   {
     "type": "mcq",
     "q": "Please answer the following question in Drupal 10 context. Which event is fired before entity saving?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": ["d"],
     "options": {
       "a": "EntitySaveEvent",
@@ -132,7 +132,7 @@
   {
     "type": "mcq",
     "q": "Please answer the following question in Drupal 10 context. Which namespace contains core migration plugins?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": ["b"],
     "options": {
       "a": "Drupal\\migrate\\Plugin\\Migration",
@@ -146,7 +146,7 @@
   {
     "type": "mcq",
     "q": "Please answer the following question in Drupal 10 context. Which interface is used for config.factory injection?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": ["c"],
     "options": {
       "a": "ConfigFactory",
@@ -160,7 +160,7 @@
   {
     "type": "mcq",
     "q": "Please answer the following question in Drupal 10 context. Which are valid cache bins?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": ["a", "c", "e"],
     "options": {
       "a": "render",
@@ -175,7 +175,7 @@
   {
     "type": "mcq",
     "q": "Please answer the following question in Drupal 10 context. What is the base theme class?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": ["d"],
     "options": {
       "a": "BaseTheme",
@@ -189,7 +189,7 @@
   {
     "type": "mcq",
     "q": "Please answer the following question in Drupal 10 context. Where should custom modules be placed?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": ["b"],
     "options": {
       "a": "sites/all/modules",
@@ -203,7 +203,7 @@
   {
     "type": "mcq",
     "q": "Please answer the following question in Drupal 10 context. What is the modern replacement for the deprecated drupal_set_message() function?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": ["e"],
     "options": {
       "a": "->message()->add()",
@@ -217,7 +217,7 @@
   {
     "type": "mcq",
     "q": "Please answer the following question in Drupal 10 context. What is the base class for custom service providers in Drupal 10?",
-    "instruction": "Provide your answer as a single letter.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": ["c"],
     "options": {
       "a": "Drupal\\Core\\DependencyInjection\\BaseServiceProvider",
@@ -231,7 +231,7 @@
   {
     "type": "mcq",
     "q": "How is a lazy service declared in Drupal 10's services.yml file?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": ["a"],
     "options": {
       "a": "lazy: true",
@@ -245,7 +245,7 @@
   {
     "type": "mcq",
     "q": "What is the service ID for the current user service in Drupal 10?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": ["a"],
     "options": {
       "a": "current_user",
@@ -259,7 +259,7 @@
   {
     "type": "mcq",
     "q": "What is the correct way to create a SELECT query using Drupal 10's database API?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": ["a"],
     "options": {
       "a": "\\Drupal::database()->select()",
@@ -273,7 +273,7 @@
   {
     "type": "mcq",
     "q": "What is the correct return type for a hook_help() implementation in Drupal 10?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": ["a"],
     "options": {
       "a": "string",
@@ -287,7 +287,7 @@
   {
     "type": "mcq",
     "q": "What is the Twig template naming convention for a node article template in Drupal 10?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": ["a"],
     "options": {
       "a": "node--article.html.twig",
@@ -309,7 +309,7 @@
   {
     "type": "mcq",
     "q": "Which of the following numbers are prime?",
-    "instruction": "Select two options. Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "b",
       "d"
@@ -348,7 +348,7 @@
   {
     "type": "mcq",
     "q": "Which of the following are valid programming languages?",
-    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a",
       "c",
@@ -812,7 +812,7 @@
   {
     "type": "mcq",
     "q": "Which of the following numbers are prime?",
-    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a",
       "d",
@@ -854,7 +854,7 @@
   {
     "type": "mcq",
     "q": "Which of the following are layers of the TCP\/IP model?",
-    "instruction": "Select four options. Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a",
       "c",
@@ -908,7 +908,7 @@
   {
     "type": "mcq",
     "q": "Which of the following are valid HTTP request methods?",
-    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a",
       "c",
@@ -960,7 +960,7 @@
   {
     "type": "mcq",
     "q": "Which of the following are monotheistic religions?",
-    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a",
       "d",
@@ -1025,7 +1025,7 @@
   {
     "type": "mcq",
     "q": "Which of the following are vector quantities?",
-    "instruction": "Select two options. Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "b",
       "d"
@@ -1066,7 +1066,7 @@
   {
     "type": "mcq",
     "q": "Which of the following are valid SQL data types?",
-    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a",
       "c",
@@ -1139,7 +1139,7 @@
   {
     "type": "mcq",
     "q": "Which of the following are NP-hard problems?",
-    "instruction": "Select two options. Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a",
       "d"
@@ -1181,7 +1181,7 @@
   {
     "type": "mcq",
     "q": "Which of the following are programming paradigms?",
-    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a",
       "c",
@@ -1251,7 +1251,7 @@
   {
     "type": "mcq",
     "q": "Which of the following are Greek letters?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a",
       "b",
@@ -1308,7 +1308,7 @@
   {
     "type": "mcq",
     "q": "Which of the following are valid CSS positioning values?",
-    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a",
       "c",
@@ -1366,7 +1366,7 @@
   {
     "type": "mcq",
     "q": "Which of the following are valid HTTP status codes?",
-    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "c",
       "d",
@@ -1416,7 +1416,7 @@
   {
     "type": "mcq",
     "q": "Which of the following are trigonometric identities?",
-    "instruction": "Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a",
       "b",
@@ -1472,7 +1472,7 @@
   {
     "type": "mcq",
     "q": "Which of the following are design patterns?",
-    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "b",
       "d",
@@ -1523,7 +1523,7 @@
   {
     "type": "mcq",
     "q": "Which of the following are principles of object-oriented programming (OOP)?",
-    "instruction": "Select four options. Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a",
       "b",
@@ -1581,7 +1581,7 @@
   {
     "type": "mcq",
     "q": "Which of the following are machine learning algorithms?",
-    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a",
       "c",
@@ -1635,7 +1635,7 @@
   {
     "type": "mcq",
     "q": "Which of the following are programming languages?",
-    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "b",
       "d",
@@ -1693,7 +1693,7 @@
   {
     "type": "mcq",
     "q": "Which of the following are sorting algorithms?",
-    "instruction": "Select three options. Provide your answer as comma-separated letters.",
+    "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a",
       "c",
