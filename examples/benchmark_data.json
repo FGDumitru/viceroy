@@ -18,7 +18,7 @@
     "type": "mcq",
     "q": "Please answer the following question in Drupal 10 context. Which Symfony components are required by Drupal 10 core?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
-    "answers": ["a", "c", "e"],
+    "answers": ["a", "c", "e", "f"],
     "options": {
       "a": "HttpKernel",
       "b": "SwiftMailer",
