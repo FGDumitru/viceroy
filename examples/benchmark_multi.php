@@ -152,6 +152,7 @@ if ($resetBenchmark && file_exists($benchmarkJsonFile)) {
 }
 
 $benchmarkJsonData = loadBenchmarkJson(); // Renamed from $benchmarkIniData
+$llmConnection->readBearerTokenFromFile('.bearer_token');
 
 $models = $llmConnection->getAvailableModels();
 
@@ -260,8 +261,8 @@ foreach ($models as $modelIndex => $model) {
 
                 echo "\n\033[1mQuestion $currentQuestion/$totalQuestions | Model $model\033[0m\n";
                 echo "Progress: $progress\n";
-                echo "Time Passed: " . gmdate("H:i:s", $timePassed) . "\n";
-                echo "ETA: " . gmdate("H:i:s", $eta) . "\n";
+                echo "Time Passed: " . gmdate("H:i:s", (int) $timePassed) . "\n";
+                echo "ETA: " . gmdate("H:i:s", (int) $eta) . "\n";
 
                 try {
                     $llmConnection->getRolesManager()
@@ -269,37 +270,8 @@ foreach ($models as $modelIndex => $model) {
                         ->setSystemMessage('Answer concisely and accurately.')
                         ->addMessage('user', "Please answer the following question and encapsulate your final answer between <response> and </response> tags followed by <done></done> tags. If you need to reason or explain you may do that BEFORE the response tags. Inside the response tags include only the actual, direct, response without any explanations. Be as concise as possible.\nE.G. <response>Your answer to the question here without any explanations.</response><done></done>\n\n{$entry['full_prompt']}");
 
-                    //$conf = $llmConnection->getConfiguration()->getFullConfigData();
-
-                    $isReasoningModel = FALSE;
-
-
-                    if (
-                        str_contains(strtolower($model), 'r1') ||
-                        str_contains(strtolower($model), 'deepseek-v3') ||
-                        str_contains(strtolower($model), 'qwq')
-                    ) {
-                        $isReasoningModel = TRUE;
-
-                    }
-
                     $parameters = $llmConnection->getDefaultParameters();
                     $parameters['seed'] = 0;
-
-                    $parameters['stop'][]='<done>'; // Do not let the model ramble
-                    $parameters['stop'][]='</done>';
-
-
-                    if (!$isReasoningModel) { // If this is not a reasoning model then limit the output to 1024 tokens
-                        $parameters['n_predict'] = 1024;
-                        $llmConnection->setGuzzleConnectionTimeout(600); // Max 10 minutes for not reasoning models
-                    } else {
-                        // Settings for a reasoning model
-                        $parameters['n_predict'] = -1;
-                        $llmConnection->setGuzzleConnectionTimeout(PHP_INT_MAX);
-                    }
-
-
 
                     $response = $llmConnection->queryPost($parameters);
 
@@ -314,8 +286,8 @@ foreach ($models as $modelIndex => $model) {
                         $content = trim($response->getLlmResponse());
                         $rawContent = json_decode($llmConnection->getResponse()->getRawContent(), TRUE);
 
-                        $verboseResponse = $rawContent['__verbose'];
-                        echo json_encode($rawContent['timings']) . "\n";
+                        $verboseResponse = $rawContent['__verbose'] ?? [];
+                        echo json_encode($rawContent['timings'] ?? []) . "\n";
                         $reasoning = $llmConnection->getThinkContent();
                         $isCorrect = validateResponse($entry, $content);
                         $responseTime = $llmConnection->getLastQueryMicrotime();

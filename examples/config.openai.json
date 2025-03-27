@@ -1,0 +1,15 @@
+{
+  "server": {
+    "host": "https://api.openai.com",
+    "port": "443",
+    "completions": "/v1/chat/completions",
+    "tokenize": "/tokenize",
+    "detokenize": "/detokenize",
+    "health": "/v1/health",
+    "models": "/v1/models",
+    "server_type": "openai",
+    "type": "OpenAiCompatibleConnection"
+  },
+  "debug": true,
+  "description": "This config file will use a locally deploy OpenAI compatible completion endpoint."
+}

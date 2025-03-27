@@ -56,6 +56,15 @@ abstract class LLmConnectionAbstractClass implements LlmConnectionInterface {
     return $this;
   }
 
+  public function readBearerTokenFromFile(string $filename) {
+    if (file_exists($filename)) {
+      $this->bearedToken = file_get_contents($filename);
+      return TRUE;
+    }
+
+    return FALSE;
+  }
+
   function __construct() {
     $this->configuration = new ConfigObjects();
 
