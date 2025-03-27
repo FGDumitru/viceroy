@@ -152,6 +152,8 @@ if ($resetBenchmark && file_exists($benchmarkJsonFile)) {
 }
 
 $benchmarkJsonData = loadBenchmarkJson(); // Renamed from $benchmarkIniData
+
+// Load a Bearer token if the file exists.
 $llmConnection->readBearerTokenFromFile('.bearer_token');
 
 $models = $llmConnection->getAvailableModels();

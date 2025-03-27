@@ -1,14 +1,13 @@
 {
   "server": {
-    "host": "http://127.0.0.1",
-    "port": "8855",
+    "host": "https://api.openai.com",
+    "port": "443",
     "completions": "/v1/chat/completions",
     "tokenize": "/tokenize",
     "detokenize": "/detokenize",
     "health": "/v1/health",
     "models": "/v1/models",
-    "server_type": "llamacpp",
-    "use_llama-swap": true,
+    "server_type": "openai",
     "type": "OpenAiCompatibleConnection"
   },
   "debug": true,
