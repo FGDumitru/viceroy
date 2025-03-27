@@ -14,11 +14,7 @@ class RolesManager {
   /**
    * @throws \Exception
    */
-  public function __construct(string $system = NULL) {
-    if (!is_null($system)) {
-      $this->systemMessage = $system;
-      $this->addMessage('system', $system);
-    }
+  public function __construct() {
   }
 
   public function addUserMessage($string) {
