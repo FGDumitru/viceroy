@@ -23,7 +23,7 @@ Output Requirements:
 
 Output Format:
 
-    Start your response directly with {—do not include any additional text, explanations, or delimiters.
+    Start your response directly with — do not include any additional text, explanations, or delimiters.
 
 Examples
 
@@ -93,8 +93,7 @@ SYS;
 
     public function setSystem(string $systemMessage): void
     {
-        $this->setSystemMessage($this->systemMessageTemplate);
-        $this->setSystemMessageTrait($this->systemMessageTemplate);
+        $this->setSystemMessage($systemMessage);
     }
 
     public function getSystem(): string
@@ -118,10 +117,6 @@ SYS;
         return $this;
     }
 
-    public function health(): array
-    {
-        return $this->connection->health();
-    }
 
     public function tokenize(string $sentence): array|bool
     {
@@ -171,11 +166,14 @@ SYS;
                 }
                 $resultRaw = $this->connection->query($functionCommands);
 
+                preg_match('/\{.*?\}/s', $resultRaw, $matches);
+                $extracted_json = $matches[0] ?? null;
+
                 if ($this->debugMode) {
                     echo "RESPONSE: $resultRaw\n\n";
                 }
 
-                $jsonParsedResult = json_decode($resultRaw, true);
+                $jsonParsedResult = json_decode($extracted_json, true);
 
                 if (json_last_error() !== JSON_ERROR_NONE) {
                     throw new \JsonException($this->connection->error($functionCommands));

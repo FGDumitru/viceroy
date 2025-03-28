@@ -14,15 +14,7 @@ class simpleLlamaCppOAICompatibleConnection extends OpenAICompatibleEndpointConn
 
 
     $this->llmConnection = new OpenAICompatibleEndpointConnection();
-    $this->llmConnection->setEndpointTypeToLlamaCpp();
 
-    // Check the endpoint health with detailed diagnostics
-    $health = $this->llmConnection->health();
-    if (!$health['status']) {
-        $error = $health['error'] ?? 'Unknown error';
-        $endpointStatus = json_encode($health['endpoints'] ?? []);
-        //die("LLM health check failed:\nError: $error\nEndpoint Status: $endpointStatus\nLatency: {$health['latency']}ms");
-    }
 
     $this->llmConnection->getRolesManager()
       ->clearMessages()
@@ -53,25 +45,6 @@ class simpleLlamaCppOAICompatibleConnection extends OpenAICompatibleEndpointConn
         // Perform the actual LLM query.
         $this->response = $this->llmConnection->queryPost();
         
-        if ($this->response === false) {
-            $health = $this->llmConnection->health();
-            $errorDetails = [
-                'health_status' => $health['status'] ? 'OK' : 'FAILED',
-                'endpoints' => $health['endpoints'],
-                'last_error' => $health['error'] ?? 'None'
-            ];
-            $suggestion = "";
-            if ($errorDetails['endpoints']['completions']['status_code'] === 404) {
-                $suggestion = "\nSuggestion: The completions endpoint may not be properly configured. " .
-                             "Check your server URL and endpoint paths in the configuration.";
-            }
-            
-            throw new \RuntimeException(
-                "LLM query failed. Diagnostics:\n" . 
-                json_encode($errorDetails, JSON_PRETTY_PRINT) .
-                $suggestion
-            );
-        }
 
         return $this->response->getLlmResponse();
     }

@@ -157,65 +157,6 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      *               - endpoints: array Status of individual endpoints
      *               - error: string|null Error message if any
      */
-    public function health(): array
-    {
-        $healthCheck = [
-            'status' => true,  // Assume healthy by default
-            'latency' => 0,
-            'endpoints' => [],
-            'error' => null
-        ];
-
-        // Check base health endpoint
-        $startTime = microtime(true);
-        try {
-            $uri = $this->getServerUri('health');
-            $response = $this->guzzleObject->get($uri, ['http_errors' => false]);
-            $healthCheck['latency'] = round((microtime(true) - $startTime) * 1000, 2);
-            $healthCheck['endpoints']['health'] = [
-                'status_code' => $response->getStatusCode(),
-                'reachable' => true
-            ];
-        } catch (GuzzleException $e) {
-            $healthCheck['status'] = false;
-            $healthCheck['error'] = $e->getMessage();
-            $healthCheck['endpoints']['health'] = [
-                'reachable' => false,
-                'error' => $e->getMessage()
-            ];
-            return $healthCheck;
-        }
-
-        // Check additional critical endpoints
-        $endpointsToCheck = ['models', 'completions'];
-        foreach ($endpointsToCheck as $endpoint) {
-            try {
-                $uri = $this->getServerUri($endpoint);
-                $response = $this->guzzleObject->get($uri, ['http_errors' => false]);
-            $statusCode = $response->getStatusCode();
-            $isCritical = in_array($endpoint, ['completions', 'health']);
-            $healthCheck['endpoints'][$endpoint] = [
-                'status_code' => $statusCode,
-                'reachable' => true,
-                'healthy' => !$isCritical || $statusCode === 200
-            ];
-            
-            if ($isCritical && $statusCode !== 200) {
-                $healthCheck['status'] = false;
-                $healthCheck['error'] = "Critical endpoint '$endpoint' returned $statusCode";
-            }
-            } catch (GuzzleException $e) {
-                $healthCheck['endpoints'][$endpoint] = [
-                    'reachable' => false,
-                    'error' => $e->getMessage()
-                ];
-                $healthCheck['status'] = false;
-                $healthCheck['error'] = $e->getMessage();
-            }
-        }
-
-        return $healthCheck;
-    }
 
     public function detokenize(array $promptJson): string|bool
     {
@@ -339,12 +280,6 @@ public function queryPost(array $promptJson = []): Response
     {
         $this->promptType = 'llamacpp';
         $this->setEndpointUri('');
-    }
-
-    public function setEndpointTypeToGroqAPI()
-    {
-        $this->promptType = 'groqApi';
-        $this->setEndpointUri('https://api.groq.com/openai/v1/chat/completions');
     }
 
     public function setLLMmodelName($modelName)

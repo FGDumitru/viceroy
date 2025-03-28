@@ -15,10 +15,6 @@ echo "\nOriginal text:\n\t$text\n";
 $llmConnection = new OpenAICompatibleEndpointConnection();
 $llmConnection->setLLMmodelName('gpt-4o');
 
-// Check the endpoint health.
-if (!$llmConnection->health()) {
-  die('The LLM health status is not valid!');
-}
 
 $tokens = $llmConnection->tokenize($text);
 

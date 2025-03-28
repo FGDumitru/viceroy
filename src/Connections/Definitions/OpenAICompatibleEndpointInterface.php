@@ -9,7 +9,6 @@ interface OpenAICompatibleEndpointInterface {
   /**
    * @return bool
    */
-  public function health(): array;
 
   /**
    * @param string $sentence
