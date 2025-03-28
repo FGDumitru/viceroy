@@ -1,9 +1,9 @@
 <?php
 require_once '../vendor/autoload.php';
-use Viceroy\Connections\llamacppOAICompatibleConnection;
+use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
 // ======================= Configuration =======================
-$llmConnection = new llamacppOAICompatibleConnection();
+$llmConnection = new OpenAICompatibleEndpointConnection();
 $llmConnection->setGuzzleConnectionTimeout(PHP_INT_MAX);
 
 $results = [];

@@ -1,7 +1,7 @@
 {
   "server": {
-    "host": "https://api.openai.com",
-    "port": "443",
+    "host": "http://127.0.0.1",
+    "port": "8855",
     "completions": "/v1/chat/completions",
     "tokenize": "/tokenize",
     "detokenize": "/detokenize",

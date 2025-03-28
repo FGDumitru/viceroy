@@ -95,7 +95,7 @@ SYS;
         return $this->getSystemMessage();
     }
 
-    public function __construct(string $connectionType = 'llamacppOAICompatibleConnection')
+    public function __construct(string $connectionType = 'Definitions\\OpenAICompatibleEndpointConnection')
     {
         parent::__construct($connectionType);
         $this->setSystem($this->systemMessageTemplate);

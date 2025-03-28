@@ -4,12 +4,12 @@ namespace Viceroy\Connections\Definitions;
 
 use Viceroy\Core\Response;
 
-interface LlmConnectionInterface {
+interface OpenAICompatibleEndpointInterface {
 
   /**
    * @return bool
    */
-  public function health(): bool|\GuzzleHttp\Psr7\Response;
+  public function health(): array;
 
   /**
    * @param string $sentence

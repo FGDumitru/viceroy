@@ -2,8 +2,7 @@
 
 namespace Viceroy\Connections\Definitions;
 
-use Viceroy\Connections\llamacppOAICompatibleConnection;
-use Viceroy\Connections\OpenAiCompatibleConnection;
+use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
 class TraitableConnectionAbstractClass
 {

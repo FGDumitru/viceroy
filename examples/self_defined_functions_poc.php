@@ -10,20 +10,11 @@ $models = $llm->getModels();
 sort($models);
 $models = array_reverse($models);
 
-$modelId = 'Qwen_QwQ-32B-Q8_0';
+//$modelId = 'Qwen_QwQ-32B-Q8_0';
+//$llm->setLLMmodelName($modelId);
 
 $llm->setConnectionTimeout(0);
 
-$useGrok = FALSE;
-if ($useGrok && $authorization = getenv('GrokAPI')) {
-  echo "\n\tUsing Grok API\n";
-  $llm->setEndpointTypeToGroqAPI();
-  $llm->setLLMmodelName('llama-3.2-90b-vision-preview');
-  $llm->setBearedToken($authorization);
-} else {
-  echo "\n\tUsing default API.\n";
-  $llm->setLLMmodelName($modelId);
-}
 
 
 // Define some dynamic functions.

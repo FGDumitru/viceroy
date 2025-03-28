@@ -2,9 +2,9 @@
 
 require_once '../vendor/autoload.php';
 
-use Viceroy\Connections\llamacppOAICompatibleConnection;
+use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
-$llmConnection = new llamacppOAICompatibleConnection();
+$llmConnection = new OpenAICompatibleEndpointConnection();
 
 // Timeout usage example, wait 5 minutes before timing out.
 $llmConnection->setGuzzleConnectionTimeout(300);

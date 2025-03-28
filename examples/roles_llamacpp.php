@@ -2,11 +2,11 @@
 
 require_once '../vendor/autoload.php';
 
-use Viceroy\Connections\llamacppOAICompatibleConnection;
+use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
-$useGrok = TRUE;
 
-$llmConnection = new llamacppOAICompatibleConnection();
+require_once '../vendor/autoload.php';
+$llmConnection = new OpenAICompatibleEndpointConnection();
 
 if ($useGrok && $authorization = getenv('GrokAPI')) {
   echo "\n\tUsing Grok API\n";

@@ -2,9 +2,9 @@
 
 require_once '../vendor/autoload.php';
 
-use Viceroy\Connections\llamacppOAICompatibleConnection;
+use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
-$llmConnection = new llamacppOAICompatibleConnection();
+$llmConnection = new OpenAICompatibleEndpointConnection();
 
 // Timeout usage example, wait 5 minutes before timing out.
 $llmConnection->setGuzzleConnectionTimeout(PHP_INT_MAX);
@@ -139,13 +139,13 @@ $benchmarkData = [
     ['q' => 'Plural of "crisis" in English. Single word.', 'a' => 'crises'],
     ['q' => 'Translate "How old are you?" to French. Four words.', 'a' => 'Quel âge as-tu'],
     ['q' => 'Conjugate "to write" in Russian (present, я). Transliterated.', 'a' => 'pišu'],
-];
+]; 
 
 
 sort($models);
 
 // DEBUG
-$models = ['WizardLM-2-8x22B.Q6_K_CTX-32768'];
+$models = ['qwen_QwQ-32B-Q8_0'];
 foreach ($models as $model) {
 
     $m = strtolower($model);
