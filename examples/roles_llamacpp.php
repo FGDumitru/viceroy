@@ -7,15 +7,7 @@ use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
 require_once '../vendor/autoload.php';
 $llmConnection = new OpenAICompatibleEndpointConnection();
-
-if ($useGrok && $authorization = getenv('GrokAPI')) {
-  echo "\n\tUsing Grok API\n";
-  $llmConnection->setEndpointTypeToGroqAPI();
-  $llmConnection->setLLMmodelName('llama-3.2-90b-vision-preview');
-  $llmConnection->setBearedToken($authorization);
-} else {
-  echo "\n\tUsing default API.\n";
-}
+$llmConnection->setLLMmodelName('gpt-4o');
 
 // Add a system message (if the model supports it).
 $llmConnection->setSystemMessage('You are a helpful LLM that responds to user queries.');

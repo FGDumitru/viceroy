@@ -40,17 +40,6 @@ class RolesManager {
       return $this->roles;
     };
 
-    if ($promptType == 'groqApi') {
-      $roles = $this->roles;
-
-      $data = [];
-      foreach ($roles as $role) {
-        $data[] = (object) $role;
-      }
-
-      return $data;
-    };
-
     return null;
   }
 

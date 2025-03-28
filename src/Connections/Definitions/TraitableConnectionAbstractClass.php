@@ -2,8 +2,6 @@
 
 namespace Viceroy\Connections\Definitions;
 
-use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
-
 class TraitableConnectionAbstractClass
 {
     protected $connectionOriginal;

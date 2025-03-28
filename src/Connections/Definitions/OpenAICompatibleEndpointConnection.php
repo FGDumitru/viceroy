@@ -10,6 +10,7 @@ use Viceroy\Configuration\ConfigObjects;
 use Viceroy\Core\Request;
 use Viceroy\Core\Response;
 use Viceroy\Core\RolesManager;
+use RuntimeException;
 
 class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInterface
 {
@@ -259,47 +260,43 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         return $promptJson;
     }
 
-    public function queryPost(array $promptJson = []): Response|bool
-    {
-        if (empty($promptJson)) {
-            $promptJson = $this->getDefaultParameters();
-        }
-
-        $uri = $this->getServerUri('completions');
-
-        $guzzleRequest = [
-            'json' => $promptJson,
-            'headers' => ['Content-Type' => 'application/json'],
-            'timeout' => 0,
-        ];
-
-        if (!empty($this->model)) {
-            $guzzleRequest['model'] = $this->model;
-        }
-
-        $guzzleRequest = array_merge($guzzleRequest, $this->getGuzzleCustomOptions());
-
-        if (!empty($this->bearedToken)) {
-            $guzzleRequest['headers']['Authorization'] = 'Bearer ' . $this->bearedToken;
-        }
-
-        if (is_callable($this->guzzleParametersFormationCallback)) {
-            [$uri, $guzzleRequest] = call_user_func($this->guzzleParametersFormationCallback, $uri, $guzzleRequest);
-        }
-
-        $timer = microtime(TRUE);
-        try {
-            $response = $this->guzzleObject->post($uri, $guzzleRequest);
-            $this->queryTime = microtime(TRUE) - $timer;
-        } catch (GuzzleException $e) {
-            $this->queryTime = NULL;
-            return FALSE;
-        }
-
-        $this->response = new Response($response);
-
-        return $this->response;
+public function queryPost(array $promptJson = []): Response
+{
+    if (empty($promptJson)) {
+        $promptJson = $this->getDefaultParameters();
     }
+
+    $uri = $this->getServerUri('completions');
+
+    $guzzleRequest = [
+        'json' => $promptJson,
+        'headers' => ['Content-Type' => 'application/json'],
+        'timeout' => 0,
+    ];
+
+    $guzzleRequest = array_merge($guzzleRequest, $this->getGuzzleCustomOptions());
+
+    if (!empty($this->bearedToken)) {
+        $guzzleRequest['headers']['Authorization'] = 'Bearer ' . $this->bearedToken;
+    }
+
+    if (is_callable($this->guzzleParametersFormationCallback)) {
+        [$uri, $guzzleRequest] = call_user_func($this->guzzleParametersFormationCallback, $uri, $guzzleRequest);
+    }
+
+    $timer = microtime(TRUE);
+    try {
+        $response = $this->guzzleObject->post($uri, $guzzleRequest);
+        $this->queryTime = microtime(TRUE) - $timer;
+    } catch (GuzzleException $e) {
+        $this->queryTime = NULL;
+        throw new RuntimeException("Guzzle request failed: " . $e->getMessage());
+    }
+
+    $this->response = new Response($response);
+
+    return $this->response;
+}
 
     public function getLastQueryMicrotime()
     {
@@ -369,6 +366,12 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     public function setGuzzleConnectionTimeout(int $timeout) {
         $currentOptions = $this->getGuzzleCustomOptions();
         $this->setGuzzleCustomOptions(array_merge($currentOptions, ['timeout' => $timeout]));
+        return $this;
+    }
+
+    public function setApiKey(string $apiKey): OpenAICompatibleEndpointConnection
+    {
+        $this->bearedToken = $apiKey;
         return $this;
     }
 

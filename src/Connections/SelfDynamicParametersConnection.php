@@ -5,7 +5,7 @@ namespace Viceroy\Connections;
 use Viceroy\Connections\Definitions\TraitableConnectionAbstractClass;
 use Viceroy\Connections\Traits\setSystemMessageTrait;
 
-class SelfDynamicParametersConnection extends TraitableConnectionAbstractClass {
+class SelfDynamicParametersConnection extends TraitableConnectionAbstractClass implements \Viceroy\Connections\Definitions\OpenAICompatibleEndpointInterface {
     use setSystemMessageTrait;
 
     private string $systemMessageTemplate = <<<SYS
@@ -83,6 +83,13 @@ SYS;
     private bool $useLastResponse = FALSE;
 
     private bool $chainMode = FALSE;
+    private bool $debugMode = FALSE;
+
+    public function setDebugMode(bool $debugMode): SelfDynamicParametersConnection
+    {
+        $this->debugMode = $debugMode;
+        return $this;
+    }
 
     public function setSystem(string $systemMessage): void
     {
@@ -109,6 +116,26 @@ SYS;
     {
         $this->definedFunctions[$functionName] = $definition;
         return $this;
+    }
+
+    public function health(): array
+    {
+        return $this->connection->health();
+    }
+
+    public function tokenize(string $sentence): array|bool
+    {
+        return $this->connection->tokenize($sentence);
+    }
+
+    public function detokenize(array $promptJson): string|bool
+    {
+        return $this->connection->detokenize($promptJson);
+    }
+
+    public function queryPost(array $promptJson = []): \Viceroy\Core\Response|bool
+    {
+        return $this->connection->queryPost($promptJson);
     }
 
     public function getThinkContent(): string
@@ -139,10 +166,14 @@ SYS;
                     $functionCommands .= "[PARAMETER $index of type $argumentType]\n $argument\n\n";
                 }
 
-                echo "\n\n\tREQUEST: $functionCommands\n\n";
+                if ($this->debugMode) {
+                    echo "\n\n\tREQUEST: $functionCommands\n\n";
+                }
                 $resultRaw = $this->connection->query($functionCommands);
 
-                echo "RESPONSE: $resultRaw\n\n";
+                if ($this->debugMode) {
+                    echo "RESPONSE: $resultRaw\n\n";
+                }
 
                 $jsonParsedResult = json_decode($resultRaw, true);
 
@@ -161,7 +192,7 @@ SYS;
                 }
 
                 $this->useLastResponse = NULL;
-                var_dump($resultRaw);
+//                var_dump($resultRaw);
                 throw new \LogicException($jsonParsedResult['error'] ?? 'Unknown error');
             }
         }
