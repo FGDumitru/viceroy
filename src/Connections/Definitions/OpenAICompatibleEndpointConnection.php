@@ -122,7 +122,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      *
      * @param ConfigObjects|null $config Configuration object (default: new instance)
      */
-    public function __construct(ConfigObjects $config = NULL)
+    public function __construct(?ConfigObjects $config = NULL)
     {
         if (is_null($config)) {
             $this->configuration = new ConfigObjects();

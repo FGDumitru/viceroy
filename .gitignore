@@ -5,3 +5,4 @@
 /*.env
 .vscode/
 examples/benchmark_*.json
+examples/benchmark_stats.csv
