@@ -33,6 +33,13 @@ class Response {
     private $thinkContent = NULL;
 
     /**
+     * @var bool $wasStreamed Flag indicating if response was streamed
+     */
+    private $wasStreamed = FALSE;
+
+    private $streamedContent = NULL;
+
+    /**
      * @param \Psr\Http\Message\ResponseInterface $response
      */
     /**
@@ -86,10 +93,15 @@ class Response {
      * @return mixed The first choice message from the response
      */
     private function getChoice(): mixed {
+
+      if (!$this->wasStreamed()) {
         $content = $this->getContent();
         $contentArray = json_decode($content, TRUE);
         $choices = $contentArray['choices'];
         return $choices[0]['message'];
+      } else {
+        return $this->getStreamedContent();
+      }
     }
 
     /**
@@ -112,8 +124,14 @@ class Response {
      */
     private function processContent(): void {
         if ($this->processedContent === NULL) {
+
+          if (!$this->wasStreamed) {
             $choice = $this->getChoice();
             $content = $choice['content'];
+          } else {
+            $content = $this->getStreamedContent();
+          }
+
             preg_match_all('/<think>(.*?)<\/think>/s', $content, $matches);
             $this->thinkContent = implode("\n", $matches[1] ?? []);
             $this->processedContent = preg_replace('/<think>.*?<\/think>/s', '', $content);
@@ -125,9 +143,13 @@ class Response {
      *
      * @return mixed The role specified in the response
      */
-    public function getLlmResponseRole(): mixed {
+    public function getLlmResponseRole(?string $defaultAiRole = 'assistant'): mixed {
+      if (!$this->wasStreamed()) {
         $choice = $this->getChoice();
         return $choice['role'];
+      } else {
+        return $defaultAiRole;
+      }
     }
 
     /**
@@ -136,7 +158,44 @@ class Response {
      * @return string The complete raw response content
      */
     public function getRawContent(): string {
+      if (!$this->wasStreamed) {
         return $this->getContent();
+      } else {
+        return $this->getStreamedContent();
+      }
     }
+
+    /**
+     * Gets whether the response was streamed
+     *
+     * @return bool True if response was streamed, false otherwise
+     */
+    public function wasStreamed(): bool {
+        return $this->wasStreamed;
+    }
+
+    /**
+     * Sets whether the response was streamed
+     *
+     * @param bool $wasStreamed Flag indicating if response was streamed
+     * @return void
+     */
+    public function setWasStreamed(bool $wasStreamed = TRUE): void {
+        $this->wasStreamed = $wasStreamed;
+    }
+
+  /**
+   * @return null
+   */
+  public function getStreamedContent() {
+    return $this->streamedContent;
+  }
+
+  /**
+   * @param null $streamedContent
+   */
+  public function setStreamedContent($streamedContent): void {
+    $this->streamedContent = $streamedContent;
+  }
 
 }

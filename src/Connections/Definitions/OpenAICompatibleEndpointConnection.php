@@ -315,40 +315,86 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      * @return Response The response object
      * @throws RuntimeException If the Guzzle request fails
      */
-    public function queryPost(array $promptJson = []): Response
+    public function queryPost(array $promptJson = [], ?callable $streamCallback = null): Response
     {
         if (empty($promptJson)) {
             $promptJson = $this->getDefaultParameters();
         }
-
+    
         $uri = $this->getServerUri('completions');
-
+    
         $guzzleRequest = [
             'json' => $promptJson,
             'headers' => ['Content-Type' => 'application/json'],
             'timeout' => 0,
         ];
-
+    
         $guzzleRequest = array_merge($guzzleRequest, $this->getGuzzleCustomOptions());
-
+    
         if (!empty($this->bearedToken)) {
             $guzzleRequest['headers']['Authorization'] = 'Bearer ' . $this->bearedToken;
         }
-
+    
         if (is_callable($this->guzzleParametersFormationCallback)) {
             [$uri, $guzzleRequest] = call_user_func($this->guzzleParametersFormationCallback, $uri, $guzzleRequest);
         }
-
+    
         $timer = microtime(TRUE);
         try {
-            $response = $this->guzzleObject->post($uri, $guzzleRequest);
-            $this->queryTime = microtime(TRUE) - $timer;
+            if ($streamCallback) {
+                $guzzleRequest['stream'] = true;
+                $response = $this->guzzleObject->post($uri, $guzzleRequest);
+                $body = $response->getBody();
+                $buffer = ''; $streamedData = '';
+                while (!$body->eof()) {
+                    $chunk = $body->read(1);
+
+                    //echo $chunk;
+                    $buffer .= $chunk;
+
+                    if (str_ends_with($buffer, "\n\n")) {
+                      $jsonString = substr($buffer, 6);
+                        $decoded = json_decode($jsonString, TRUE);
+
+                        // var_dump($decoded['choices'][0]['finish_reason']);
+                        // die;
+                        if ( is_array($decoded) &&
+                            array_key_exists('choices',$decoded) &&
+                            !empty($decoded['choices']) &&
+                            array_key_exists('finish_reason',$decoded['choices'][0]) &&
+                          null === $decoded['choices'][0]['finish_reason']) {
+
+                          call_user_func($streamCallback, $decoded['choices'][0]['delta']['content']);
+                          $streamedData .= $decoded['choices'][0]['delta']['content'];
+                          $buffer = '';
+                        } else {
+                            if ('[DONE]' === $buffer) {
+                                break;
+                            }
+                            $a = 1;
+                            break;
+                        }
+
+                      
+                    }
+ 
+
+
+                }
+                $this->queryTime = microtime(TRUE) - $timer;
+                $this->response = new Response($response);
+                $this->response->setWasStreamed();
+                $this->response->setStreamedContent($streamedData);
+            } else {
+                $response = $this->guzzleObject->post($uri, $guzzleRequest);
+                $this->queryTime = microtime(TRUE) - $timer;
+                $this->response = new Response($response);
+            }
         } catch (GuzzleException $e) {
             $this->queryTime = NULL;
             throw new RuntimeException("Guzzle request failed: " . $e->getMessage());
         }
-
-        $this->response = new Response($response);
+    
         return $this->response;
     }
 
