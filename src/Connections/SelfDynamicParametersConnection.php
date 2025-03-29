@@ -107,6 +107,11 @@ SYS;
         $this->setSystem($this->systemMessageTemplate);
     }
 
+    public function setConnection($connection): void
+    {
+        $this->connection = $connection;
+    }
+
     public function setConnectionTimeout(int $timeout) {
         $this->connection->setGuzzleConnectionTimeout($timeout);
     }
@@ -166,32 +171,7 @@ SYS;
                 }
                 $resultRaw = $this->connection->query($functionCommands);
 
-                preg_match('/\{.*?\}/s', $resultRaw, $matches);
-                $extracted_json = $matches[0] ?? null;
-
-                if ($this->debugMode) {
-                    echo "RESPONSE: $resultRaw\n\n";
-                }
-
-                $jsonParsedResult = json_decode($extracted_json, true);
-
-                if (json_last_error() !== JSON_ERROR_NONE) {
-                    throw new \JsonException($this->connection->error($functionCommands));
-                }
-
-                if (isset($jsonParsedResult['response'])) {
-                    $this->lastResponse = $jsonParsedResult['response'];
-
-                    if ($this->useLastResponse) {
-                        return $this;
-                    }
-
-                    return $this->lastResponse;
-                }
-
-                $this->useLastResponse = NULL;
-//                var_dump($resultRaw);
-                throw new \LogicException($jsonParsedResult['error'] ?? 'Unknown error');
+                return $this->parseAndHandleResponse($resultRaw, $functionCommands);
             }
         }
 
@@ -213,4 +193,32 @@ SYS;
         return $this->lastResponse;
     }
 
+    protected function parseAndHandleResponse(string $resultRaw, string $functionCommands)
+    {
+        preg_match('/\{.*?\}/s', $resultRaw, $matches);
+        $extracted_json = $matches[0] ?? null;
+
+        if ($this->debugMode) {
+            echo "RESPONSE: $resultRaw\n\n";
+        }
+
+        $jsonParsedResult = json_decode($extracted_json, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \JsonException($this->connection->error($functionCommands));
+        }
+
+        if (isset($jsonParsedResult['response'])) {
+            $this->lastResponse = $jsonParsedResult['response'];
+
+            if ($this->useLastResponse) {
+                return $this;
+            }
+
+            return $this->lastResponse;
+        }
+
+        $this->useLastResponse = NULL;
+        throw new \LogicException($jsonParsedResult['error'] ?? 'Unknown error');
+    }
 }

@@ -3,7 +3,7 @@ namespace Viceroy\Connections\Traits;
 
 Trait setSystemMessageTrait {
 
-    private string $systemMessage;
+    protected string $systemMessage;
 
     public function setSystemMessageTrait(string $message) {
         $this->systemMessage = $message;

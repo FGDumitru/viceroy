@@ -12,6 +12,10 @@ use Viceroy\Core\Response;
 use Viceroy\Core\RolesManager;
 use RuntimeException;
 
+/**
+ * Represents a connection to an OpenAI-compatible API endpoint.
+ * Implements OpenAICompatibleEndpointInterface to provide methods for interacting with the API.
+ */
 class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInterface
 {
 
@@ -55,88 +59,138 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
 
     private $bearedToken = '';
 
+    /**
+     * Sets the Bearer token for API authentication.
+     *
+     * @param string $bearedToken The Bearer token string
+     * @return self Chainable instance
+     */
     public function setBearedToken(string $bearedToken): OpenAICompatibleEndpointConnection
     {
         $this->bearedToken = $bearedToken;
         return $this;
     }
 
+    /**
+     * Initializes the OpenAICompatibleEndpointConnection with configuration and dependencies.
+     *
+     * @param ConfigObjects|null $config Configuration object (default: new instance)
+     */
     function __construct(ConfigObjects $config = NULL)
     {
         if (is_null($config)) {
             $this->configuration = new ConfigObjects();
         }
-
+    
         $this->createGuzzleConnection();
-
+    
         $this->request = new Request($this->configuration);
-
+    
         $this->rolesManager = new RolesManager();
     }
 
-    function createGuzzleConnection()
+    /**
+     * Initializes the Guzzle HTTP client for API requests.
+     */
+    public function createGuzzleConnection()
     {
         $this->guzzleObject = new GuzzleClient();
     }
 
+    /**
+     * Sets a custom Guzzle HTTP client instance for API requests.
+     *
+     * @param GuzzleClient $guzzleObject Pre-configured Guzzle client instance
+     * @return self Chainable instance
+     */
     public function setConnection(GuzzleClient $guzzleObject)
     {
         $this->guzzleObject = $guzzleObject;
+        return $this;
     }
 
-    public function getConnection()
+    /**
+     * Retrieves the configured Guzzle HTTP client instance.
+     *
+     * @return GuzzleClient The Guzzle HTTP client used for API requests
+     */
+    public function getConnection(): GuzzleClient
     {
         return $this->guzzleObject;
     }
 
+    /**
+     * Retrieves the configured Request instance.
+     *
+     * @return Request The Request object used for API interaction
+     */
     public function getRequest(): Request
     {
         return $this->request;
     }
 
+    /**
+     * Retrieves the roles manager instance.
+     *
+     * @return RolesManager The roles manager responsible for message management.
+     */
     public function getRolesManager(): RolesManager
     {
         return $this->rolesManager;
     }
 
+    /**
+     * Tokenizes a given sentence by sending a POST request to the API's tokenization endpoint.
+     *
+     * @param string $sentence The sentence to tokenize.
+     * @return bool|array Returns an array of tokens if successful, or false on failure.
+     */
     public function tokenize(string $sentence): bool|array
     {
         $uri = $this->getServerUri('tokenize');
-
+    
         try {
-
+    
             $guzzleOptions = [
                 'json' => ['content' => $sentence],
                 'headers' => ['Content-Type' => 'application/json'],
                 'timeout' => 0,
             ];
-
+    
             $guzzleOptions = array_merge($guzzleOptions, $this->getGuzzleCustomOptions());
-
-
+    
+    
             $response = $this->guzzleObject->post($uri, $guzzleOptions);
         } catch (Exception $e) {
             return FALSE;
         }
-
+    
         $tokensJsonResponse = $response->getBody()->getContents();
-
+    
         $tokens = json_decode($tokensJsonResponse)->tokens;
-
+    
         return $tokens;
     }
 
-    private function getServerUri(string $verb)
+    /**
+     * Constructs the server URI based on configuration and the provided verb.
+     *
+     * If an explicit endpoint URI is set, it is returned directly.
+     * Otherwise, constructs the URI using host, port, and the verb's path from configuration.
+     *
+     * @param string $verb The API endpoint verb (e.g., 'tokenize', 'completions')
+     * @return string The fully constructed API endpoint URI
+     */
+    private function getServerUri(string $verb): string
     {
-
         if (!empty($this->endpointUri)) {
             return $this->endpointUri;
         }
-
+    
         $uri = $this->getConfiguration()->getServerConfigKey('host');
         $uri .= ':' . $this->getConfiguration()->getServerConfigKey('port');
         $uri .= $this->getConfiguration()->getServerConfigKey($verb);
-
+    
         return $uri;
     }
 
@@ -276,11 +330,6 @@ public function queryPost(array $promptJson = []): Response
         return $this->response->getThinkContent();
     }
 
-    public function setEndpointTypeToLlamaCpp()
-    {
-        $this->promptType = 'llamacpp';
-        $this->setEndpointUri('');
-    }
 
     public function setLLMmodelName($modelName)
     {
