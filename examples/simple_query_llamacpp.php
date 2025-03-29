@@ -2,9 +2,9 @@
 
 require_once '../vendor/autoload.php';
 
-use Viceroy\Connections\Simple\simpleLlamaCppOAICompatibleConnection;
+use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
-$llm = new simpleLlamaCppOAICompatibleConnection();
+$llm = new OpenAICompatibleEndpointConnection();
 
 $llm->setLLMmodelName('gpt-4o');
 

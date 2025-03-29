@@ -40,9 +40,9 @@ composer require fgdumitru/viceroy
 
 1. **Basic Connection**:
 ```php
-use Viceroy\Connections\Simple\simpleLlamaCppOAICompatibleConnection;
+use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
-$llm = new simpleLlamaCppOAICompatibleConnection();
+$llm = new OpenAICompatibleEndpointConnection();
 $llm->setLLMmodelName('Llama-3.3-70B-Instruct');
 $response = $llm->query('Explain quantum computing');
 ```
@@ -177,7 +177,7 @@ Here is a more detailed conversation example to illustrate how the conversation 
 
 ```php
 // Initialize the LLM connection
-$llm = new simpleLlamaCppOAICompatibleConnection();
+$llm = new OpenAICompatibleEndpointConnection();
 $llm->setLLMmodelName('Llama-3.3-70B-Instruct');
 
 // Set the system message

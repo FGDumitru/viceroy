@@ -9,7 +9,6 @@ $llm = new SelfDynamicParametersConnection();
 $modelId = 'qwen_QwQ-32B-Q8_0';
 $llm->setLLMmodelName($modelId);
 
-
 $llm->setConnectionTimeout(0);
 
 // Color constants
@@ -31,23 +30,23 @@ $llm->addNewFunction('validEmail', 'Check if the email address provided in the f
 $llm->addNewFunction('leetSpeak', 'Transform the following parameters into l33t speak.');
 $llm->addNewFunction('reverseString', 'Reverse the string in the first parameter. Ensure the entire string is reversed, including handling of special characters and spaces.');
 
-function displayResult($title, $input, $result) {
+function displayResult($title, $input, $result, $description) {
     echo COLOR_CYAN . "────────────────────────────────────────────────────────" . COLOR_RESET . PHP_EOL;
     echo COLOR_CYAN . "  " . str_pad($title, 54) . COLOR_RESET . PHP_EOL;
+    echo COLOR_MAGENTA . "  Description: " . $description . COLOR_RESET . PHP_EOL;
     echo COLOR_CYAN . "────────────────────────────────────────────────────────" . COLOR_RESET . PHP_EOL;
     echo COLOR_YELLOW . "  Input:  " . COLOR_RESET . str_pad(json_encode($input), 45) . PHP_EOL;
     echo COLOR_GREEN . "  Result: " . COLOR_RESET . str_pad(json_encode($result), 45) . PHP_EOL;
     echo COLOR_CYAN . "────────────────────────────────────────────────────────" . COLOR_RESET . PHP_EOL . PHP_EOL;
 }
 
-// Demonstrate functions
-displayResult('Reverse String', 'Hello World!', $llm->reverseString('Hello World!'));
-displayResult('Leet Speak', 'Hello world!', $llm->leetSpeak('Hello world!'));
-displayResult('Addition', [5, 4], $llm->adunare(5, 4));
-displayResult('Word Count', 'This is a test', $llm->countWords('This is a test'));
-displayResult('Reverse Words', 'This is a test', $llm->reverseWordsOrder('This is a test'));
-displayResult('Translation', ['romanian', 'Hello world'], $llm->translate('romanian', 'Hello world'));
-displayResult('Email Validation', 'test@example.com', $llm->validEmail('test@example.com'));
+displayResult('Reverse String', 'Hello World!', $llm->reverseString('Hello World!'), 'Reverses the input string character by character.');
+displayResult('Leet Speak', 'Hello world!', $llm->leetSpeak('Hello world!'), 'Converts text into l33t speak.');
+displayResult('Addition', [5, 4], $llm->adunare(5, 4), 'Adds the two numbers provided.');
+displayResult('Word Count', 'This is a test', $llm->countWords('This is a test'), 'Counts the number of words in the input text.');
+displayResult('Reverse Words', 'This is a test', $llm->reverseWordsOrder('This is a test'), 'Reverses the order of words in the input text.');
+displayResult('Translation', ['romanian', 'Hello world'], $llm->translate('romanian', 'Hello world'), 'Translates the given text into the specified target language.');
+displayResult('Email Validation', 'test@example.com', $llm->validEmail('test@example.com'), 'Checks if the provided email address is valid.');
 
 // Chaining mode demonstration
 $chainLLM = new SelfDynamicParametersConnection();
@@ -61,4 +60,4 @@ $chainLLM->addNewFunction('numberToLiteral', 'Convert a numeric value to its lit
 $chain = $chainLLM->setChainMode();
 $result = $chain->add(5, 3)->multiply(2)->numberToLiteral();
 
-displayResult('Chaining Result', 'add(5,3)->multiply(2)->numberToLiteral()', $result->getLastResponse());
+displayResult('Chaining Result', 'add(5,3)->multiply(2)->numberToLiteral()', $result->getLastResponse(), 'Performs addition, multiplication, and converts to literal form through function chaining.');

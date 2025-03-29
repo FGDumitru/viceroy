@@ -18,46 +18,92 @@ use RuntimeException;
  */
 class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInterface
 {
-
+    /**
+     * @var GuzzleClient|null $guzzleObject Guzzle HTTP client instance
+     */
     private ?GuzzleClient $guzzleObject = NULL;
 
+    /**
+     * @var array $guzzleCustomOptions Custom options for Guzzle HTTP client
+     */
     private array $guzzleCustomOptions = [];
 
+    /**
+     * @var ConfigObjects $configuration Configuration objects container
+     */
     private ConfigObjects $configuration;
 
+    /**
+     * @var ConfigManager $configManager Configuration manager instance
+     */
     private ConfigManager $configManager;
 
+    /**
+     * @var float|null $queryTime Time taken for last query in seconds
+     */
     private ?float $queryTime = NULL;
 
+    /**
+     * @var string $model The LLM model name being used
+     */
     protected string $model = '';
 
+    /**
+     * @var Request $request Request handler instance
+     */
     private Request $request;
 
+    /**
+     * @var RolesManager $rolesManager Roles and messages manager
+     */
     private RolesManager $rolesManager;
 
+    /**
+     * @var callable $guzzleParametersFormationCallback Callback for custom Guzzle parameter formation
+     */
     public $guzzleParametersFormationCallback;
 
+    /**
+     * @var string $promptType Type of prompt being used (default: 'llamacpp')
+     */
     public $promptType = 'llamacpp';
 
+    /**
+     * @var string $endpointUri Custom endpoint URI override
+     */
     private $endpointUri = '';
 
     /**
-     * @var Response
+     * @var Response $response The last response received
      */
     private $response;
 
+    /**
+     * @var string $bearedToken Bearer token for authentication
+     */
+    private $bearedToken = '';
+
+    /**
+     * Gets the endpoint URI
+     *
+     * @return string The current endpoint URI
+     */
     public function getEndpointUri(): string
     {
         return $this->endpointUri;
     }
 
+    /**
+     * Sets the endpoint URI
+     *
+     * @param string $endpointUri The URI to set
+     * @return OpenAICompatibleEndpointConnection Returns self for method chaining
+     */
     public function setEndpointUri(string $endpointUri): OpenAICompatibleEndpointConnection
     {
         $this->endpointUri = $endpointUri;
         return $this;
     }
-
-    private $bearedToken = '';
 
     /**
      * Sets the Bearer token for API authentication.
@@ -76,7 +122,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      *
      * @param ConfigObjects|null $config Configuration object (default: new instance)
      */
-    function __construct(ConfigObjects $config = NULL)
+    public function __construct(ConfigObjects $config = NULL)
     {
         if (is_null($config)) {
             $this->configuration = new ConfigObjects();
@@ -150,7 +196,6 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         $uri = $this->getServerUri('tokenize');
     
         try {
-    
             $guzzleOptions = [
                 'json' => ['content' => $sentence],
                 'headers' => ['Content-Type' => 'application/json'],
@@ -159,14 +204,12 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     
             $guzzleOptions = array_merge($guzzleOptions, $this->getGuzzleCustomOptions());
     
-    
             $response = $this->guzzleObject->post($uri, $guzzleOptions);
         } catch (Exception $e) {
             return FALSE;
         }
     
         $tokensJsonResponse = $response->getBody()->getContents();
-    
         $tokens = json_decode($tokensJsonResponse)->tokens;
     
         return $tokens;
@@ -194,24 +237,33 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         return $uri;
     }
 
+    /**
+     * Gets the configuration object
+     *
+     * @return ConfigObjects The configuration object
+     */
     public function getConfiguration(): ConfigObjects
     {
         return $this->configuration;
     }
 
+    /**
+     * Sets the configuration object
+     *
+     * @param ConfigObjects $configuration The configuration to set
+     * @return void
+     */
     public function setConfiguration(ConfigObjects $configuration)
     {
         $this->configuration = $configuration;
     }
 
     /**
-     * @return array Returns detailed health status including:
-     *               - status: bool Overall health status
-     *               - latency: float Response time in ms
-     *               - endpoints: array Status of individual endpoints
-     *               - error: string|null Error message if any
+     * Detokenizes a JSON prompt array into a string
+     *
+     * @param array $promptJson The prompt in JSON format
+     * @return string|bool Detokenized string on success, false on failure
      */
-
     public function detokenize(array $promptJson): string|bool
     {
         if (empty($promptJson)) {
@@ -221,7 +273,6 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         $uri = $this->getServerUri('detokenize');
 
         try {
-
             $guzzleOptions = [
                 'json' => ['tokens' => $promptJson],
                 'headers' => ['Content-Type' => 'application/json'],
@@ -236,16 +287,18 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         }
 
         $tokensJsonResponse = $response->getBody()->getContents();
-
         return json_decode($tokensJsonResponse)->content;
     }
 
+    /**
+     * Gets default parameters for API requests
+     *
+     * @return array Default parameters array
+     */
     public function getDefaultParameters(): array
     {
         $configManager = new ConfigManager($this->configuration);
-
         $promptJson = $configManager->getJsonPrompt($this->promptType);
-
         $promptJson['messages'] = $this->rolesManager->getMessages($this->promptType);
 
         if (!empty($this->model)) {
@@ -255,64 +308,84 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         return $promptJson;
     }
 
-public function queryPost(array $promptJson = []): Response
-{
-    if (empty($promptJson)) {
-        $promptJson = $this->getDefaultParameters();
+    /**
+     * Executes a POST query to the API endpoint
+     *
+     * @param array $promptJson The prompt data to send (default: empty array)
+     * @return Response The response object
+     * @throws RuntimeException If the Guzzle request fails
+     */
+    public function queryPost(array $promptJson = []): Response
+    {
+        if (empty($promptJson)) {
+            $promptJson = $this->getDefaultParameters();
+        }
+
+        $uri = $this->getServerUri('completions');
+
+        $guzzleRequest = [
+            'json' => $promptJson,
+            'headers' => ['Content-Type' => 'application/json'],
+            'timeout' => 0,
+        ];
+
+        $guzzleRequest = array_merge($guzzleRequest, $this->getGuzzleCustomOptions());
+
+        if (!empty($this->bearedToken)) {
+            $guzzleRequest['headers']['Authorization'] = 'Bearer ' . $this->bearedToken;
+        }
+
+        if (is_callable($this->guzzleParametersFormationCallback)) {
+            [$uri, $guzzleRequest] = call_user_func($this->guzzleParametersFormationCallback, $uri, $guzzleRequest);
+        }
+
+        $timer = microtime(TRUE);
+        try {
+            $response = $this->guzzleObject->post($uri, $guzzleRequest);
+            $this->queryTime = microtime(TRUE) - $timer;
+        } catch (GuzzleException $e) {
+            $this->queryTime = NULL;
+            throw new RuntimeException("Guzzle request failed: " . $e->getMessage());
+        }
+
+        $this->response = new Response($response);
+        return $this->response;
     }
 
-    $uri = $this->getServerUri('completions');
-
-    $guzzleRequest = [
-        'json' => $promptJson,
-        'headers' => ['Content-Type' => 'application/json'],
-        'timeout' => 0,
-    ];
-
-    $guzzleRequest = array_merge($guzzleRequest, $this->getGuzzleCustomOptions());
-
-    if (!empty($this->bearedToken)) {
-        $guzzleRequest['headers']['Authorization'] = 'Bearer ' . $this->bearedToken;
-    }
-
-    if (is_callable($this->guzzleParametersFormationCallback)) {
-        [$uri, $guzzleRequest] = call_user_func($this->guzzleParametersFormationCallback, $uri, $guzzleRequest);
-    }
-
-    $timer = microtime(TRUE);
-    try {
-        $response = $this->guzzleObject->post($uri, $guzzleRequest);
-        $this->queryTime = microtime(TRUE) - $timer;
-    } catch (GuzzleException $e) {
-        $this->queryTime = NULL;
-        throw new RuntimeException("Guzzle request failed: " . $e->getMessage());
-    }
-
-    $this->response = new Response($response);
-
-    return $this->response;
-}
-
+    /**
+     * Gets the time taken for the last query
+     *
+     * @return float Time in seconds, rounded to 4 decimal places
+     */
     public function getLastQueryMicrotime()
     {
         return round($this->queryTime, 4);
     }
 
-    public function getParameterValue($param)
-    {
-
-    }
-
+    /**
+     * Clears all messages in the roles manager
+     */
     public function clear()
     {
         $this->getRolesManager()->clearMessages();
     }
 
+    /**
+     * Sets the system message
+     *
+     * @param string $systemMessage The system message to set
+     */
     public function setSystemMessage($systemMessage)
     {
         $this->getRolesManager()->setSystemMessage($systemMessage);
     }
 
+    /**
+     * Executes a query and manages conversation flow
+     *
+     * @param string $query The query to send
+     * @return mixed The LLM response
+     */
     public function query($query)
     {
         $this->getRolesManager()->addUserMessage($query);
@@ -321,56 +394,96 @@ public function queryPost(array $promptJson = []): Response
         return $this->response->getLlmResponse();
     }
 
+    /**
+     * Gets the last response
+     *
+     * @return Response The last response received
+     */
     public function getResponse() {
         return $this->response;
     }
 
+    /**
+     * Gets the think content from the last response
+     *
+     * @return string The think content
+     */
     public function getThinkContent(): string
     {
         return $this->response->getThinkContent();
     }
 
-
+    /**
+     * Sets the LLM model name
+     *
+     * @param string $modelName The model name to set
+     */
     public function setLLMmodelName($modelName)
     {
         $this->model = $modelName;
     }
 
+    /**
+     * Sets custom Guzzle options
+     *
+     * @param array $guzzleCustomOptions Custom Guzzle options
+     * @return OpenAICompatibleEndpointConnection Returns self for method chaining
+     */
     public function setGuzzleCustomOptions(array $guzzleCustomOptions): OpenAICompatibleEndpointConnection
     {
         $this->guzzleCustomOptions = $guzzleCustomOptions;
         return $this;
     }
 
+    /**
+     * Gets custom Guzzle options
+     *
+     * @return array The custom Guzzle options
+     */
     public function getGuzzleCustomOptions(): array
     {
         return $this->guzzleCustomOptions;
     }
 
+    /**
+     * Sets Guzzle connection timeout
+     *
+     * @param int $timeout Timeout in seconds
+     * @return OpenAICompatibleEndpointConnection Returns self for method chaining
+     */
     public function setGuzzleConnectionTimeout(int $timeout) {
         $currentOptions = $this->getGuzzleCustomOptions();
         $this->setGuzzleCustomOptions(array_merge($currentOptions, ['timeout' => $timeout]));
         return $this;
     }
 
+    /**
+     * Sets the API key
+     *
+     * @param string $apiKey The API key to set
+     * @return OpenAICompatibleEndpointConnection Returns self for method chaining
+     */
     public function setApiKey(string $apiKey): OpenAICompatibleEndpointConnection
     {
         $this->bearedToken = $apiKey;
         return $this;
     }
 
+    /**
+     * Gets available models from the API
+     *
+     * @return array|bool Array of available models or false on failure
+     */
     public function getAvailableModels() {
         $uri = $this->getServerUri('models') ?? '/v1/models';
 
         try {
-
             $guzzleOptions = [
                 'headers' => ['Content-Type' => 'application/json'],
                 'timeout' => 0,
             ];
 
             $guzzleOptions = array_merge($guzzleOptions, $this->getGuzzleCustomOptions());
-
 
             $response = $this->guzzleObject->get($uri, $guzzleOptions);
         } catch (Exception $e) {
@@ -388,7 +501,5 @@ public function queryPost(array $promptJson = []): Response
         }
 
         return $models;
-
     }
-
 }

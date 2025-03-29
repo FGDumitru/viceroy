@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * SelfDynamicParametersConnection - A connection class that allows dynamic parameter handling
+ * and function definitions for OpenAI-compatible endpoints.
+ * 
+ * This class extends TraitableConnectionAbstractClass and implements OpenAICompatibleEndpointInterface,
+ * providing functionality to define and execute custom functions with dynamic parameters.
+ */
 namespace Viceroy\Connections;
 
 use Viceroy\Connections\Definitions\TraitableConnectionAbstractClass;
@@ -8,6 +15,10 @@ use Viceroy\Connections\Traits\setSystemMessageTrait;
 class SelfDynamicParametersConnection extends TraitableConnectionAbstractClass implements \Viceroy\Connections\Definitions\OpenAICompatibleEndpointInterface {
     use setSystemMessageTrait;
 
+    /**
+     * @var string $systemMessageTemplate The system message template used for function execution
+     * Contains instructions for processing parameters and formatting responses
+     */
     private string $systemMessageTemplate = <<<SYS
 Your task:
 
@@ -77,45 +88,103 @@ Examples
 
 Important: Always respond in JSON format only, beginning with {, ending with } and following the specified format exactly. Do not output anything else after you finish outputting the JSON object (IMPORTANT!).
 SYS;
+    /**
+     * @var array $definedFunctions Array of user-defined functions and their definitions
+     */
     private array $definedFunctions = [];
 
+    /**
+     * @var mixed $lastResponse Stores the last response from a function call
+     */
     private $lastResponse = NULL;
+
+    /**
+     * @var bool $useLastResponse Flag to determine if last response should be used in next call
+     */
     private bool $useLastResponse = FALSE;
 
+    /**
+     * @var bool $chainMode Flag indicating if chaining mode is active
+     */
     private bool $chainMode = FALSE;
+
+    /**
+     * @var bool $debugMode Flag to enable/disable debug output
+     */
     private bool $debugMode = FALSE;
 
+    /**
+     * Sets the debug mode
+     *
+     * @param bool $debugMode Whether to enable debug mode
+     * @return SelfDynamicParametersConnection Returns self for method chaining
+     */
     public function setDebugMode(bool $debugMode): SelfDynamicParametersConnection
     {
         $this->debugMode = $debugMode;
         return $this;
     }
 
+    /**
+     * Sets the system message
+     *
+     * @param string $systemMessage The system message to set
+     * @return void
+     */
     public function setSystem(string $systemMessage): void
     {
         $this->setSystemMessage($systemMessage);
     }
 
+    /**
+     * Gets the current system message
+     *
+     * @return string The current system message
+     */
     public function getSystem(): string
     {
         return $this->getSystemMessage();
     }
 
+    /**
+     * Constructor
+     *
+     * @param string $connectionType The connection type to use (default: OpenAICompatibleEndpointConnection)
+     */
     public function __construct(string $connectionType = 'Definitions\\OpenAICompatibleEndpointConnection')
     {
         parent::__construct($connectionType);
         $this->setSystem($this->systemMessageTemplate);
     }
 
+    /**
+     * Sets the connection object
+     *
+     * @param mixed $connection The connection object to set
+     * @return void
+     */
     public function setConnection($connection): void
     {
         $this->connection = $connection;
     }
 
+    /**
+     * Sets the connection timeout
+     *
+     * @param int $timeout Timeout in seconds
+     * @return void
+     */
     public function setConnectionTimeout(int $timeout) {
         $this->connection->setGuzzleConnectionTimeout($timeout);
     }
 
+    /**
+     * Adds a new function definition
+     *
+     * @param string $functionName Name of the function to add
+     * @param string $definition Definition/instructions for the function
+     * @return SelfDynamicParametersConnection Returns self for method chaining
+     */
     public function addNewFunction(string $functionName, string $definition): SelfDynamicParametersConnection
     {
         $this->definedFunctions[$functionName] = $definition;
@@ -123,26 +192,59 @@ SYS;
     }
 
 
+    /**
+     * Tokenizes a sentence
+     *
+     * @param string $sentence The sentence to tokenize
+     * @return array|bool Returns token array on success, false on failure
+     */
     public function tokenize(string $sentence): array|bool
     {
         return $this->connection->tokenize($sentence);
     }
 
+    /**
+     * Detokenizes a prompt JSON array
+     *
+     * @param array $promptJson The prompt JSON to detokenize
+     * @return string|bool Returns detokenized string on success, false on failure
+     */
     public function detokenize(array $promptJson): string|bool
     {
         return $this->connection->detokenize($promptJson);
     }
 
+    /**
+     * Executes a POST query
+     *
+     * @param array $promptJson The prompt data to send
+     * @return \Viceroy\Core\Response|bool Returns Response object on success, false on failure
+     */
     public function queryPost(array $promptJson = []): \Viceroy\Core\Response|bool
     {
         return $this->connection->queryPost($promptJson);
     }
 
+    /**
+     * Gets the think content from the connection
+     *
+     * @return string The think content
+     */
     public function getThinkContent(): string
     {
         return $this->connection->getThinkContent();
     }
 
+    /**
+     * Magic method to handle dynamic function calls
+     *
+     * @param string $method The method name being called
+     * @param array $arguments The arguments passed to the method
+     * @return mixed The result of the function call
+     * @throws \BadMethodCallException If method doesn't exist
+     * @throws \JsonException If JSON parsing fails
+     * @throws \LogicException If response parsing fails
+     */
     public function __call($method,  $arguments) {
         try {
             parent::__call($method, $arguments);
@@ -177,11 +279,22 @@ SYS;
 
     }
 
+    /**
+     * Checks if chain mode is active
+     *
+     * @return bool True if chain mode is active, false otherwise
+     */
     public function isChainMode(): bool
     {
         return $this->chainMode;
     }
 
+    /**
+     * Sets the chain mode
+     *
+     * @param bool $chainMode Whether to enable chain mode (default: true)
+     * @return SelfDynamicParametersConnection Returns self for method chaining
+     */
     public function setChainMode(bool $chainMode = TRUE): SelfDynamicParametersConnection
     {
         $this->lastResponse = NULL;
@@ -189,10 +302,24 @@ SYS;
         return $this;
     }
 
+    /**
+     * Gets the last response
+     *
+     * @return mixed The last response received
+     */
     public function getLastResponse() {
         return $this->lastResponse;
     }
 
+    /**
+     * Parses and handles the response from a function call
+     *
+     * @param string $resultRaw The raw response string
+     * @param string $functionCommands The function commands that were sent
+     * @return mixed The parsed response
+     * @throws \JsonException If JSON parsing fails
+     * @throws \LogicException If response is invalid
+     */
     protected function parseAndHandleResponse(string $resultRaw, string $functionCommands)
     {
         preg_match('/\{.*?\}/s', $resultRaw, $matches);

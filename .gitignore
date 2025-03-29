@@ -4,3 +4,4 @@
 /*.api
 /*.env
 .vscode/
+examples/benchmark_*.json
