@@ -21,7 +21,11 @@ $llmConnection->getRolesManager()
 try {
   $queryString = 'Is the number 9.11 larger than 9.9? Respond only with either [YES] or [NO].';
   echo $queryString . "\n";
-  $llmConnection->getRolesManager()
+  
+  $llmConnection
+    ->setParameter('temperature', 0.3)
+    ->setParameter('top_p', 0.5)
+    ->getRolesManager()
     ->addMessage('user', $queryString);
 }
 catch (Exception $e) {

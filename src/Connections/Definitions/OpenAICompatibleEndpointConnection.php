@@ -49,6 +49,11 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     protected string $model = '';
 
     /**
+     * @var array $parameters LLM parameters (temperature, top_p, etc)
+     */
+    private array $parameters = [];
+
+    /**
      * @var Request $request Request handler instance
      */
     private Request $request;
@@ -291,9 +296,22 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     }
 
     /**
+     * Sets a parameter value
+     *
+     * @param string $key Parameter name (temperature, top_p, etc)
+     * @param mixed $value Parameter value
+     * @return OpenAICompatibleEndpointConnection Returns self for method chaining
+     */
+    public function setParameter(string $key, $value): OpenAICompatibleEndpointConnection
+    {
+        $this->parameters[$key] = $value;
+        return $this;
+    }
+
+    /**
      * Gets default parameters for API requests
      *
-     * @return array Default parameters array
+     * @return array Default parameters array with any custom parameters applied
      */
     public function getDefaultParameters(): array
     {
@@ -303,6 +321,11 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
 
         if (!empty($this->model)) {
             $promptJson['model'] = $this->model;
+        }
+
+        // Apply any custom parameters
+        foreach ($this->parameters as $key => $value) {
+            $promptJson[$key] = $value;
         }
 
         return $promptJson;
