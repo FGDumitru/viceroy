@@ -22,17 +22,21 @@ use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 try {
     // Initialize connection
     $connection = new OpenAICompatibleEndpointConnection();
-    $buffered = ''; // Buffer to accumulate streamed content
+    $buffered = ''; // Buffer to accumulate streamed content for later comparison
 
-    // Display streaming header
+    // Display streaming header to indicate real-time output
     echo PHP_EOL . str_repeat('-', 84);
     echo PHP_EOL . str_repeat('-', 16) . " Displaying the response in real-time. ";
     echo PHP_EOL . str_repeat('-', 84) . PHP_EOL;
 
-    // Execute streaming query
+    // Execute streaming query with callback for chunk processing
     $response = $connection->queryPost(
         'What is the result of 9 ^ 3? Reason about it.',
         function ($chunk) use (&$buffered) {
+            // Output each chunk as it arrives
+            echo $chunk;
+            // Accumulate chunks into buffer for final comparison
+            $buffered .= $chunk;
             echo $chunk; // Output tokens as they arrive
             $buffered .= $chunk; // Accumulate in buffer
         }

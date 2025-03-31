@@ -1,24 +1,24 @@
 <?php
 
 /**
- * Response - Core HTTP response processor for Viceroy
+ * Core HTTP response processor for Viceroy
  *
- * This class provides:
+ * Provides:
  * - Raw and processed response access
- * - Think-tag extraction and processing
- * - Streamed response handling
- * - Content cleaning and validation
+ * - Think-tag extraction and metadata processing
+ * - Streamed response handling with progressive accumulation
+ * - Content validation and sanitization
  *
  * Key Features:
- * - Handles both streamed and complete responses
- * - Extracts metadata from think-tags
- * - Provides clean response content
- * - Caches processed content for performance
+ * - Dual-mode handling for streamed/complete responses
+ * - Think-tag extraction for internal metadata
+ * - Caching of processed content for performance
+ * - PSR-7 response integration
  *
- * Architecture Role:
- * - Works with Request for complete HTTP cycle
- * - Integrates with Connections for response handling
- * - Provides standardized response interface
+ * Interdependencies:
+ * - Works with Request class to complete HTTP lifecycle
+ * - Integrates with Connection implementations for response parsing
+ * - Used by RolesManager for role validation
  *
  * @package Viceroy\Core
  */
@@ -26,212 +26,222 @@ namespace Viceroy\Core;
 
 use Psr\Http\Message\ResponseInterface;
 
-class Response {
-
+class Response
+{
     /**
-     * @var ResponseInterface $response The raw HTTP response
+     * Raw HTTP response container
      *
-     * Contains the unprocessed PSR-7 response object
-     * with headers, status code, and raw body.
+     * @var ResponseInterface $response Unprocessed PSR-7 response object containing:
+     *   - Headers
+     *   - Status code
+     *   - Raw body content
      */
     private ResponseInterface $response;
 
     /**
-     * @var mixed $contents Cached response body contents
+     * Cached response body contents
+     *
+     * @var mixed $contents Raw response body storage
      */
     private $contents = NULL;
 
     /**
-     * @var mixed $processedContent Processed LLM response content
+     * Processed LLM response content
+     *
+     * @var mixed $processedContent Cleaned response content with think-tags removed
      */
     private $processedContent = NULL;
 
     /**
-     * @var string $thinkContent Extracted think-tag content
+     * Extracted think-tag content
+     *
+     * @var string $thinkContent Concatenated metadata from think-tags
      */
     private $thinkContent = NULL;
 
     /**
-     * @var bool $wasStreamed Flag indicating if response was streamed
+     * Streaming status flag
+     *
+     * @var bool $wasStreamed Indicates if response was received via streaming
      */
     private $wasStreamed = FALSE;
 
+    /**
+     * Accumulated streamed content buffer
+     *
+     * @var mixed $streamedContent Progressive response content for streaming
+     */
     private $streamedContent = NULL;
 
     /**
-     * @param \Psr\Http\Message\ResponseInterface $response
-     */
-    /**
-     * Constructor
+     * Response processor constructor
      *
-     * @param ResponseInterface $response The HTTP response to process
+     * @param ResponseInterface $response PSR-7 HTTP response to process
+     * @throws \InvalidArgumentException If invalid response object provided
      */
-    public function __construct(ResponseInterface $response) {
+    public function __construct(ResponseInterface $response)
+    {
         $this->response = $response;
     }
 
     /**
      * Gets the raw HTTP response
      *
-     * @return ResponseInterface The unprocessed HTTP response
+     * @return ResponseInterface The unprocessed PSR-7 response object
      */
-    public function getRawResponse(): ResponseInterface {
+    public function getRawResponse(): ResponseInterface
+    {
         return $this->response;
     }
 
     /**
-     * @return mixed
-     */
-    /**
-     * Gets the processed LLM response content
+     * Gets processed LLM response content
      *
-     * @return mixed The processed response content with think-tags removed
+     * @return mixed Cleaned response content with think-tags removed
      */
-    public function getLlmResponse(): mixed {
+    public function getLlmResponse(): mixed
+    {
         $this->processContent();
         return $this->processedContent;
     }
 
     /**
-     * Extracts and returns content within <think> tags from the LLM response.
-     * @return string
-     */
-    /**
      * Gets content extracted from think-tags
      *
-     * @return string Concatenated think-tag content
+     * @return string Concatenated metadata from all think-tags
      */
-    public function getThinkContent(): string {
+    public function getThinkContent(): string
+    {
         $this->processContent();
         return $this->thinkContent;
     }
 
     /**
-     * Gets the first choice from LLM response
+     * Retrieves first choice from LLM response structure
      *
-     * @return mixed The first choice message from the response
+     * @return array LLM message object containing:
+     *   - role (string)
+     *   - content (string)
+     *   - think tags (if present)
      */
-    private function getChoice(): mixed {
-
-      if (!$this->wasStreamed()) {
-        $content = $this->getContent();
-        $contentArray = json_decode($content, TRUE);
-        $choices = $contentArray['choices'];
-        return $choices[0]['message'];
-      } else {
-        return $this->getStreamedContent();
-      }
+    private function getChoice(): array
+    {
+        if (!$this->wasStreamed()) {
+            $content = $this->getContent();
+            $contentArray = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+            $choices = $contentArray['choices'];
+            return $choices[0]['message'];
+        } else {
+            return $this->getStreamedContent();
+        }
     }
 
     /**
-     * Gets the raw response content
+     * Gets raw response content
      *
-     * @return string The raw response body contents
+     * @return string Raw response body contents
      */
-    private function getContent(): string {
+    private function getContent(): string
+    {
         if (is_null($this->contents)) {
             $this->contents = $this->response->getBody()->getContents();
         }
-
         return $this->contents;
     }
 
     /**
-     * Processes response content to extract think-tags and clean output
+     * Processes response content extracting think-tags and sanitizing output
      *
-     * This method:
-     * 1. Gets the response content (streamed or complete)
-     * 2. Extracts <think> tag content for internal processing
-     * 3. Removes think-tags from the final output
+     * Execution Steps:
+     * 1. Retrieves raw content (streamed or complete)
+     * 2. Extracts think-tag content into $this->thinkContent
+     * 3. Removes think-tags from final output
      * 4. Caches processed content for subsequent calls
      *
-     * Think-tag Usage:
-     * - Contains internal processing metadata
-     * - Not meant for end-user display
-     * - Multiple think-tags are concatenated
-     *
-     * @return void
-     * @throws \RuntimeException If content cannot be processed
+     * @throws \RuntimeException If content parsing fails
      */
-    private function processContent(): void {
-        if ($this->processedContent === NULL) {
+    private function processContent(): void
+    {
+        if ($this->processedContent === null) {
+            if (!$this->wasStreamed) {
+                $choice = $this->getChoice();
+                $content = $choice['content'] ?? '';
+            } else {
+                $content = $this->getStreamedContent();
+            }
 
-          if (!$this->wasStreamed) {
-            $choice = $this->getChoice();
-            $content = $choice['content'];
-          } else {
-            $content = $this->getStreamedContent();
-          }
-
-            preg_match_all('/<think>(.*?)<\/think>/s', $content, $matches);
+            // Extract think tags
+            preg_match_all('/<tool_call>(.*?)<\/think>/s', $content, $matches);
             $this->thinkContent = implode("\n", $matches[1] ?? []);
-            $this->processedContent = preg_replace('/<think>.*?<\/think>/s', '', $content);
+
+            // Remove think tags from final output
+            $this->processedContent = preg_replace('/<tool_call>.*?<\/think>/s', '', $content);
         }
     }
 
     /**
-     * Gets the role from the LLM response
+     * Gets role from LLM response
      *
-     * @return mixed The role specified in the response
+     * @param string|null $defaultAiRole Default role if not present
+     * @return mixed Role specified in the response
      */
-    public function getLlmResponseRole(?string $defaultAiRole = 'assistant'): mixed {
-      if (!$this->wasStreamed()) {
-        $choice = $this->getChoice();
-        return $choice['role'];
-      } else {
-        return $defaultAiRole;
-      }
+    public function getLlmResponseRole(?string $defaultAiRole = 'assistant'): mixed
+    {
+        if (!$this->wasStreamed()) {
+            $choice = $this->getChoice();
+            return $choice['role'];
+        } else {
+            return $defaultAiRole;
+        }
     }
 
     /**
-     * Gets the raw unprocessed response content
+     * Gets raw unprocessed response content
      *
-     * @return string The complete raw response content
+     * @return string Complete raw response content
      */
-    public function getRawContent(): string {
-      if (!$this->wasStreamed) {
-        return $this->getContent();
-      } else {
-        return $this->getStreamedContent();
-      }
+    public function getRawContent(): string
+    {
+        return $this->wasStreamed() ? $this->getStreamedContent() : $this->getContent();
     }
 
     /**
-     * Checks if response was received via streaming
+     * Checks if response was streamed
      *
-     * Streaming differences:
-     * - Content is accumulated progressively
-     * - Think-tag processing happens on complete content
-     * - Some metadata may be unavailable until complete
-     *
-     * @return bool True if response was streamed, false otherwise
+     * @return bool True if response was streamed
      */
-    public function wasStreamed(): bool {
+    public function wasStreamed(): bool
+    {
         return $this->wasStreamed;
     }
 
     /**
-     * Sets whether the response was streamed
+     * Sets streamed content buffer
      *
-     * @param bool $wasStreamed Flag indicating if response was streamed
-     * @return void
+     * @param mixed $streamedContent Accumulated streamed data
      */
-    public function setWasStreamed(bool $wasStreamed = TRUE): void {
-        $this->wasStreamed = $wasStreamed;
+    public function setStreamedContent(mixed $streamedContent): void
+    {
+        $this->streamedContent = $streamedContent;
     }
 
-  /**
-   * @return null
-   */
-  public function getStreamedContent() {
-    return $this->streamedContent;
-  }
+    /**
+     * Gets accumulated streamed content
+     *
+     * @return mixed Streamed content accumulated during progressive response
+     */
+    public function getStreamedContent(): mixed
+    {
+        return $this->streamedContent;
+    }
 
-  /**
-   * @param null $streamedContent
-   */
-  public function setStreamedContent($streamedContent): void {
-    $this->streamedContent = $streamedContent;
-  }
-
+    /**
+     * Sets streaming status flag
+     *
+     * @param bool $wasStreamed Streaming status indicator
+     */
+    public function setWasStreamed(bool $wasStreamed = true): void
+    {
+        $this->wasStreamed = $wasStreamed;
+    }
 }

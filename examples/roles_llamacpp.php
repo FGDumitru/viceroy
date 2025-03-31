@@ -21,18 +21,19 @@ require_once '../vendor/autoload.php';
 use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 // Initialize connection with system message
 $llmConnection = new OpenAICompatibleEndpointConnection();
-$llmConnection->setSystemMessage('You are a helpful LLM that responds to user queries.');
+$llmConnection->setSystemMessage('You are a helpful LLM that responds to user queries.'); // Sets default behavior
 
-// First turn: Simple factual question
+// First turn: Simple factual question with strict response format
 $userQuery = 'Which animal can bark between a "dog" and a "cat"? Respond using a single word.';
-echo PHP_EOL .'user: ' . $userQuery . PHP_EOL;
+echo PHP_EOL .'user: ' . $userQuery . PHP_EOL; // Display user query
 
+// Get and display response (maintains conversation state internally)
 $response = $llmConnection->query($userQuery);
-echo 'assistant: ' . $response . PHP_EOL; // Expected: "dog"
+echo 'assistant: ' . $response . PHP_EOL; // Expected: "dog" (single word)
 
-// Second turn: Math follow-up question
+// Second turn: Math follow-up building on previous context
 $queryString = 'Also, what is the sum of the number of letters from each animal\'s name? Respond using a single value inside a JSON object, in the "result" key.';
-echo "\nuser: $queryString\n";
+echo "\nuser: $queryString\n"; // Uses previous answer ("dog"=3, "cat"=3)
 $response = $llmConnection->query($queryString);
 
 echo 'assistant: ' . $response . PHP_EOL; // Expected: {"result":6} (dog=3 + cat=3)

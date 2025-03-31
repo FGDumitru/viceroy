@@ -2,33 +2,38 @@
 /**
  * benchmark_multi.php - Multi-Model Performance Benchmark
  *
- * This script provides:
- * - Automated testing of multiple LLM models
- * - Question/answer validation system
- * - Detailed performance metrics
- * - CSV and JSON output generation
+ * This script provides a comprehensive benchmarking framework for LLM models
+ * to evaluate their accuracy and performance across multiple questions.
+ *
+ * Key Features:
+ * 1. Model Filtering: Supports pattern-based inclusion/exclusion of models
+ * 2. Multi-Attempt Validation: Tracks multiple response attempts per question
+ * 3. Detailed Metrics: Captures timing data and correctness statistics
+ * 4. Output Formats: Produces both human-readable CSV and machine-readable JSON
+ * 5. Error Handling: Gracefully manages API timeouts and exceptions
  *
  * Usage:
  * php benchmark_multi.php [options]
  *
  * Options:
- * --model=pattern       Filter models by name pattern (wildcard)
- * --ignore=pattern      Exclude models matching pattern
- * --reset               Clear previous benchmark data
- * --total-required-answers=N  Set number of attempts per question (default: 1)
- * --required-correct-answers=N Set required correct answers per question (default: 1)
+ * --model=pattern       Filter models using shell-style wildcards (e.g. "*-13b")
+ * --ignore=pattern      Exclude models matching pattern (e.g. "llama*")
+ * --reset               Clear all previous benchmark data
+ * --total-required-answers=N  Number of attempts per question (default:1)
+ * --required-correct-answers=N Minimum correct answers required (default:1)
  *
- * Outputs:
- * - benchmark_results.json: Detailed per-model results
- * - benchmark_stats.csv: Summary statistics
- * - benchmark_runs.json: Raw attempt data
+ * Output Files:
+ * - benchmark_results.json: Full model performance details
+ * - benchmark_stats.csv: Summary table for quick comparison
+ * - benchmark_runs.json: Raw attempt history for debugging
  */
 require_once '../vendor/autoload.php';
 use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
 // ======================= Configuration =======================
+// Initialize connection with maximum possible timeout
 $llmConnection = new OpenAICompatibleEndpointConnection();
-$llmConnection->setGuzzleConnectionTimeout(PHP_INT_MAX);
+$llmConnection->setGuzzleConnectionTimeout(PHP_INT_MAX); // No timeout
 
 $results = [];
 $benchmarkJsonFile = 'benchmark_runs.json'; // Changed from INI to JSON
@@ -41,15 +46,21 @@ $requiredCorrectAnswers = 1;
 
 // Parse command-line parameters
 foreach ($argv as $arg) {
-
+    // Handle model filtering
     if (str_starts_with($arg, '--model=')) {
-        $filterModels[] = substr($arg, 8);
-    } elseif (str_starts_with($arg, '--total-required-answers=')) {
+        $filterModels[] = substr($arg, 8); // Add to model filter list
+    }
+    // Set number of attempts per question
+    elseif (str_starts_with($arg, '--total-required-answers=')) {
         $totalRequiredAnswersPerQuestion = (int) substr($arg, strlen('--total-required-answers='));
-    } elseif (str_starts_with($arg, '--required-correct-answers=')) {
+    }
+    // Set required correct answers threshold
+    elseif (str_starts_with($arg, '--required-correct-answers=')) {
         $requiredCorrectAnswers = (int) substr($arg, strlen('--required-correct-answers='));
-    } elseif (str_starts_with($arg, '--ignore=')) {
-        $ignoredModels[] = substr($arg, 9);
+    }
+    // Handle model exclusions
+    elseif (str_starts_with($arg, '--ignore=')) {
+        $ignoredModels[] = substr($arg, 9); // Add to ignore list
     }
 }
 
@@ -84,12 +95,17 @@ $totalQuestions = count($benchmarkData);
  * @return string Formatted progress bar
  */
 function generateProgressBar($current, $total, $correct, $wrong) {
+    // Calculate progress metrics
     $done = $correct + $wrong;
     $remaining = $total - $done;
+
+    // Build visual progress bar with emojis
     $bar = "[$done/$total ";
-    $bar .= str_repeat('👍', $correct);
-    $bar .= str_repeat('🚫', $wrong);
-    $bar .= str_repeat('-', $remaining) . "]";
+    $bar .= str_repeat('👍', $correct);   // Correct answers
+    $bar .= str_repeat('🚫', $wrong);     // Incorrect answers
+    $bar .= str_repeat('-', $remaining);  // Remaining questions
+    $bar .= "]";
+
     return $bar;
 }
 
@@ -102,18 +118,25 @@ function generateProgressBar($current, $total, $correct, $wrong) {
  * @param array &$entry Question data (modified in-place)
  */
 function prepareQuestion(&$entry) {
+    // Shuffle multiple-choice options if present
     if ($entry['type'] === 'mcq' && !empty($entry['options'])) {
         $options = $entry['options'];
+        // Randomize option order using uksort with random comparator
         uksort($options, fn() => rand() - getrandmax()/2);
         $entry['shuffled_options'] = $options;
     }
+
+    // Build complete prompt string
     $entry['full_prompt'] = "Question: {$entry['q']}\nInstruction: {$entry['instruction']}";
+    
+    // Add formatted options if present
     if (isset($entry['shuffled_options'])) {
-        $entry['full_prompt'] .= "\nOptions:\n" . implode("\n",
-                array_map(fn($k, $v) => "$k) $v",
-                    array_keys($entry['shuffled_options']),
-                    $entry['shuffled_options'])
-            );
+        $entry['full_prompt'] .= "\nOptions:\n" .
+            implode("\n", array_map(
+                fn($k, $v) => "$k) $v",
+                array_keys($entry['shuffled_options']),
+                $entry['shuffled_options']
+            ));
     }
 }
 
@@ -129,43 +152,47 @@ function prepareQuestion(&$entry) {
  * @return bool True if response matches any expected answer
  */
 function validateResponse($entry, $response) {
+    // Display expected answers for debugging
     echo "\n\t## Expected response: " . json_encode($entry['answers']) . "\n";
 
+    // Extract final response from XML tags
     preg_match_all('/<response>(.*?)<\/response>/s', $response, $matches);
     $finalResponse = $matches[1][0] ?? '';
+    
+    // Normalize response for comparison
     $clean = strtolower(trim($finalResponse));
-    $clean = trim($clean, '.');
-    $clean = str_replace(' ', '', $clean);
+    $clean = trim($clean, '.'); // Remove trailing punctuation
+    $clean = str_replace(' ', '', $clean); // Remove whitespace
 
+    // Handle multiple-choice questions
     if ($entry['type'] === 'mcq') {
-        $selected = preg_split('/\s*,\s*/', $clean);
+        $selected = preg_split('/\s*,\s*/', $clean); // Split comma-separated answers
         $correct = array_map('strtolower', $entry['answers']);
 
+        // Check answer count matches and all answers are correct
         if (count($selected) !== count($correct)) {
             return false;
         }
-
+        
         foreach ($selected as $s) {
             if (!in_array($s, $correct)) {
                 return false;
             }
         }
-
         return true;
     }
 
-    // Process each answer for non-MCQ types
+    // Handle free-form answers
     $processedAnswers = array_map(function($answer) {
         $cleaned = strtolower(trim($answer));
         $cleaned = trim($cleaned, '.');
         return str_replace(' ', '', $cleaned);
     }, $entry['answers']);
 
+    // Check for numeric equality or substring match
     foreach ($processedAnswers as $pa) {
-        $c = intval($clean);
-
-        if ($c == $clean) {
-            // this LLM response is a numeric number, we need to strict check it
+        $responseNumber = intval($clean);
+        if ($responseNumber == $clean) { // Check if numeric response
             if ($clean == $pa) {
                 return true;
             }
@@ -175,7 +202,6 @@ function validateResponse($entry, $response) {
             }
         }
     }
-
     return false;
 }
 
@@ -226,18 +252,21 @@ sort($others);
 
 $models = array_merge($others, $deepseek);
 
-// Main benchmark loop
+// Main benchmark loop - test each model
 foreach ($models as $modelIndex => $model) {
+    // Initialize model-specific counters and timers
 
-    // Apply model filtering
+    // Apply model filtering if specified
     if (!empty($filterModels)) {
         $match = false;
+        // Check if model matches any filter pattern
         foreach ($filterModels as $filter) {
             if (fnmatch(strtolower($filter), strtolower($model))) {
                 $match = true;
                 break;
             }
         }
+        // Skip non-matching models
         if (!$match) {
             echo "\n\033[1;33mSkipping model (does not match filter): $model\033[0m\n";
             continue;
@@ -270,10 +299,10 @@ foreach ($models as $modelIndex => $model) {
     $startTime = microtime(true);
     $modelStartTime = $startTime;
 
+    // Process each question for the current model
     foreach ($benchmarkData as $qIndex => $entry) {
-
-        $currentQuestion++;
-        prepareQuestion($entry);
+        $currentQuestion++; // Track question number
+        prepareQuestion($entry); // Shuffle options and build full prompt
 
         $questionString = $benchmarkData[$qIndex]['q'];
         $instructionString = $benchmarkData[$qIndex]['instruction'];
@@ -298,8 +327,9 @@ foreach ($models as $modelIndex => $model) {
             // We need a sleep in order to not lock up the GPU
             // sleep(2);
 
+            // Make required number of attempts per question
             for ($i = 0; $i < $remainingAttempts; $i++) {
-                // Display progress
+                // Calculate and display progress metrics
                 $done = $correctCount + $incorrectCount;
                 $progress = generateProgressBar(
                     $currentQuestion,
@@ -319,14 +349,17 @@ foreach ($models as $modelIndex => $model) {
                 echo "ETA: " . gmdate("H:i:s", (int) $eta) . "\n";
 
                 try {
+                    // Configure the LLM conversation context
                     $llmConnection->getRolesManager()
                         ->clearMessages()
                         ->setSystemMessage('Answer concisely and accurately.')
                         ->addMessage('user', "Please answer the following question and encapsulate your final answer between <response> and </response> tags followed by <done></done> tags. If you need to reason or explain you may do that BEFORE the response tags. Inside the response tags include only the actual, direct, response without any explanations. Be as concise as possible.\nE.G. <response>Your answer to the question here without any explanations.</response><done></done>\n\n{$entry['full_prompt']}");
 
+                    // Set deterministic parameters for reproducible results
                     $parameters = $llmConnection->getDefaultParameters();
-                    $parameters['seed'] = 0;
+                    $parameters['seed'] = 0; // Fixed seed for consistency
 
+                    // Execute the query and get response
                     $response = $llmConnection->queryPost($parameters);
 
                     if (FALSE === $response) { // we had an error
@@ -378,10 +411,11 @@ foreach ($models as $modelIndex => $model) {
             $isCorrectOverall = $correctAttempts >= $requiredCorrectAnswers;
         }
 
+        // Update overall correctness counters
         if ($isCorrectOverall) {
-            $correctCount++;
+            $correctCount++; // Increment correct tally
         } else {
-            $incorrectCount++;
+            $incorrectCount++; // Increment incorrect tally
         }
 
         echo "\t### Question result: " . ($isCorrectOverall ? '👍 CORRECT' : '🚫 INCORRECT') . " ($correctCount correct and $incorrectCount incorrect ) ###\n";
@@ -436,10 +470,12 @@ $csvHeader = [
 $csvLines = [implode("\t", $csvHeader)];
 $terminalOutput = "\n\033[1;36m=== Benchmark Summary ===\033[0m\n";
 
+// Generate summary data for each model
 foreach ($results as $model => $modelData) {
+    // Calculate total time and attempts
     $totalTime = 0;
     $totalAttempts = 0;
-
+    
     foreach ($modelData['details'] as $question) {
         foreach ($question['attempts'] as $attempt) {
             $totalTime += $attempt['response_time'];
@@ -447,17 +483,20 @@ foreach ($results as $model => $modelData) {
         }
     }
 
+    // Compute average time per attempt
     $avgTime = $totalAttempts > 0 ? $totalTime / $totalAttempts : 0;
+    
+    // Calculate correctness metrics
     $correct = $modelData['score'];
     $incorrect = $totalQuestions - $correct;
     $percentage = $totalQuestions > 0 ? ($correct / $totalQuestions) * 100 : 0;
 
-    // Format numbers
+    // Format numerical values for display
     $totalTimeFmt = number_format($totalTime, 2);
     $avgTimeFmt = number_format($avgTime, 2);
     $percentageFmt = number_format($percentage, 1) . '%';
 
-    // Add to CSV
+    // Prepare CSV row
     $csvLines[] = implode("\t", [
         $model,
         $totalTimeFmt,
@@ -467,7 +506,7 @@ foreach ($results as $model => $modelData) {
         $percentageFmt
     ]);
 
-    // Add to terminal output
+    // Format terminal output line
     $terminalOutput .= sprintf(
         "\033[1;33m%-40s\033[0m %8ss  %8ss  %3d/%-3d  %6s\n",
         $model,
