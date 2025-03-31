@@ -473,16 +473,17 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     }
 
     /**
-     * Executes a query and manages conversation flow
+     * Executes a query and manages conversation flow.
+     * It handles roles management by default.
      *
      * @param string $query The query to send
      * @return mixed The LLM response
      * @throws Exception
      */
-    public function query($query): mixed
+    public function query(string $query, ?callable $streamCallback = null): string
     {
         $this->getRolesManager()->addUserMessage($query);
-        $this->response = $this->queryPost();
+        $this->response = $this->queryPost([], $streamCallback);
         $this->getRolesManager()->addAssistantMessage($this->response->getLlmResponse());
         return $this->response->getLlmResponse();
     }
