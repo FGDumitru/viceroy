@@ -89,6 +89,9 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      * @var string $bearedToken Bearer token for authentication
      */
     private $bearedToken = '';
+    private int $llmQueryStartTime;
+    private int $currentTokensPerSecond;
+    private array $queryStats;
 
     /**
      * Gets the endpoint URI
@@ -383,9 +386,12 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         }
     
         $timer = microtime(TRUE);
+        $this->llmQueryStartTime = time();
         try {
             if ($streamCallback) {
+
                 $guzzleRequest['json']['stream'] = TRUE;
+                $numberOfTokensReceived = 0;
                 $response = $this->guzzleObject->post($uri, $guzzleRequest);
                 $body = $response->getBody();
                 $buffer = ''; $streamedData = '';
@@ -408,38 +414,66 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                             array_key_exists('finish_reason',$decoded['choices'][0]) &&
                           null === $decoded['choices'][0]['finish_reason']) {
 
-                          call_user_func($streamCallback, $decoded['choices'][0]['delta']['content']);
+                            $numberOfTokensReceived++;
+                            $deltaTimeFloat = time() - $this->llmQueryStartTime;
+                            if ($deltaTimeFloat > 0) {
+                                $tps = round($numberOfTokensReceived / $deltaTimeFloat);
+                                $this->setCurrentTokensPerSecond($tps);
+                                $this->currentTokensPerSecond = $tps;
+                            } else {
+                                $this->setCurrentTokensPerSecond($numberOfTokensReceived);
+                            }
+                          call_user_func($streamCallback, $decoded['choices'][0]['delta']['content'], $this->getCurrentTokensPerSecond());
                           $streamedData .= $decoded['choices'][0]['delta']['content'];
                           $buffer = '';
                         } else {
                             if ('[DONE]' === $buffer) {
                                 break;
                             }
-                            $a = 1;
                             break;
                         }
-
-                      
                     }
- 
-
 
                 }
                 $this->queryTime = microtime(TRUE) - $timer;
                 $this->response = new Response($response);
                 $this->response->setWasStreamed();
+                $jsonString = substr($buffer, 6);
+                $decoded = json_decode($jsonString, TRUE);
+
+                $this->setQueryStats($decoded);
+
                 $this->response->setStreamedContent($streamedData);
             } else {
                 $response = $this->guzzleObject->post($uri, $guzzleRequest);
                 $this->queryTime = microtime(TRUE) - $timer;
                 $this->response = new Response($response);
+
+                $fullResponseString = $this->response->getRawContent();
+                $fullResponse = json_decode($fullResponseString, TRUE);
+                $this->setQueryStats($fullResponse);
+
             }
         } catch (GuzzleException $e) {
             $this->queryTime = NULL;
             throw new RuntimeException("Guzzle request failed: " . $e->getMessage());
         }
-    
+
+
         return $this->response;
+    }
+
+    private function setQueryStats($data) {
+        $this->queryStats = $data;
+        unset($this->queryStats['choices']);
+    }
+
+    public function getQueryStats() {
+        return $this->queryStats;
+    }
+
+    public function getQuerytimings() {
+        return $this->queryStats['timings'] ?? [];
     }
 
     /**
@@ -516,6 +550,10 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     {
         $this->model = $modelName;
         return $this;
+    }
+
+    public function getLLMmodelName(): string {
+        return $this->model;
     }
 
     /**
@@ -596,5 +634,15 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         }
 
         return $models;
+    }
+
+    public function getCurrentTokensPerSecond(): int
+    {
+        return $this->currentTokensPerSecond;
+    }
+
+    private function setCurrentTokensPerSecond(int $currentTokensPerSecond): void
+    {
+        $this->currentTokensPerSecond = $currentTokensPerSecond;
     }
 }
