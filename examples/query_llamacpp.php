@@ -6,8 +6,6 @@ use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
 $llmConnection = new OpenAICompatibleEndpointConnection();
 
-$llmConnection->setLLMmodelName('gpt-4o');
-
 // Timeout usage example, wait 5 minutes before timing out.
 $llmConnection->setGuzzleConnectionTimeout(300);
 

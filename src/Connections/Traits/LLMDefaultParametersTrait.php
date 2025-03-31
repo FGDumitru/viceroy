@@ -29,6 +29,7 @@ trait LLMDefaultParametersTrait {
     "min_p" => 0.05,
     "n_predict" => -1,
     "stop" => ['<|im_end|>','<|endoftext|>','[/INST]','</s>'],
+    "cache_prompt" => true
   ];
 
   /**

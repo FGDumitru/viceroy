@@ -7,7 +7,6 @@ use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
 require_once '../vendor/autoload.php';
 $llmConnection = new OpenAICompatibleEndpointConnection();
-$llmConnection->setLLMmodelName('gpt-4o');
 
 // Add a system message (if the model supports it).
 $llmConnection->setSystemMessage('You are a helpful LLM that responds to user queries.');

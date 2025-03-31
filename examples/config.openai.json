@@ -8,7 +8,8 @@
     "health": "/v1/health",
     "models": "/v1/models",
     "server_type": "openai",
-    "type": "OpenAiCompatibleConnection"
+    "type": "OpenAiCompatibleConnection",
+    "preferredModel": "gpt-4o"
   },
   "debug": true,
   "description": "This config file will use a locally deploy OpenAI compatible completion endpoint."

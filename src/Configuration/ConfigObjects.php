@@ -20,7 +20,7 @@ class ConfigObjects {
    *
    * @param string $configFile Path to configuration file (default: 'config.json')
    */
-  public function __construct($configFile = 'config.json') {
+  public function __construct(string $configFile = 'config.json') {
     $currentDir = getcwd();
     $configFilename = $currentDir . DIRECTORY_SEPARATOR . $configFile;
     $this->readConfigFile($configFilename);

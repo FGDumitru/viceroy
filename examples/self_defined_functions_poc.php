@@ -6,11 +6,6 @@ use Viceroy\Connections\SelfDynamicParametersConnection;
 
 $llm = new SelfDynamicParametersConnection();
 
-$modelId = 'qwen_QwQ-32B-Q8_0';
-$llm->setLLMmodelName($modelId);
-
-$llm->setConnectionTimeout(0);
-
 // Color constants
 define('COLOR_RESET', "\033[0m");
 define('COLOR_RED', "\033[31m");
@@ -48,10 +43,9 @@ displayResult('Reverse Words', 'This is a test', $llm->reverseWordsOrder('This i
 displayResult('Translation', ['romanian', 'Hello world'], $llm->translate('romanian', 'Hello world'), 'Translates the given text into the specified target language.');
 displayResult('Email Validation', 'test@example.com', $llm->validEmail('test@example.com'), 'Checks if the provided email address is valid.');
 
+
 // Chaining mode demonstration
 $chainLLM = new SelfDynamicParametersConnection();
-$chainLLM->setConnectionTimeout(0);
-$chainLLM->setLLMmodelName($modelId);
 
 $chainLLM->addNewFunction('add', 'Add all numeric values provided in the parameters. Return the total sum.');
 $chainLLM->addNewFunction('multiply', 'Multiply all numeric values provided in the parameters. Return the product.');

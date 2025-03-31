@@ -73,6 +73,8 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      */
     public $promptType = 'llamacpp';
 
+    private $defaultModelName = 'gpt-4o';
+
     /**
      * @var string $endpointUri Custom endpoint URI override
      */
@@ -131,6 +133,15 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     {
         if (is_null($config)) {
             $this->configuration = new ConfigObjects();
+
+            // If no model is specified by the calling class then we'll try to use the preferred one if it's specified.
+            $this->model = $this->configuration->getServerConfigKey('preferredModel') ?? '';
+
+            // No default model name found in config-server-preferredKey, use the class default.
+            if (empty($this->model)) {
+                $this->model = $this->defaultModelName;
+            }
+
         }
     
         $this->createGuzzleConnection();
@@ -331,17 +342,25 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         return $promptJson;
     }
 
+    public function queryPostStreamable(?callable $streamCallback = null): Response {
+        return $this->queryPost([], $streamCallback);
+    }
+
     /**
      * Executes a POST query to the API endpoint
      *
-     * @param array $promptJson The prompt data to send (default: empty array)
+     * @param string|array $promptJson The prompt data to send (default: empty array)
+     * @param callable|null $streamCallback
      * @return Response The response object
-     * @throws RuntimeException If the Guzzle request fails
+     * @throws Exception
      */
-    public function queryPost(array $promptJson = [], ?callable $streamCallback = null): Response
+    public function queryPost(string|array $promptJson = [], ?callable $streamCallback = null): Response
     {
         if (empty($promptJson)) {
             $promptJson = $this->getDefaultParameters();
+        } elseif (is_string($promptJson)) {
+            $defaultParams = $this->getDefaultParameters();
+            $promptJson = array_merge($defaultParams, ['messages' => $this->getRolesManager()->addMessage('user', $promptJson)->getMessages()]);
         }
     
         $uri = $this->getServerUri('completions');
@@ -350,6 +369,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
             'json' => $promptJson,
             'headers' => ['Content-Type' => 'application/json'],
             'timeout' => 0,
+            'stream' => TRUE
         ];
     
         $guzzleRequest = array_merge($guzzleRequest, $this->getGuzzleCustomOptions());
@@ -365,12 +385,15 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         $timer = microtime(TRUE);
         try {
             if ($streamCallback) {
-                $guzzleRequest['stream'] = true;
+                $guzzleRequest['json']['stream'] = TRUE;
                 $response = $this->guzzleObject->post($uri, $guzzleRequest);
                 $body = $response->getBody();
                 $buffer = ''; $streamedData = '';
                 while (!$body->eof()) {
                     $chunk = $body->read(1);
+
+                    //DEBUG
+//                    echo $chunk;
 
                     //echo $chunk;
                     $buffer .= $chunk;
@@ -379,8 +402,6 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                       $jsonString = substr($buffer, 6);
                         $decoded = json_decode($jsonString, TRUE);
 
-                        // var_dump($decoded['choices'][0]['finish_reason']);
-                        // die;
                         if ( is_array($decoded) &&
                             array_key_exists('choices',$decoded) &&
                             !empty($decoded['choices']) &&
@@ -426,7 +447,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      *
      * @return float Time in seconds, rounded to 4 decimal places
      */
-    public function getLastQueryMicrotime()
+    public function getLastQueryMicrotime(): float
     {
         return round($this->queryTime, 4);
     }
@@ -434,9 +455,10 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     /**
      * Clears all messages in the roles manager
      */
-    public function clear()
+    public function clear(): static
     {
         $this->getRolesManager()->clearMessages();
+        return $this;
     }
 
     /**
@@ -444,9 +466,10 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      *
      * @param string $systemMessage The system message to set
      */
-    public function setSystemMessage($systemMessage)
+    public function setSystemMessage($systemMessage): static
     {
         $this->getRolesManager()->setSystemMessage($systemMessage);
+        return $this;
     }
 
     /**
@@ -454,8 +477,9 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      *
      * @param string $query The query to send
      * @return mixed The LLM response
+     * @throws Exception
      */
-    public function query($query)
+    public function query($query): mixed
     {
         $this->getRolesManager()->addUserMessage($query);
         $this->response = $this->queryPost();
@@ -487,9 +511,10 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      *
      * @param string $modelName The model name to set
      */
-    public function setLLMmodelName($modelName)
+    public function setLLMmodelName($modelName): static
     {
         $this->model = $modelName;
+        return $this;
     }
 
     /**

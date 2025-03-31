@@ -6,20 +6,16 @@ use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 try {
 
     $connection = new OpenAICompatibleEndpointConnection();
-    $connection->setLLMmodelName('qwen_QwQ-32B-Q8_0');
 
-    $parameters = [
-        'messages' => [
-            ['role' => 'user', 'content' => 'What is x when x+5 = 10?']
-        ],
-        'stream' => true,
-        'model' => 'qwen_QwQ-32B-Q8_0'
-    ];
+    $buffered = '';
 
-    echo "Streaming response:\n";
+    echo PHP_EOL . str_repeat('-', 84);
+    echo PHP_EOL . str_repeat('-', 16) . " Recalling the response after the buffered reading has ended " ;
+    echo PHP_EOL . str_repeat('-', 84) . PHP_EOL;
     $buf = '';
-    $response = $connection->queryPost($parameters, function($chunk)  {
-        echo $chunk;
+    $response = $connection->queryPost('What is the result of 9 ^ 3? Reason about it.',function($chunk) use (&$buffered) {
+        echo $chunk; // Here are the tokens as they are received from the server.
+        $buffered .= $chunk;
     });
 
 } catch (Exception $e) {
@@ -27,4 +23,13 @@ try {
     exit(1);
 }
 
-echo PHP_EOL . $response->getLlmResponseRole() . ': ' . $response->getLlmResponse();
+echo PHP_EOL . str_repeat('-', 84);
+echo PHP_EOL . str_repeat('-', 16) . " Recalling the response after the reaming has ended " ;
+echo PHP_EOL . str_repeat('-', 84);
+echo PHP_EOL . $response->getLlmResponseRole() . ': ' . $response->getLlmResponse() .PHP_EOL;
+
+// As a sanity check, let's compare the buffered response with the final LLM response.
+echo PHP_EOL . str_repeat('-', 84);
+$areEqual =  $buffered ===$response->getLlmResponse() ? 'EQUAL' : 'NOT EQUAL';
+echo PHP_EOL . str_repeat('-', 16) . " Comparing the buffered string with the recall string: $areEqual" ;
+echo PHP_EOL . str_repeat('-', 84);
