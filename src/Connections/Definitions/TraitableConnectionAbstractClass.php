@@ -1,22 +1,39 @@
 <?php
 
 /**
- * TraitableConnectionAbstractClass - Abstract base class for traitable connections
- * 
- * This class provides proxy functionality and method pass-through
- * for connection implementations.
+ * TraitableConnectionAbstractClass - Base implementation for traitable connections
+ *
+ * This abstract class provides:
+ * - Proxy pattern implementation for method pass-through
+ * - Base functionality for OpenAI-compatible connections
+ * - Common methods required by OpenAICompatibleEndpointInterface
+ * - Dynamic method handling via __call
+ *
+ * Architecture Role:
+ * - Serves as base class for all connection implementations
+ * - Implements proxy pattern to wrap concrete connections
+ * - Provides common functionality to child classes
+ * - Enables trait composition via method pass-through
+ *
+ * @package Viceroy\Connections\Definitions
  */
 namespace Viceroy\Connections\Definitions;
 
 class TraitableConnectionAbstractClass
 {
     /**
-     * @var object $connectionOriginal The original connection instance
+     * @var object $connectionOriginal The original unwrapped connection instance
+     *
+     * This holds the concrete connection implementation before
+     * being wrapped by the proxy object.
      */
     protected $connectionOriginal;
 
     /**
      * @var object $connection The proxy connection instance
+     *
+     * This anonymous class instance wraps the original connection
+     * to enable method pass-through and trait composition.
      */
     protected $connection;
 
@@ -34,6 +51,16 @@ class TraitableConnectionAbstractClass
 
     /**
      * Creates a proxy object for method pass-through
+     *
+     * This method:
+     * 1. Creates an anonymous proxy class
+     * 2. Wraps the original connection instance
+     * 3. Enables method forwarding via __call
+     *
+     * The proxy pattern is used to:
+     * - Maintain separation between base and concrete implementations
+     * - Enable trait composition without direct inheritance
+     * - Provide flexibility for dynamic method handling
      *
      * @param string $fullyQualifiedClass The class name to proxy
      * @return void
@@ -85,12 +112,22 @@ class TraitableConnectionAbstractClass
     }
 
     /**
-     * Magic method for method pass-through
+     * Magic method for dynamic method handling
+     *
+     * This method:
+     * 1. Attempts to call method on proxied connection
+     * 2. Falls back to dynamic LLM function calling
+     * 3. Throws exception for undefined methods
+     *
+     * Key Features:
+     * - Enables transparent method forwarding
+     * - Supports dynamic function calling
+     * - Maintains strict method existence checking
      *
      * @param string $method Method name
      * @param array $arguments Method arguments
      * @return mixed Method return value
-     * @throws \BadMethodCallException If method doesn't exist
+     * @throws \BadMethodCallException If method doesn't exist on proxied object
      */
     public function __call($method, $arguments)
     {

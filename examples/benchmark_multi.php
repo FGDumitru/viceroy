@@ -1,4 +1,28 @@
 <?php
+/**
+ * benchmark_multi.php - Multi-Model Performance Benchmark
+ *
+ * This script provides:
+ * - Automated testing of multiple LLM models
+ * - Question/answer validation system
+ * - Detailed performance metrics
+ * - CSV and JSON output generation
+ *
+ * Usage:
+ * php benchmark_multi.php [options]
+ *
+ * Options:
+ * --model=pattern       Filter models by name pattern (wildcard)
+ * --ignore=pattern      Exclude models matching pattern
+ * --reset               Clear previous benchmark data
+ * --total-required-answers=N  Set number of attempts per question (default: 1)
+ * --required-correct-answers=N Set required correct answers per question (default: 1)
+ *
+ * Outputs:
+ * - benchmark_results.json: Detailed per-model results
+ * - benchmark_stats.csv: Summary statistics
+ * - benchmark_runs.json: Raw attempt data
+ */
 require_once '../vendor/autoload.php';
 use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
@@ -50,6 +74,15 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 $totalQuestions = count($benchmarkData);
 
 // ======================= Core Functions =======================
+/**
+ * Generates a visual progress bar with emoji indicators
+ *
+ * @param int $current Current question number
+ * @param int $total Total questions
+ * @param int $correct Correct answers count
+ * @param int $wrong Wrong answers count
+ * @return string Formatted progress bar
+ */
 function generateProgressBar($current, $total, $correct, $wrong) {
     $done = $correct + $wrong;
     $remaining = $total - $done;
@@ -60,6 +93,14 @@ function generateProgressBar($current, $total, $correct, $wrong) {
     return $bar;
 }
 
+/**
+ * Prepares question data for LLM processing
+ *
+ * - Shuffles MCQ options
+ * - Builds full prompt string
+ *
+ * @param array &$entry Question data (modified in-place)
+ */
 function prepareQuestion(&$entry) {
     if ($entry['type'] === 'mcq' && !empty($entry['options'])) {
         $options = $entry['options'];
@@ -76,6 +117,17 @@ function prepareQuestion(&$entry) {
     }
 }
 
+/**
+ * Validates LLM response against expected answers
+ *
+ * Handles both MCQ and free-form responses
+ * Extracts content between <response> tags
+ * Normalizes for comparison (lowercase, trim, etc.)
+ *
+ * @param array $entry Question data with expected answers
+ * @param string $response LLM response string
+ * @return bool True if response matches any expected answer
+ */
 function validateResponse($entry, $response) {
     echo "\n\t## Expected response: " . json_encode($entry['answers']) . "\n";
 

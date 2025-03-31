@@ -1,5 +1,24 @@
 <?php
-
+/**
+ * benchmark_simple.php - Basic LLM Performance Benchmark
+ *
+ * This script provides:
+ * - Straightforward single-model testing
+ * - Basic question/answer validation
+ * - Response timing metrics
+ * - Simple console output
+ *
+ * Usage:
+ * php benchmark_simple.php
+ *
+ * Features:
+ * - Tests against 100+ knowledge questions
+ * - Measures response accuracy and speed
+ * - Provides immediate pass/fail feedback
+ * - Easy to modify test cases
+ *
+ * Note: For more advanced benchmarking, use benchmark_multi.php
+ */
 require_once '../vendor/autoload.php';
 
 use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
@@ -16,6 +35,8 @@ $models = $llmConnection->getAvailableModels();
 var_dump($models);
 
 $benchmarkData = [
+    // Test cases organized by category
+    // Format: ['q' => 'question', 'a' => 'expected answer']
     // === General Knowledge (20) ===
     ['q' => 'Capital of Australia? Single word.', 'a' => 'Canberra'],
     ['q' => 'Inventor of the telephone? Single word.', 'a' => 'Bell'],
@@ -144,13 +165,16 @@ $benchmarkData = [
 
 sort($models);
 
-// DEBUG
-$models = ['qwen_QwQ-32B-Q8_0'];
+// For debugging/testing specific models
+//$models = ['qwen_QwQ-32B-Q8_0']; // Override model list if needed
+
+
 foreach ($models as $model) {
 
     $m = strtolower($model);
 
-    if (str_starts_with($m,'deepseek')) {
+    // Skipping any model containing 'deepseek' in its name due to time optimisation.
+    if (str_contains($m,'deepseek')) {
         echo "\n\t ** SKIPPING $model **\n";
         continue;
     }

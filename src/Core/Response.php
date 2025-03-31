@@ -1,10 +1,26 @@
 <?php
 
 /**
- * Response - Handles HTTP response operations
- * 
- * This class processes and provides access to HTTP responses,
- * including LLM-specific content parsing and think-tag extraction.
+ * Response - Core HTTP response processor for Viceroy
+ *
+ * This class provides:
+ * - Raw and processed response access
+ * - Think-tag extraction and processing
+ * - Streamed response handling
+ * - Content cleaning and validation
+ *
+ * Key Features:
+ * - Handles both streamed and complete responses
+ * - Extracts metadata from think-tags
+ * - Provides clean response content
+ * - Caches processed content for performance
+ *
+ * Architecture Role:
+ * - Works with Request for complete HTTP cycle
+ * - Integrates with Connections for response handling
+ * - Provides standardized response interface
+ *
+ * @package Viceroy\Core
  */
 namespace Viceroy\Core;
 
@@ -14,6 +30,9 @@ class Response {
 
     /**
      * @var ResponseInterface $response The raw HTTP response
+     *
+     * Contains the unprocessed PSR-7 response object
+     * with headers, status code, and raw body.
      */
     private ResponseInterface $response;
 
@@ -120,7 +139,19 @@ class Response {
     /**
      * Processes response content to extract think-tags and clean output
      *
+     * This method:
+     * 1. Gets the response content (streamed or complete)
+     * 2. Extracts <think> tag content for internal processing
+     * 3. Removes think-tags from the final output
+     * 4. Caches processed content for subsequent calls
+     *
+     * Think-tag Usage:
+     * - Contains internal processing metadata
+     * - Not meant for end-user display
+     * - Multiple think-tags are concatenated
+     *
      * @return void
+     * @throws \RuntimeException If content cannot be processed
      */
     private function processContent(): void {
         if ($this->processedContent === NULL) {
@@ -166,7 +197,12 @@ class Response {
     }
 
     /**
-     * Gets whether the response was streamed
+     * Checks if response was received via streaming
+     *
+     * Streaming differences:
+     * - Content is accumulated progressively
+     * - Think-tag processing happens on complete content
+     * - Some metadata may be unavailable until complete
      *
      * @return bool True if response was streamed, false otherwise
      */

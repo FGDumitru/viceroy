@@ -1,28 +1,44 @@
 <?php
-
+/**
+ * query_llamacpp.php - Basic LLM Query Example
+ *
+ * This script demonstrates:
+ * - Establishing a connection to LLM
+ * - Setting system and user messages
+ * - Configuring generation parameters
+ * - Processing and validating responses
+ *
+ * Usage:
+ * php query_llamacpp.php
+ *
+ * Key Features:
+ * - Shows basic query/response flow
+ * - Includes parameter tuning examples
+ * - Measures response time
+ * - Performs simple output validation
+ */
 require_once '../vendor/autoload.php';
 
 use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
+// Initialize connection with 5 minute timeout
 $llmConnection = new OpenAICompatibleEndpointConnection();
-
-// Timeout usage example, wait 5 minutes before timing out.
-$llmConnection->setGuzzleConnectionTimeout(300);
+$llmConnection->setGuzzleConnectionTimeout(300); // 5 minutes
 
 
-// Add a system message (if the model supports it).
+// Configure conversation context
 $llmConnection->getRolesManager()
   ->clearMessages()
   ->setSystemMessage('You are a helpful LLM that responds to user queries.');
 
-// Query the model as a User.
+// Execute query with controlled parameters
 try {
   $queryString = 'Is the number 9.11 larger than 9.9? Respond only with either [YES] or [NO].';
   echo $queryString . "\n";
   
   $llmConnection
-    ->setParameter('temperature', 0.3)
-    ->setParameter('top_p', 0.5)
+    ->setParameter('temperature', 0.3)  // Lower = more deterministic
+    ->setParameter('top_p', 0.5)       // Nucleus sampling threshold
     ->getRolesManager()
     ->addMessage('user', $queryString);
 }

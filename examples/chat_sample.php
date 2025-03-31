@@ -1,4 +1,25 @@
 <?php
+/**
+ * chat_sample.php - Interactive Chat Interface Example
+ *
+ * This script demonstrates:
+ * - Basic chat interface with Viceroy
+ * - Real-time streaming responses
+ * - Colorized terminal output
+ * - Performance metrics
+ *
+ * Usage:
+ * php chat_sample.php [-nocolor]
+ *
+ * Controls:
+ * - Type messages to chat
+ * - Enter "q!" to quit
+ *
+ * Features:
+ * - Maintains conversation history
+ * - Shows tokens/second metrics
+ * - Handles errors gracefully
+ */
 require_once '../vendor/autoload.php';
 
 use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
@@ -6,6 +27,14 @@ use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 $useColors = !in_array('-nocolor', $argv);
 $chatHistory = [];
 
+/**
+ * Formats chat message with timestamp and color coding
+ *
+ * @param string $role 'User' or 'AI'
+ * @param string $message The message content
+ * @param bool $useColors Whether to use terminal colors
+ * @return string Formatted message string
+ */
 function formatMessage($role, $message, $useColors) {
     $timestamp = date('Y-m-d H:i:s');
     $formatted = "[$timestamp] ";
@@ -25,6 +54,14 @@ function formatMessage($role, $message, $useColors) {
     return $formatted;
 }
 
+/**
+ * Displays a chat message with formatting
+ *
+ * @param string $role 'User', 'AI' or 'System'
+ * @param string $message The message content
+ * @param bool $useColors Whether to use terminal colors
+ * @return void
+ */
 function displayChatMessage($role, $message, $useColors) {
     $formatted = formatMessage($role, $message, $useColors);
     echo PHP_EOL . str_repeat('-', 84) . PHP_EOL;

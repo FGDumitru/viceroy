@@ -1,10 +1,26 @@
 <?php
 
 /**
- * RolesManager - Manages conversation roles and messages
- * 
- * This class handles the organization of messages by role (system, user, assistant)
- * and provides methods to manage conversation flow.
+ * RolesManager - Conversation role and message management
+ *
+ * This class provides:
+ * - Strict role-based message organization
+ * - Conversation history tracking
+ * - System/user/assistant message validation
+ * - Prompt formatting for LLM consumption
+ *
+ * Key Features:
+ * - Enforces system message as first message
+ * - Validates role transitions (system -> user -> assistant)
+ * - Supports method chaining for fluent interface
+ * - Handles multiple prompt formats
+ *
+ * Architecture Role:
+ * - Works with Response for complete conversation handling
+ * - Integrates with Connections for message formatting
+ * - Provides standardized role management
+ *
+ * @package Viceroy\Core
  */
 namespace Viceroy\Core;
 
@@ -15,6 +31,17 @@ class RolesManager {
 
   /**
    * @var array $roles Array of message objects with role and content
+   *
+   * Structure:
+   * [
+   *   ['role' => 'system', 'content' => '...'],
+   *   ['role' => 'user', 'content' => '...'],
+   *   ['role' => 'assistant', 'content' => '...']
+   * ]
+   *
+   * Rules:
+   * - System message must be first
+   * - User and assistant messages alternate
    */
   private array $roles = [];
 
@@ -65,9 +92,30 @@ class RolesManager {
    * @return static Returns self for method chaining
    * @throws Exception If system message is not first
    */
+  /**
+   * Adds a message with strict role validation
+   *
+   * Enforces conversation structure rules:
+   * 1. System message must be first (if present)
+   * 2. User and assistant messages must alternate
+   * 3. No duplicate roles in sequence
+   *
+   * @param string $role The role (system/user/assistant)
+   * @param string $message The message content
+   * @return static Returns self for method chaining
+   * @throws Exception If:
+   *   - System message is not first
+   *   - Role sequence is invalid
+   */
   public function addMessage(string $role, string $message): static {
     if ('system' == $role && !empty($this->roles)) {
       throw new Exception("The system message MUST be the first message!");
+    }
+
+    // Check for invalid role sequence
+    $lastRole = end($this->roles)['role'] ?? null;
+    if ($lastRole === $role && $role !== 'system') {
+      throw new Exception("Cannot add consecutive $role messages");
     }
 
     $this->roles[] = ['role' => $role, 'content' => $message];
@@ -117,7 +165,11 @@ class RolesManager {
   }
 
   /**
-   * Clears all messages
+   * Clears all messages and resets conversation state
+   *
+   * Note: After clearing, the next message can be:
+   * - A new system message (starting fresh conversation)
+   * - A user message (if system message is handled externally)
    *
    * @return static Returns self for method chaining
    */

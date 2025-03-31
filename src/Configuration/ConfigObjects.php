@@ -1,10 +1,23 @@
 <?php
 
 /**
- * ConfigObjects - Handles configuration data storage and retrieval
- * 
- * This class manages configuration data from JSON files and provides
- * methods to access and modify the configuration.
+ * ConfigObjects - Central configuration data container for Viceroy
+ *
+ * This class serves as the primary data store for all configuration values,
+ * typically loaded from JSON files. It provides:
+ * - Configuration loading and validation
+ * - Type-safe access to configuration values
+ * - Methods for bulk configuration management
+ * - Integration with ConfigManager for prompt processing
+ *
+ * Expected configuration structure:
+ * {
+ *   "server": { ...connection settings... },
+ *   "debug": boolean,
+ *   ...other application-specific settings
+ * }
+ *
+ * @package Viceroy\Configuration
  */
 namespace Viceroy\Configuration;
 
@@ -12,6 +25,12 @@ class ConfigObjects {
 
   /**
    * @var array $config Configuration data storage
+   *
+   * Stores all configuration values in associative array format.
+   * Structure should match the JSON configuration file format with:
+   * - 'server' key for connection settings
+   * - 'debug' key for debug mode
+   * - Other application-specific keys
    */
   private $config = [];
 
@@ -27,10 +46,16 @@ class ConfigObjects {
   }
 
   /**
-   * Reads configuration from file
+   * Reads and validates configuration from JSON file
+   *
+   * Loads configuration from specified JSON file, validating that:
+   * - File exists and is readable
+   * - Contains valid JSON
+   * - Has required structure
    *
    * @param string $configFile Path to configuration file
-   * @return bool True if file was successfully read, false otherwise
+   * @return bool True if file was successfully read and parsed, false otherwise
+   * @throws \RuntimeException If JSON is malformed
    */
   public function readConfigFile($configFile): bool {
     if (file_exists($configFile)) {
@@ -94,10 +119,17 @@ class ConfigObjects {
   }
 
   /**
-   * Gets a server configuration value by key
+   * Gets a server-specific configuration value
+   *
+   * Retrieves a value from the 'server' configuration section.
+   * Common server configuration keys include:
+   * - 'host': API endpoint host
+   * - 'port': Connection port
+   * - 'timeout': Request timeout in seconds
    *
    * @param string $key Server configuration key
-   * @return mixed The configuration value or null if not found
+   * @return mixed The configuration value or null if key doesn't exist
+   * @throws \InvalidArgumentException If server config section doesn't exist
    */
   public function getServerConfigKey(string $key) {
     return $this->config['server'][$key];

@@ -1,11 +1,27 @@
 <?php
 
 /**
- * SelfDynamicParametersConnection - A connection class that allows dynamic parameter handling
- * and function definitions for OpenAI-compatible endpoints.
- * 
- * This class extends TraitableConnectionAbstractClass and implements OpenAICompatibleEndpointInterface,
- * providing functionality to define and execute custom functions with dynamic parameters.
+ * SelfDynamicParametersConnection - Dynamic function execution handler for OpenAI endpoints
+ *
+ * This class provides a powerful interface for:
+ * - Defining custom functions with dynamic parameters
+ * - Executing these functions against OpenAI-compatible APIs
+ * - Chaining function calls using response data
+ * - Handling complex JSON response parsing
+ *
+ * Key Features:
+ * - Dynamic function definition via addNewFunction()
+ * - Automatic parameter injection and type handling
+ * - Response caching for chained operations
+ * - Strict JSON response validation
+ *
+ * Architecture Role:
+ * - Extends TraitableConnectionAbstractClass for base connection functionality
+ * - Implements OpenAICompatibleEndpointInterface for API compatibility
+ * - Works with ConfigManager for system message templates
+ * - Integrates with Core\Response for standardized output
+ *
+ * @package Viceroy\Connections
  */
 namespace Viceroy\Connections;
 
@@ -16,8 +32,16 @@ class SelfDynamicParametersConnection extends TraitableConnectionAbstractClass i
     use setSystemMessageTrait;
 
     /**
-     * @var string $systemMessageTemplate The system message template used for function execution
-     * Contains instructions for processing parameters and formatting responses
+     * @var string $systemMessageTemplate System message template for function execution
+     *
+     * This template defines:
+     * - Required JSON response format
+     * - Parameter processing rules
+     * - Error handling expectations
+     * - Example input/output patterns
+     *
+     * The template is injected into every function call to ensure
+     * consistent response formatting from the LLM.
      */
     private string $systemMessageTemplate = <<<SYS
 Your task:
@@ -238,6 +262,18 @@ SYS;
     /**
      * Magic method to handle dynamic function calls
      *
+     * This method enables calling user-defined functions dynamically.
+     * When an undefined method is called, it:
+     * 1. Checks if a matching function definition exists
+     * 2. Prepares the system message template
+     * 3. Formats parameters with type information
+     * 4. Executes the query via the connection
+     * 5. Parses and returns the response
+     *
+     * Example Usage:
+     * $connection->addNewFunction('capitalize', 'Capitalize the input string');
+     * $result = $connection->capitalize('hello world'); // Returns "HELLO WORLD"
+     *
      * @param string $method The method name being called
      * @param array $arguments The arguments passed to the method
      * @return mixed The result of the function call
@@ -314,11 +350,23 @@ SYS;
     /**
      * Parses and handles the response from a function call
      *
+     * This method performs:
+     * 1. JSON extraction from raw response
+     * 2. Strict JSON validation
+     * 3. Response structure verification
+     * 4. Error handling and exception throwing
+     * 5. Response caching for chained operations
+     *
+     * Response Requirements:
+     * - Must contain valid JSON with 'response' key
+     * - Errors must include 'error' key
+     * - Must match system message template format
+     *
      * @param string $resultRaw The raw response string
      * @param string $functionCommands The function commands that were sent
-     * @return mixed The parsed response
+     * @return mixed The parsed response or self for chaining
      * @throws \JsonException If JSON parsing fails
-     * @throws \LogicException If response is invalid
+     * @throws \LogicException If response is invalid or missing required keys
      */
     protected function parseAndHandleResponse(string $resultRaw, string $functionCommands)
     {
