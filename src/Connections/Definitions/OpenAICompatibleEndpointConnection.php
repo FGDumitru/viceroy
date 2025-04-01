@@ -205,36 +205,6 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     }
 
     /**
-     * Tokenizes a given sentence by sending a POST request to the API's tokenization endpoint.
-     *
-     * @param string $sentence The sentence to tokenize.
-     * @return bool|array Returns an array of tokens if successful, or false on failure.
-     */
-    public function tokenize(string $sentence): bool|array
-    {
-        $uri = $this->getServerUri('tokenize');
-    
-        try {
-            $guzzleOptions = [
-                'json' => ['content' => $sentence],
-                'headers' => ['Content-Type' => 'application/json'],
-                'timeout' => 0,
-            ];
-    
-            $guzzleOptions = array_merge($guzzleOptions, $this->getGuzzleCustomOptions());
-    
-            $response = $this->guzzleObject->post($uri, $guzzleOptions);
-        } catch (Exception $e) {
-            return FALSE;
-        }
-    
-        $tokensJsonResponse = $response->getBody()->getContents();
-        $tokens = json_decode($tokensJsonResponse)->tokens;
-    
-        return $tokens;
-    }
-
-    /**
      * Constructs the server URI based on configuration and the provided verb.
      *
      * If an explicit endpoint URI is set, it is returned directly.
@@ -275,38 +245,6 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     public function setConfiguration(ConfigObjects $configuration)
     {
         $this->configuration = $configuration;
-    }
-
-    /**
-     * Detokenizes a JSON prompt array into a string
-     *
-     * @param array $promptJson The prompt in JSON format
-     * @return string|bool Detokenized string on success, false on failure
-     */
-    public function detokenize(array $promptJson): string|bool
-    {
-        if (empty($promptJson)) {
-            $promptJson = $this->getDefaultParameters();
-        }
-
-        $uri = $this->getServerUri('detokenize');
-
-        try {
-            $guzzleOptions = [
-                'json' => ['tokens' => $promptJson],
-                'headers' => ['Content-Type' => 'application/json'],
-                'timeout' => 0,
-            ];
-
-            $guzzleOptions = array_merge($guzzleOptions, $this->getGuzzleCustomOptions());
-
-            $response = $this->guzzleObject->post($uri, $guzzleOptions);
-        } catch (Exception $e) {
-            return FALSE;
-        }
-
-        $tokensJsonResponse = $response->getBody()->getContents();
-        return json_decode($tokensJsonResponse)->content;
     }
 
     /**

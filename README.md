@@ -66,7 +66,7 @@ Create `config.json`:
     "port": "8855",
     "endpoints": {
       "completions": "/v1/chat/completions",
-      "tokenize": "/tokenize",
+      "tokenize": "",
       "models": "/v1/models"
     },
     "server_type": "llamacpp"

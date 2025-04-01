@@ -17,7 +17,6 @@ classDiagram
     }
     class OpenAICompatibleEndpointConnection {
         +queryPost()
-        +tokenize()
         +setSystemMessage()
         +getAvailableModels()
     }
@@ -62,7 +61,6 @@ classDiagram
 - Manages API communication via Guzzle
 - Key features:
   - Streaming response support
-  - Tokenization/detokenization
   - Model management
   - Bearer token authentication
 - Key methods:

@@ -7,3 +7,8 @@
 examples/benchmark_*.json
 examples/benchmark_stats.csv
 .roomodes
+.rooignore
+/.roo/
+/memory-bank/
+/default-mode/
+.clinerules-default

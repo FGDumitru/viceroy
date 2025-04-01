@@ -4,8 +4,6 @@
     "port": "5000",
     "port_description": "Adjust the port (5000) to your own setup.",
     "completions": "/v1/chat/completions",
-    "tokenize": "/tokenize",
-    "detokenize": "/detokenize",
     "health": "/v1/health",
     "models": "/v1/models",
     "server_type": "openai",
