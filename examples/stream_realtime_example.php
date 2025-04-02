@@ -31,12 +31,9 @@ try {
 
     // Execute streaming query with callback for chunk processing
     $response = $connection->queryPost(
-        'What is the result of 9 ^ 3? Reason about it.',
+        'What is the result of 9 ^ 3? Reason about it. Adter you finish, output the following character: #',
         function ($chunk) use (&$buffered) {
             // Output each chunk as it arrives
-            echo $chunk;
-            // Accumulate chunks into buffer for final comparison
-            $buffered .= $chunk;
             echo $chunk; // Output tokens as they arrive
             $buffered .= $chunk; // Accumulate in buffer
         }

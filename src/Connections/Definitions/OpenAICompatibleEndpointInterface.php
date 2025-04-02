@@ -23,34 +23,6 @@ use Viceroy\Core\Response;
 interface OpenAICompatibleEndpointInterface {
 
   /**
-   * Tokenizes input text according to OpenAI's tokenization rules
-   *
-   * This method must:
-   * - Split text into semantic tokens
-   * - Handle special characters and whitespace properly
-   * - Return false only on unrecoverable errors
-   *
-   * @param string $sentence The input text to tokenize
-   * @return array|bool Array of tokens on success, false on critical failure
-   * @throws \InvalidArgumentException If input is not a string
-   */
-  public function tokenize(string $sentence): array|bool;
-
-  /**
-   * Reconstructs text from tokenized JSON prompt
-   *
-   * This method must:
-   * - Handle all token types produced by tokenize()
-   * - Preserve original formatting when possible
-   * - Return false only on unrecoverable errors
-   *
-   * @param array $promptJson Tokenized prompt in JSON format
-   * @return string|bool Reconstructed string on success, false on critical failure
-   * @throws \InvalidArgumentException If input is malformed
-   */
-  public function detokenize(array $promptJson): string|bool;
-
-  /**
    * Executes a standardized POST query to the API endpoint
    *
    * This method must:
