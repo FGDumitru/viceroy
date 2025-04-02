@@ -1,266 +1,207 @@
-# Viceroy PHP Library for OpenAI-Compatible LLM APIs
+# Viceroy LLM Library
 
-## Comprehensive Documentation
+## Table of Contents
+1. [Introduction](#introduction)
+2. [Architecture Diagram](#architecture-diagram)
+3. [Core Components](#core-components)
+   - [Configuration Management](#configuration-management)
+   - [Connection Handling](#connection-handling)
+   - [Request/Response Handling](#requestresponse-handling)
+   - [Conversation Management](#conversation-management)
+4. [Usage Example](#usage-example)
+5. [Key Features](#key-features)
+6. [Class Relationships](#class-relationships)
+7. [Configuration Details](#configuration-details)
+8. [Advanced Features](#advanced-features)
+9. [Troubleshooting](#troubleshooting)
+10. [Example Files](#example-files)
 
-### Architecture Overview
+## Introduction
+Viceroy provides a PHP framework for interacting with OpenAI-compatible LLM APIs. The library handles configuration management, API communication, conversation state, and response processing.
 
-The Viceroy library provides a structured interface for working with OpenAI-compatible LLM APIs through several key components:
 
-1. **Connection Layer**:
-   - `OpenAICompatibleEndpointInterface`: Core interface defining LLM operations
-   - `TraitableConnectionAbstractClass`: Base implementation using proxy pattern
-   - Connection implementations for various providers
+## Installation
 
-2. **Core Messaging**:
-   - `Request`: Handles configuration and request preparation
-   - `Response`: Processes LLM responses with advanced features like:
-     - Raw response access
-     - Content processing
-     - Think tag extraction (`<think>...</think>`)
-     - Role identification
-
-3. **Conversation Management**:
-   - `RolesManager`: Manages message history with strict ordering
-   - Supports system/user/assistant roles
-
-4. **Configuration System**:
-   - JSON-based configuration
-   - Endpoint management
-   - Debug settings
-
-### Installation
+To integrate the Viceroy LLM Library into your project, you can use Composer. Run the following command in your project directory:
 
 ```bash
-composer require fgdumitru/viceroy
+composer require viceroy/llm-library
 ```
 
-### Core Concepts
 
-#### Connection Types
+## Architecture Diagram
+```mermaid
+classDiagram
+    class ConfigObjects {
+        +readConfigFile()
+        +getServerConfigKey()
+        +isDebug()
+    }
+    class ConfigManager {
+        +getJsonPrompt()
+        +processJsonPromptBlueprint()
+    }
+    class OpenAICompatibleEndpointConnection {
+        +queryPost()
+        +setSystemMessage()
+        +getAvailableModels()
+    }
+    class Request {
+        -ConfigObjects $configObjects
+    }
+    class Response {
+        +getLlmResponse()
+        +getThinkContent()
+        +wasStreamed()
+    }
+    class RolesManager {
+        +addUserMessage()
+        +addAssistantMessage()
+        +setSystemMessage()
+    }
+    ConfigManager --> ConfigObjects
+    OpenAICompatibleEndpointConnection --> ConfigManager
+    OpenAICompatibleEndpointConnection --> Request
+    OpenAICompatibleEndpointConnection --> Response
+    OpenAICompatibleEndpointConnection --> RolesManager
+```
 
-1. **Basic Connection**:
+## Core Components
+
+### 1. Configuration Management
+#### **ConfigObjects.php**
+- Manages configuration data from JSON files
+- Key methods:
+  - `readConfigFile()`: Loads configuration from file
+  - `getServerConfigKey()`: Gets server-specific config values
+  - `isDebug()`: Checks debug mode status
+
+#### **ConfigManager.php**
+- Processes JSON prompts and parameters
+- Key methods:
+  - `getJsonPrompt()`: Retrieves processed prompt content
+  - `processJsonPromptBlueprint()`: Prepares prompt structure
+
+### 2. Connection Handling
+#### **OpenAICompatibleEndpointConnection.php**
+- Manages API communication via Guzzle
+- Key features:
+  - Streaming response support
+  - Model management
+  - Bearer token authentication
+- Key methods:
+  - `queryPost()`: Sends requests to API
+  - `setSystemMessage()`: Sets initial context
+  - `getAvailableModels()`: Lists available models
+  - `setParameter()`: Sets LLM parameters (temperature, top_p, etc) with fluent interface
+
+### 3. Request/Response Handling
+#### **Request.php**
+- Currently minimal implementation holding ConfigObjects reference
+
+#### **Response.php**
+- Processes API responses with:
+  - Think-tag extraction (`<think>...</think>`)
+  - Streaming support
+  - Error handling
+- Key methods:
+  - `getLlmResponse()`: Gets processed response content
+  - `getThinkContent()`: Extracts think-tag content
+  - `wasStreamed()`: Checks if response was streamed
+
+### 4. Conversation Management
+#### **RolesManager.php**
+- Manages message history by role
+- Enforces system message as first message
+- Key methods:
+  - `addUserMessage()`: Adds user prompt
+  - `addAssistantMessage()`: Adds LLM response
+  - `setSystemMessage()`: Sets system context
+  - `clearMessages()`: Resets conversation
+
+## Usage Example
 ```php
-use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
+// Initialize configuration
+$config = new ConfigObjects('config.json');
+$configManager = new ConfigManager($config);
 
-$llm = new OpenAICompatibleEndpointConnection();
-$llm->setLLMmodelName('Llama-3.3-70B-Instruct');
-$response = $llm->query('Explain quantum computing');
+// Create connection
+$connection = new OpenAICompatibleEndpointConnection($config);
+$connection->setSystemMessage("You are a helpful assistant.")
+    ->setParameter('temperature', 0.7)
+    ->setParameter('top_p', 0.9);
+
+// Send query
+$response = $connection->query("Explain quantum physics");
+
+// Handle response
+if ($response->wasStreamed()) {
+    echo "Streamed response received";
+} else {
+    echo $response->getLlmResponse();
+    echo "\nThink content: " . $response->getThinkContent();
+}
 ```
 
-2. **Advanced Connection with Dynamic Parameters**:
-```php
-use Viceroy\Connections\SelfDynamicParametersConnection;
+## Key Features
+- **Streaming Support**: Real-time processing of LLM responses
+- **Think-Tag Processing**: Extracts and processes `<think>` tags from responses
+- **Conversation State**: Maintains context across multiple messages
+- **Configuration**: Flexible JSON-based configuration
 
-$llm = new SelfDynamicParametersConnection();
-$llm->setDebugMode(true);
-$llm->setConnectionTimeout(30);
-```
+## Class Relationships
+1. ConfigManager uses ConfigObjects for configuration storage
+2. OpenAICompatibleEndpointConnection coordinates:
+   - ConfigManager for parameters
+   - Request for request handling
+   - Response for processing outputs
+   - RolesManager for conversation state
+3. Response processes data from OpenAICompatibleEndpointConnection
 
-#### Configuration
+## Configuration Details
+Configuration is managed via JSON files. The `config.json` file is the primary configuration file. Here is an example of what the `config.json` might look like:
 
-Create `config.json`:
 ```json
 {
   "server": {
-    "host": "http://127.0.0.1",
-    "port": "8855",
-    "endpoints": {
-      "completions": "/v1/chat/completions",
-      "tokenize": "",
-      "models": "/v1/models"
-    },
-    "server_type": "llamacpp"
+    "url": "https://api.openai.com/v1",
+    "bearer_token": "your-bearer-token"
+  },
+  "debug": true,
+  "models": {
+    "default": "gpt4-o"
   }
 }
 ```
 
-### Advanced Features
+## Advanced Features
+- **Custom Parameters**: You can set custom parameters for the LLM using the `setParameter()` method.
+- **Fluent Interface**: Methods like `setParameter()` return the object itself, allowing for method chaining.
+- **Error Handling**: The library includes robust error handling for API requests and response processing.
 
-#### Custom Function Definitions
+## Troubleshooting
+- **API Errors**: Ensure that your bearer token is correct and that the API URL is accessible.
+- **Configuration Issues**: Verify that your `config.json` file is correctly formatted and contains all necessary fields.
+- **Debug Mode**: Enable debug mode in the configuration to get more detailed logs and error messages.
 
-```php
-$llm->addNewFunction('analyzeSentiment', 
-    'Analyze sentiment of the provided text. Return POSITIVE, NEUTRAL, or NEGATIVE.');
+## Example Files
+The `examples` directory contains several PHP scripts demonstrating different usage scenarios:
+- `benchmark_multi.php`: Demonstrates sending multiple queries in a loop.
+- `benchmark_simple.php`: Demonstrates a simple query.
+- `chat_sample.php`: Demonstrates a basic chat interaction.
+- `config.localhost.json`: Example configuration for local development.
+- `config.openai.json`: Example configuration for OpenAI API.
+- `query_llamacpp.php`: Example using a different LLM provider.
+- `roles_llamacpp.php`: Example managing roles with a different LLM provider.
+- `self_defined_functions_poc.php`: Example of using self-defined functions.
+- `simple_query_llamacpp.php`: Simple query example with a different LLM provider.
+- `stream_realtime_example.php`: Example of streaming responses in real-time.
 
-$sentiment = $llm->analyzeSentiment('I love this library!'); // Returns "POSITIVE"
+
+## Installation
+
+To integrate the Viceroy LLM Library into your project, you can use Composer. Run the following command in your project directory:
+
+```bash
+composer require viceroy/llm-library
 ```
-
-#### Chaining Operations
-
-```php
-// Define some dynamic functions for chaining
-$llm->addNewFunction('add', 'Add all numeric values provided in the parameters. Return the total sum.');
-$llm->addNewFunction('multiply', 'Multiply all numeric values provided in the parameters. Return the product.');
-$llm->addNewFunction('reverseString', 'Reverse the string in the first parameter.');
-$llm->addNewFunction('numberToLiteral', 'Convert a numeric value to its literal form (e.g., 10 to "ten").');
-
-// Set up chaining mode
-$chain = $llm->setChainMode();
-
-// Execute the entire chain in one go
-$finalResult = $chain->add(5, 3)         // Returns 8
-                 ->multiply(2)           // Returns 16
-                 ->numberToLiteral();    // Converts 16 to 'sixteen'
-
-// Display the final result
-echo "Final result after entire chain execution: " . $finalResult . PHP_EOL; // 'sixteen'
-```
-
-#### Conversation Management
-
-```php
-$llm->setSystemMessage('You are a helpful coding assistant.');
-$llm->addUserMessage('How do I implement a singleton in PHP?');
-$response = $llm->query(); // Uses conversation context
-
-// Add the response as an assistant message and display it as a comment
-$llm->addAssistantMessage($response->getLlmResponse());
-echo "// Assistant's response: " . $response->getLlmResponse() . PHP_EOL;
-
-// Continue the conversation with multiple role swaps
-$llm->addUserMessage('Can you provide an example?');
-$response = $llm->query(); // Continues the conversation
-
-// Add the response as an assistant message and display it as a comment
-$llm->addAssistantMessage($response->getLlmResponse());
-echo "// Assistant's response: " . $response->getLlmResponse() . PHP_EOL;
-
-// Clear conversation history
-$llm->clearMessages();
-```
-
-**Explanation**:
-
-In the conversation management example, the `RolesManager` class is used to manage the message history with strict ordering and support for system/user/assistant roles. Here's a detailed breakdown of why the code is formatted as such:
-
-1. **Setting the System Message**:
-   ```php
-   $llm->setSystemMessage('You are a helpful coding assistant.');
-   ```
-   This sets the system message, which defines the role and behavior of the assistant. The system message is crucial for guiding the assistant's responses and ensuring that it adheres to the desired behavior.
-
-2. **Adding User Messages**:
-   ```php
-   $llm->addUserMessage('How do I implement a singleton in PHP?');
-   ```
-   User messages are added to the conversation context. These messages represent the queries or prompts from the user.
-
-3. **Querying the LLM**:
-   ```php
-   $response = $llm->query(); // Uses conversation context
-   ```
-   The `query` method sends the conversation context to the LLM and retrieves a response. The response is an instance of the `Response` class, which contains the LLM's response.
-
-4. **Adding Assistant Messages**:
-   ```php
-   $llm->addAssistantMessage($response->getLlmResponse());
-   echo "// Assistant's response: " . $response->getLlmResponse() . PHP_EOL;
-   ```
-   The assistant's response is added to the conversation context. This is important for maintaining the conversation history and ensuring that the LLM has the full context of the conversation when generating subsequent responses. The response is also printed as a comment for reference.
-
-5. **Continuing the Conversation**:
-   ```php
-   $llm->addUserMessage('Can you provide an example?');
-   $response = $llm->query(); // Continues the conversation
-   ```
-   The conversation can be continued by adding more user messages and querying the LLM again. The LLM will use the entire conversation history to generate its response.
-
-6. **Clearing Conversation History**:
-   ```php
-   $llm->clearMessages();
-   ```
-   The conversation history can be cleared to start a new conversation. This is useful for managing memory and ensuring that the LLM does not retain information from previous conversations.
-
-**Conversation Example**:
-
-Here is a more detailed conversation example to illustrate how the conversation management works:
-
-```php
-// Initialize the LLM connection
-$llm = new OpenAICompatibleEndpointConnection();
-$llm->setLLMmodelName('Llama-3.3-70B-Instruct');
-
-// Set the system message
-$llm->setSystemMessage('You are a helpful coding assistant.');
-
-// Add the first user message
-$llm->addUserMessage('How do I implement a singleton in PHP?');
-
-// Query the LLM and get the response
-$response = $llm->query();
-
-// Add the assistant's response to the conversation context
-$llm->addAssistantMessage($response->getLlmResponse());
-echo "// Assistant's response: " . $response->getLlmResponse() . PHP_EOL;
-
-// Add the next user message
-$llm->addUserMessage('Can you provide an example?');
-
-// Query the LLM again with the updated conversation context
-$response = $llm->query();
-
-// Add the assistant's response to the conversation context
-$llm->addAssistantMessage($response->getLlmResponse());
-echo "// Assistant's response: " . $response->getLlmResponse() . PHP_EOL;
-
-// Clear the conversation history
-$llm->clearMessages();
-```
-
-In this example, the conversation is managed by adding user messages, querying the LLM, and adding the assistant's responses to the conversation context. This ensures that the LLM has the full context of the conversation when generating responses, leading to more coherent and contextually relevant answers.
-
-### Response Handling
-
-```php
-$response = $llm->query('Explain with <think>internal reasoning</think>');
-
-// Get processed response
-echo $response->getLlmResponse();
-
-// Access think-tag content
-echo $response->getThinkContent();
-
-// Raw response access
-$raw = $response->getRawResponse();
-```
-
-### Best Practices
-
-1. **Connection Management**:
-```php
-// Set appropriate timeouts
-$llm->setConnectionTimeout(60);
-```
-
-2. **Error Handling**:
-```php
-try {
-    $response = $llm->query('Invalid prompt');
-} catch (Exception $e) {
-    // Handle JSON parsing, timeouts, etc.
-    error_log($e->getMessage());
-}
-```
-
-### Troubleshooting
-
-**Common Issues**:
-
-1. **Connection Timeouts**:
-   - Increase timeout: `$llm->setConnectionTimeout(120)`
-
-2. **Invalid Responses**:
-   - Enable debug mode: `$llm->setDebugMode(true)`
-   - Check raw response: `$response->getRawResponse()`
-
-3. **Function Calling Errors**:
-   - Verify function definitions
-   - Check parameter types
-
-### Examples
-
-See the `examples/` directory for complete implementations:
-- `simple_query_llamacpp.php`: Basic querying
-- `roles_llamacpp.php`: Conversation management
-- `self_defined_functions_poc.php`: Custom functions
-- `config.json`: Configuration reference
