@@ -119,14 +119,12 @@ classDiagram
   - `setSystemMessage()`: Sets system context
   - `clearMessages()`: Resets conversation
 
-## Usage Example
+## Usage Example - OpenAI endpoint.
 ```php
-// Initialize configuration
-$config = new ConfigObjects('config.json');
-$configManager = new ConfigManager($config);
+// Create connection. It defaults to OpenAI servers.
+$connection = new OpenAICompatibleEndpointConnection();
+$connection->setBearedToken('YOUR OPENAI API TOKEN HERE');
 
-// Create connection
-$connection = new OpenAICompatibleEndpointConnection($config);
 $connection->setSystemMessage("You are a helpful assistant.")
     ->setParameter('temperature', 0.7)
     ->setParameter('top_p', 0.9);
@@ -134,14 +132,32 @@ $connection->setSystemMessage("You are a helpful assistant.")
 // Send query
 $response = $connection->query("Explain quantum physics");
 
-// Handle response
-if ($response->wasStreamed()) {
-    echo "Streamed response received";
-} else {
-    echo $response->getLlmResponse();
-    echo "\nThink content: " . $response->getThinkContent();
+echo $response->getLlmResponse();
+echo "\nThink content: " . $response->getThinkContent(); // If this was a reasoning model.
 }
 ```
+
+
+## Usage Example - Custom endpoint.
+```php
+// Create connection. It defaults to OpenAI servers.
+$connection = new OpenAICompatibleEndpointConnection();
+$connection->setEndpointUri('http://127.0.0.1:5000');
+
+$connection->setBearedToken('YOUR API TOKEN HERE'); // OPTIONAL
+
+$connection->setSystemMessage("You are a helpful assistant.")
+    ->setParameter('temperature', 0.7)
+    ->setParameter('top_p', 0.9);
+
+// Send query
+$response = $connection->query("Explain quantum physics");
+
+echo $response->getLlmResponse();
+echo "\nThink content: " . $response->getThinkContent(); // If this was a reasoning model.
+}
+```
+
 
 ## Key Features
 - **Streaming Support**: Real-time processing of LLM responses

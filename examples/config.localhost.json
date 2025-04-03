@@ -1,15 +1,4 @@
 {
-  "server": {
-    "host": "http://127.0.0.1",
-    "port": "5000",
-    "port_description": "Adjust the port (5000) to your own setup.",
-    "completions": "/v1/chat/completions",
-    "health": "/v1/health",
-    "models": "/v1/models",
-    "server_type": "openai",
-    "type": "OpenAiCompatibleConnection",
-    "preferredModel": "gpt-4o"
-  },
-  "debug": true,
-  "description": "This config file will use a locally deployed OpenAI compatible completion endpoint."
+  "apiEndpoint": "http://127.0.0.1:5000",
+  "preferredModel": "gpt-4o"
 }

@@ -78,7 +78,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     /**
      * @var string $endpointUri Custom endpoint URI override
      */
-    private $endpointUri = '';
+    private $endpointUri = 'https://api.openai.com';
 
     /**
      * @var Response $response The last response received
@@ -89,9 +89,10 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      * @var string $bearedToken Bearer token for authentication
      */
     private $bearedToken = '';
-    private int $llmQueryStartTime;
     private int $currentTokensPerSecond;
     private array $queryStats;
+    private string $completionPath = '/v1/chat/completions';
+    private string $modelsPath = '/v1/models';
 
     /**
      * Gets the endpoint URI
@@ -130,27 +131,32 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     /**
      * Initializes the OpenAICompatibleEndpointConnection with configuration and dependencies.
      *
-     * @param ConfigObjects|null $config Configuration object (default: new instance)
+     * @param ConfigObjects|string|null $config Configuration object (default: new instance)
      */
-    public function __construct(?ConfigObjects $config = NULL)
+    public function __construct(ConfigObjects|string|null $config = NULL)
     {
         if (is_null($config)) {
             $this->configuration = new ConfigObjects();
-
-            // If no model is specified by the calling class then we'll try to use the preferred one if it's specified.
-            $this->model = $this->configuration->getServerConfigKey('preferredModel') ?? '';
-
-            // No default model name found in config-server-preferredKey, use the class default.
-            if (empty($this->model)) {
-                $this->model = $this->defaultModelName;
+        } elseif (is_string($config)) {
+            // The config is a path to a JSON config file.
+            if (file_exists($config)) {
+                $this->configuration = new ConfigObjects($config);
+            } else {
+                throw new RuntimeException('Config file doesn\'t exist: ' . $config);
             }
-
+        } elseif ($config instanceof ConfigObjects) {
+            $this->configuration = $config;
+        } else {
+            throw new RuntimeException('Specified config type is not valid. Provided object type: ' . gettype($config));
         }
-    
+
+        // If no model is specified by the calling class then we'll try to use the preferred one if it's specified.
+        $this->setLLMmodelName($this->configuration->getConfigKey('preferredModel') ?? $this->defaultModelName);
+        $this->setEndpointUri($this->configuration->getConfigKey('apiEndpoint') ?? $this->endpointUri);
+        $this->setBearedToken($this->configuration->getConfigKey('bearer'));
+
         $this->createGuzzleConnection();
-    
-        $this->request = new Request($this->configuration);
-    
+
         $this->rolesManager = new RolesManager();
     }
 
@@ -160,6 +166,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     public function createGuzzleConnection()
     {
         $this->guzzleObject = new GuzzleClient();
+        return $this;
     }
 
     /**
@@ -175,26 +182,6 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     }
 
     /**
-     * Retrieves the configured Guzzle HTTP client instance.
-     *
-     * @return GuzzleClient The Guzzle HTTP client used for API requests
-     */
-    public function getConnection(): GuzzleClient
-    {
-        return $this->guzzleObject;
-    }
-
-    /**
-     * Retrieves the configured Request instance.
-     *
-     * @return Request The Request object used for API interaction
-     */
-    public function getRequest(): Request
-    {
-        return $this->request;
-    }
-
-    /**
      * Retrieves the roles manager instance.
      *
      * @return RolesManager The roles manager responsible for message management.
@@ -204,26 +191,9 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         return $this->rolesManager;
     }
 
-    /**
-     * Constructs the server URI based on configuration and the provided verb.
-     *
-     * If an explicit endpoint URI is set, it is returned directly.
-     * Otherwise, constructs the URI using host, port, and the verb's path from configuration.
-     *
-     * @param string $verb The API endpoint verb (e.g., 'tokenize', 'completions')
-     * @return string The fully constructed API endpoint URI
-     */
-    private function getServerUri(string $verb): string
+    public function getModelsPath(): string
     {
-        if (!empty($this->endpointUri)) {
-            return $this->endpointUri;
-        }
-    
-        $uri = $this->getConfiguration()->getServerConfigKey('host');
-        $uri .= ':' . $this->getConfiguration()->getServerConfigKey('port');
-        $uri .= $this->getConfiguration()->getServerConfigKey($verb);
-    
-        return $uri;
+        return $this->modelsPath;
     }
 
     /**
@@ -234,17 +204,6 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     public function getConfiguration(): ConfigObjects
     {
         return $this->configuration;
-    }
-
-    /**
-     * Sets the configuration object
-     *
-     * @param ConfigObjects $configuration The configuration to set
-     * @return void
-     */
-    public function setConfiguration(ConfigObjects $configuration)
-    {
-        $this->configuration = $configuration;
     }
 
     /**
@@ -283,10 +242,6 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         return $promptJson;
     }
 
-    public function queryPostStreamable(?callable $streamCallback = null): Response {
-        return $this->queryPost([], $streamCallback);
-    }
-
     /**
      * Executes a POST query to the API endpoint
      *
@@ -303,28 +258,28 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
             $defaultParams = $this->getDefaultParameters();
             $promptJson = array_merge($defaultParams, ['messages' => $this->getRolesManager()->addMessage('user', $promptJson)->getMessages()]);
         }
-    
-        $uri = $this->getServerUri('completions');
-    
+
+        $uri = $this->getEndpointUri() . $this->getCompletionPath();
+
         $guzzleRequest = [
             'json' => $promptJson,
             'headers' => ['Content-Type' => 'application/json'],
             'timeout' => 0,
             'stream' => TRUE
         ];
-    
+
         $guzzleRequest = array_merge($guzzleRequest, $this->getGuzzleCustomOptions());
-    
+
         if (!empty($this->bearedToken)) {
             $guzzleRequest['headers']['Authorization'] = 'Bearer ' . $this->bearedToken;
         }
-    
+
         if (is_callable($this->guzzleParametersFormationCallback)) {
             [$uri, $guzzleRequest] = call_user_func($this->guzzleParametersFormationCallback, $uri, $guzzleRequest);
         }
-    
+
         $timer = microtime(TRUE);
-        $this->llmQueryStartTime = time();
+        $llmQueryStartTime = time();
         try {
             if ($streamCallback) {
 
@@ -332,28 +287,26 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                 $numberOfTokensReceived = 0;
                 $response = $this->guzzleObject->post($uri, $guzzleRequest);
                 $body = $response->getBody();
-                $buffer = ''; $streamedData = '';
+                $buffer = '';
+                $streamedData = '';
                 while (!$body->eof()) {
                     $chunk = $body->read(1);
-
-                    //DEBUG
-//                    echo $chunk;
 
                     //echo $chunk;
                     $buffer .= $chunk;
 
                     if (str_ends_with($buffer, "\n\n")) {
-                      $jsonString = substr($buffer, 6);
+                        $jsonString = substr($buffer, 6);
                         $decoded = json_decode($jsonString, TRUE);
 
-                        if ( is_array($decoded) &&
-                            array_key_exists('choices',$decoded) &&
+                        if (is_array($decoded) &&
+                            array_key_exists('choices', $decoded) &&
                             !empty($decoded['choices']) &&
-                            array_key_exists('finish_reason',$decoded['choices'][0]) &&
-                          null === $decoded['choices'][0]['finish_reason']) {
+                            array_key_exists('finish_reason', $decoded['choices'][0]) &&
+                            null === $decoded['choices'][0]['finish_reason']) {
 
                             $numberOfTokensReceived++;
-                            $deltaTimeFloat = time() - $this->llmQueryStartTime;
+                            $deltaTimeFloat = time() - $llmQueryStartTime;
                             if ($deltaTimeFloat > 0) {
                                 $tps = round($numberOfTokensReceived / $deltaTimeFloat);
                                 $this->setCurrentTokensPerSecond($tps);
@@ -361,9 +314,9 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                             } else {
                                 $this->setCurrentTokensPerSecond($numberOfTokensReceived);
                             }
-                          call_user_func($streamCallback, $decoded['choices'][0]['delta']['content'], $this->getCurrentTokensPerSecond());
-                          $streamedData .= $decoded['choices'][0]['delta']['content'];
-                          $buffer = '';
+                            call_user_func($streamCallback, $decoded['choices'][0]['delta']['content'], $this->getCurrentTokensPerSecond());
+                            $streamedData .= $decoded['choices'][0]['delta']['content'];
+                            $buffer = '';
                         } else {
                             if ('[DONE]' === $buffer) {
                                 break;
@@ -397,20 +350,22 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
             throw new RuntimeException("Guzzle request failed: " . $e->getMessage());
         }
 
-
         return $this->response;
     }
 
-    private function setQueryStats($data) {
+    private function setQueryStats($data)
+    {
         $this->queryStats = $data;
         unset($this->queryStats['choices']);
     }
 
-    public function getQueryStats() {
+    public function getQueryStats()
+    {
         return $this->queryStats;
     }
 
-    public function getQuerytimings() {
+    public function getQuerytimings()
+    {
         return $this->queryStats['timings'] ?? [];
     }
 
@@ -465,7 +420,8 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      *
      * @return Response The last response received
      */
-    public function getResponse() {
+    public function getResponse()
+    {
         return $this->response;
     }
 
@@ -490,7 +446,8 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         return $this;
     }
 
-    public function getLLMmodelName(): string {
+    public function getLLMmodelName(): string
+    {
         return $this->model;
     }
 
@@ -498,7 +455,6 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      * Sets custom Guzzle options
      *
      * @param array $guzzleCustomOptions Custom Guzzle options
-     * @return OpenAICompatibleEndpointConnection Returns self for method chaining
      */
     public function setGuzzleCustomOptions(array $guzzleCustomOptions): OpenAICompatibleEndpointConnection
     {
@@ -509,7 +465,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     /**
      * Gets custom Guzzle options
      *
-     * @return array The custom Guzzle options
+     * @return array Custom Guzzle options
      */
     public function getGuzzleCustomOptions(): array
     {
@@ -517,22 +473,20 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     }
 
     /**
-     * Sets Guzzle connection timeout
+     * Sets the Guzzle connection timeout
      *
      * @param int $timeout Timeout in seconds
-     * @return OpenAICompatibleEndpointConnection Returns self for method chaining
      */
-    public function setGuzzleConnectionTimeout(int $timeout) {
-        $currentOptions = $this->getGuzzleCustomOptions();
-        $this->setGuzzleCustomOptions(array_merge($currentOptions, ['timeout' => $timeout]));
-        return $this;
+    public function setGuzzleConnectionTimeout(int $timeout)
+    {
+        $this->guzzleCustomOptions['timeout'] = $timeout;
     }
 
     /**
      * Sets the API key
      *
-     * @param string $apiKey The API key to set
-     * @return OpenAICompatibleEndpointConnection Returns self for method chaining
+     * @param string $apiKey The API key string
+     * @return self Chainable instance
      */
     public function setApiKey(string $apiKey): OpenAICompatibleEndpointConnection
     {
@@ -543,44 +497,52 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     /**
      * Gets available models from the API
      *
-     * @return array|bool Array of available models or false on failure
+     * @return array Available models
      */
-    public function getAvailableModels() {
-        $uri = $this->getServerUri('models') ?? '/v1/models';
-
-        try {
-            $guzzleOptions = [
-                'headers' => ['Content-Type' => 'application/json'],
-                'timeout' => 0,
-            ];
-
-            $guzzleOptions = array_merge($guzzleOptions, $this->getGuzzleCustomOptions());
-
-            $response = $this->guzzleObject->get($uri, $guzzleOptions);
-        } catch (Exception $e) {
-            return FALSE;
-        }
-
-        $models = json_decode($response->getBody()->getContents(), TRUE);
-
-        if (isset($models['data'])) {
-            $data = $models['data'];
-            $models = [];
-            foreach ($data as $model) {
-                $models[] = $model['id'];
-            }
-        }
-
-        return $models;
+    public function getAvailableModels()
+    {
+        $uri = $this->getEndpointUri() . $this->getModelsPath();
+        $response = $this->guzzleObject->get($uri, $this->getGuzzleCustomOptions());
+        $body = $response->getBody();
+        $models = json_decode($body, TRUE);
+        return $models['data'];
     }
 
+    /**
+     * Gets the current tokens per second
+     *
+     * @return int Tokens per second
+     */
     public function getCurrentTokensPerSecond(): int
     {
         return $this->currentTokensPerSecond;
     }
 
+    /**
+     * Sets the current tokens per second
+     *
+     * @param int $currentTokensPerSecond Tokens per second
+     */
     private function setCurrentTokensPerSecond(int $currentTokensPerSecond): void
     {
         $this->currentTokensPerSecond = $currentTokensPerSecond;
     }
+
+    public function setCompletionPath(string $completionPath): OpenAICompatibleEndpointConnection
+    {
+        $this->completionPath = $completionPath;
+        return $this;
+    }
+
+    public function getCompletionPath(): string
+    {
+        return $this->completionPath;
+    }
+
+    public function getBearedToken(): string
+    {
+        return $this->bearedToken;
+    }
+
+
 }

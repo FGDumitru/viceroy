@@ -188,7 +188,7 @@ $benchmarkData = [
 sort($models);
 
 // For debugging/testing specific models
-//$models = ['qwen_QwQ-32B-Q8_0']; // Override model list if needed
+$models = ['qwen_QwQ-32B-Q8_0']; // Override model list if needed
 
 
 // Process each available model
