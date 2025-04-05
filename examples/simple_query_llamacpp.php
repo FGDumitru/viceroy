@@ -4,6 +4,7 @@ require_once '../vendor/autoload.php';
 
 use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
+// This connection will use the config.json file (if it exists). See custom config sample for more options.
 $llm = new OpenAICompatibleEndpointConnection();
 
 try {

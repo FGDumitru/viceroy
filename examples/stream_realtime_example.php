@@ -20,7 +20,8 @@ require_once '../vendor/autoload.php';
 use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
 try {
-    // Initialize connection
+    // Initialize connection.
+    // This connection will use the config.json file (if it exists). See custom config sample for more options.
     $connection = new OpenAICompatibleEndpointConnection();
     $buffered = ''; // Buffer to accumulate streamed content for later comparison
 

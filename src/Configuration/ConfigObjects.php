@@ -10,18 +10,11 @@
  * - Methods for bulk configuration management
  * - Integration with ConfigManager for prompt processing
  *
- * Expected configuration structure:
+ * Expected configuration array structure:
  * {
- *   "host": "http://127.0.0.1",
- *   "port": "8855",
- *   "completions": "/v1/chat/completions",
- *   "health": "/v1/health",
- *   "models": "/v1/models",
- *   "server_type": "llamacpp",
- *   "type": "OpenAiCompatibleConnection",
+ *   "host": "http://127.0.0.1:5000",
+ *   "bearer": "optional API authorization key",
  *   "preferredModel": "gpt-4o",
- *   "debug": boolean,
- *   ...other application-specific settings
  * }
  *
  * @package Viceroy\Configuration
@@ -37,33 +30,30 @@ class ConfigObjects
      *
      * Stores all configuration values in associative array format.
      * Structure should match the JSON configuration file format with:
-     * - 'host' key for API endpoint host
-     * - 'port' key for API endpoint port
-     * - 'completions' key for completions endpoint
-     * - 'health' key for health endpoint
-     * - 'models' key for models endpoint
-     * - 'server_type' key for server type
-     * - 'type' key for connection type
-     * - 'preferredModel' key for preferred model
-     * - 'debug' key for debug mode
-     * - Other application-specific keys
+     * - 'host' key for API endpoint host (includes port if required))
+     * - 'bearer' (optional) endpoint API authorization key
+     * - 'preferredModel' name of the preferred model
      */
     private $config = [
         "host" => "https://api.openai.com",
-        "port" => "443",
+        "bearer" => "",
         "preferredModel" => "gpt-4o"
     ];
 
     /**
      * Constructor
      *
-     * @param string $configFile Path to configuration file (default: 'config.json')
+     * @param string|array $configFile Path to configuration file (default: 'config.json') or an array of settings
      */
-    public function __construct(string $configFile = 'config.json')
+    public function __construct(string|array $configFile = 'config.json')
     {
-        $currentDir = getcwd();
-        $configFilename = $currentDir . DIRECTORY_SEPARATOR . $configFile;
-        $this->readConfigFile($configFilename);
+        if (is_string($configFile)) {
+            $currentDir = getcwd();
+            $configFilename = $currentDir . DIRECTORY_SEPARATOR . $configFile;
+            $this->readConfigFile($configFilename);
+        } elseif (is_array($configFile)) {
+            $this->config = $configFile;
+        }
     }
 
     /**
@@ -127,7 +117,7 @@ class ConfigObjects
      *
      * @return ConfigObjects Returns self for method chaining
      */
-    public function emptyConfigData(): ConfigObjects
+    public function clearConfigData(): ConfigObjects
     {
         $this->config = [];
         return $this;
@@ -148,24 +138,15 @@ class ConfigObjects
      * Gets a configuration value
      *
      * Retrieves a value from the configuration.
-     * Common configuration keys include:
-     * - 'host': API endpoint host
-     * - 'port': Connection port
-     * - 'completions': Completions endpoint
-     * - 'health': Health endpoint
-     * - 'models': Models endpoint
-     * - 'server_type': Server type
-     * - 'type': Connection type
-     * - 'preferredModel': Preferred model
      *
      * @param string $key Configuration key
-     * @return mixed The configuration value or null if key doesn't exist
+     * @return string|null The configuration value or null if key doesn't exist
      * @throws \InvalidArgumentException If config section doesn't exist
      */
-    public function getConfigKey(string $key)
+    public function getConfigKey(string $key): string|null
     {
         if (!isset($this->config[$key])) {
-            throw new \InvalidArgumentException("Config section doesn't exist");
+            return null;
         }
         return $this->config[$key];
     }

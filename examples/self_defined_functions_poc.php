@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require_once '../vendor/autoload.php';
 
+use Viceroy\Configuration\ConfigObjects;
 use Viceroy\Connections\SelfDynamicParametersConnection;
 
 $llm = new SelfDynamicParametersConnection();

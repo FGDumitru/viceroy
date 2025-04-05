@@ -54,11 +54,6 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     private array $parameters = [];
 
     /**
-     * @var Request $request Request handler instance
-     */
-    private Request $request;
-
-    /**
      * @var RolesManager $rolesManager Roles and messages manager
      */
     private RolesManager $rolesManager;
@@ -88,7 +83,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     /**
      * @var string $bearedToken Bearer token for authentication
      */
-    private $bearedToken = '';
+    private string|null $bearedToken = null;
     private int $currentTokensPerSecond;
     private array $queryStats;
     private string $completionPath = '/v1/chat/completions';
@@ -122,7 +117,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      * @param string $bearedToken The Bearer token string
      * @return self Chainable instance
      */
-    public function setBearedToken(string $bearedToken): OpenAICompatibleEndpointConnection
+    public function setBearedToken(string|null $bearedToken): OpenAICompatibleEndpointConnection
     {
         $this->bearedToken = $bearedToken;
         return $this;

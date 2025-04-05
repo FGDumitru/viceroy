@@ -1,4 +1,5 @@
 {
   "apiEndpoint": "http://127.0.0.1:5000",
-  "preferredModel": "gpt-4o"
+  "preferredModel": "gpt-4o",
+  "bearer": ""
 }
