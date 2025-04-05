@@ -2,19 +2,18 @@
 
 ## Table of Contents
 1. [Introduction](#introduction)
-2. [Architecture Diagram](#architecture-diagram)
-3. [Core Components](#core-components)
+2. [Core Components](#core-components)
    - [Configuration Management](#configuration-management)
    - [Connection Handling](#connection-handling)
    - [Request/Response Handling](#requestresponse-handling)
    - [Conversation Management](#conversation-management)
-4. [Usage Example](#usage-example)
-5. [Key Features](#key-features)
-6. [Class Relationships](#class-relationships)
-7. [Configuration Details](#configuration-details)
-8. [Advanced Features](#advanced-features)
-9. [Troubleshooting](#troubleshooting)
-10. [Example Files](#example-files)
+3. [Usage Example](#usage-example)
+4. [Key Features](#key-features)
+5. [Class Relationships](#class-relationships)
+6. [Configuration Details](#configuration-details)
+7. [Advanced Features](#advanced-features)
+8. [Troubleshooting](#troubleshooting)
+9. [Example Files](#example-files)
 
 ## Introduction
 Viceroy provides a PHP framework for interacting with OpenAI-compatible LLM APIs. The library handles configuration management, API communication, conversation state, and response processing.
@@ -25,101 +24,39 @@ Viceroy provides a PHP framework for interacting with OpenAI-compatible LLM APIs
 To integrate the Viceroy LLM Library into your project, you can use Composer. Run the following command in your project directory:
 
 ```bash
-composer require viceroy/llm-library
-```
-
-
-## Architecture Diagram
-```mermaid
-classDiagram
-    class ConfigObjects {
-        +readConfigFile()
-        +getServerConfigKey()
-        +isDebug()
-    }
-    class ConfigManager {
-        +getJsonPrompt()
-        +processJsonPromptBlueprint()
-    }
-    class OpenAICompatibleEndpointConnection {
-        +queryPost()
-        +setSystemMessage()
-        +getAvailableModels()
-    }
-    class Request {
-        -ConfigObjects $configObjects
-    }
-    class Response {
-        +getLlmResponse()
-        +getThinkContent()
-        +wasStreamed()
-    }
-    class RolesManager {
-        +addUserMessage()
-        +addAssistantMessage()
-        +setSystemMessage()
-    }
-    ConfigManager --> ConfigObjects
-    OpenAICompatibleEndpointConnection --> ConfigManager
-    OpenAICompatibleEndpointConnection --> Request
-    OpenAICompatibleEndpointConnection --> Response
-    OpenAICompatibleEndpointConnection --> RolesManager
+composer require fgdumitru/viceroy
 ```
 
 ## Core Components
 
-### 1. Configuration Management
-#### **ConfigObjects.php**
-- Manages configuration data from JSON files
-- Key methods:
-  - `readConfigFile()`: Loads configuration from file
-  - `getServerConfigKey()`: Gets server-specific config values
-  - `isDebug()`: Checks debug mode status
+### Classes:
+1. **Configuration Classes**:
+   - **ConfigManager.php**: Manages configuration settings and provides methods for accessing configuration data.
+   - **ConfigObjects.php**: Container for configuration objects, used by other classes for configuration management.
 
-#### **ConfigManager.php**
-- Processes JSON prompts and parameters
-- Key methods:
-  - `getJsonPrompt()`: Retrieves processed prompt content
-  - `processJsonPromptBlueprint()`: Prepares prompt structure
+2. **Connections Classes**:
+   - **OpenAICompatibleEndpointConnection.php**: Represents a connection to an OpenAI-compatible API endpoint, providing methods for interacting with the API, managing configuration, and handling API requests and responses.
+   - **SelfDynamicParametersConnection.php**: Handles dynamic function execution against OpenAI-compatible endpoints, supporting chaining and complex JSON response parsing.
+   - **TraitableConnectionAbstractClass.php**: Abstract class providing common functionality for connection classes through traits.
+   - **LLMDefaultParametersTrait.php**: Trait for setting default parameters for LLM requests.
+   - **setSystemMessageTrait.php**: Trait for setting system messages in connections.
 
-### 2. Connection Handling
-#### **OpenAICompatibleEndpointConnection.php**
-- Manages API communication via Guzzle
-- Key features:
-  - Streaming response support
-  - Model management
-  - Bearer token authentication
-- Key methods:
-  - `queryPost()`: Sends requests to API
-  - `setSystemMessage()`: Sets initial context
-  - `getAvailableModels()`: Lists available models
-  - `setParameter()`: Sets LLM parameters (temperature, top_p, etc) with fluent interface
+3. **Core Classes**:
+   - **Request.php**: Core HTTP request handler, responsible for formatting and executing HTTP requests, managing headers and authentication, and constructing payloads for API calls.
+   - **Response.php**: Core HTTP response processor, responsible for processing raw HTTP responses, extracting think-tags, handling streamed responses, and providing cleaned, processed content.
+   - **RolesManager.php**: Manages conversation roles and messages, enforcing strict role-based message organization and conversation history tracking.
 
-### 3. Request/Response Handling
-#### **Request.php**
-- Currently minimal implementation holding ConfigObjects reference
+4. **Testing Classes**:
+   - **SelfDynamicParametersConnectionTest.php**: Test class for the `SelfDynamicParametersConnection` class, ensuring its functionality is correct through unit tests.
 
-#### **Response.php**
-- Processes API responses with:
-  - Think-tag extraction (`<think>...</think>`)
-  - Streaming support
-  - Error handling
-- Key methods:
-  - `getLlmResponse()`: Gets processed response content
-  - `getThinkContent()`: Extracts think-tag content
-  - `wasStreamed()`: Checks if response was streamed
+### Key Functionalities and Interconnections:
+- **Configuration Management**: The `ConfigManager` and `ConfigObjects` classes manage configuration settings, providing a centralized way to access and modify configuration data across the system.
+- **API Interaction**: The `OpenAICompatibleEndpointConnection` and `SelfDynamicParametersConnection` classes handle interactions with OpenAI-compatible APIs, managing API requests, responses, and dynamic function execution.
+- **Request and Response Handling**: The `Request` and `Response` classes manage HTTP requests and responses, providing a standardized interface for interacting with external APIs.
+- **Conversation Management**: The `RolesManager` class manages conversation roles and messages, ensuring strict role-based message organization and conversation history tracking.
+- **Testing**: The `SelfDynamicParametersConnectionTest` class provides unit tests for the `SelfDynamicParametersConnection` class, ensuring its functionality is correct.
 
-### 4. Conversation Management
-#### **RolesManager.php**
-- Manages message history by role
-- Enforces system message as first message
-- Key methods:
-  - `addUserMessage()`: Adds user prompt
-  - `addAssistantMessage()`: Adds LLM response
-  - `setSystemMessage()`: Sets system context
-  - `clearMessages()`: Resets conversation
-
-## Usage Example - OpenAI endpoint.
+## Usage Example
 ```php
 // Create connection. It defaults to OpenAI servers.
 $connection = new OpenAICompatibleEndpointConnection();
@@ -178,15 +115,9 @@ echo "\nThink content: " . $response->getThinkContent(); // If this was a reason
 Configuration is managed via JSON files. The `config.json` file is the primary configuration file. Here is an example of what the `config.json` might look like:
 
 ```json
-{
-  "server": {
-    "url": "https://api.openai.com/v1",
-    "bearer_token": "your-bearer-token"
-  },
-  "debug": true,
-  "models": {
-    "default": "gpt4-o"
-  }
+  "apiEndpoint": "https://api.openai.com",
+  "preferredModel": "gpt-4o",
+  "bearer": "Your API key here"
 }
 ```
 
@@ -213,11 +144,3 @@ The `examples` directory contains several PHP scripts demonstrating different us
 - `simple_query_llamacpp.php`: Simple query example with a different LLM provider.
 - `stream_realtime_example.php`: Example of streaming responses in real-time.
 
-
-## Installation
-
-To integrate the Viceroy LLM Library into your project, you can use Composer. Run the following command in your project directory:
-
-```bash
-composer require viceroy/llm-library
-```
