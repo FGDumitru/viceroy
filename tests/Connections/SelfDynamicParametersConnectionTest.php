@@ -3,6 +3,7 @@
 namespace Viceroy\Tests\Connections;
 
 use PHPUnit\Framework\TestCase;
+use Viceroy\Plugins\SelfDefiningFunctionsPlugin;
 use Viceroy\Connections\SelfDynamicParametersConnection;
 use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 use Viceroy\Core\Response;
@@ -82,9 +83,11 @@ class SelfDynamicParametersConnectionTest extends TestCase
 
 class SelfDynamicParametersConnectionTestHelper extends SelfDynamicParametersConnection
 {
-    public function __construct()
+    public function __construct($config = null)
     {
-        parent::__construct('Definitions\\OpenAICompatibleEndpointConnection');
+        parent::__construct($config);
+        $this->addPlugin(new \Viceroy\Plugins\SelfDefiningFunctionsPlugin());
+        $this->addPlugin(new \Viceroy\Plugins\SelfDefiningFunctionsPlugin());
         $this->definedFunctions = [];
         $this->debugMode = false;
         $this->chainMode = false;

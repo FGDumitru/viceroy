@@ -11,7 +11,8 @@ use Viceroy\Core\Request;
 use Viceroy\Core\Response;
 use Viceroy\Core\RolesManager;
 use RuntimeException;
-
+use Viceroy\Plugins\PluginInterface;
+use Viceroy\Plugins\PluginManager;
 /**
  * Represents a connection to an OpenAI-compatible API endpoint.
  * Implements OpenAICompatibleEndpointInterface to provide methods for interacting with the API.
@@ -88,7 +89,9 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     private array $queryStats;
     private string $completionPath = '/v1/chat/completions';
     private string $modelsPath = '/v1/models';
-
+    private PluginManager $pluginManager;
+    private bool $chainMode = false;
+    private array $chainStack = [];
     /**
      * Gets the endpoint URI
      *
@@ -153,8 +156,8 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         $this->createGuzzleConnection();
 
         $this->rolesManager = new RolesManager();
+        $this->pluginManager = new PluginManager();
     }
-
     /**
      * Initializes the Guzzle HTTP client for API requests.
      */
@@ -540,4 +543,42 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     }
 
 
+    public function addPlugin(PluginInterface $plugin): self {
+        $plugin->initialize($this);
+        $this->pluginManager->add($plugin);
+        return $this;
+    }
+
+    public function setChainMode(bool $enabled): self {
+        $this->chainMode = $enabled;
+        $this->chainStack = [];
+        return $this;
+    }
+
+    public function __call(string $method, array $arguments) {
+        foreach ($this->pluginManager->getAll() as $plugin) {
+            if ($plugin->canHandle($method)) {
+                $result = $plugin->handleMethodCall($method, $arguments);
+                
+                if ($this->chainMode) {
+                    $this->chainStack[] = [
+                        'method' => $method,
+                        'arguments' => $arguments,
+                        'result' => $result
+                    ];
+                    return $this;
+                }
+                
+                return $result;
+            }
+        }
+        throw new \BadMethodCallException("Method $method does not exist");
+    }
+
+    public function getLastResponse() {
+        if (empty($this->chainStack)) {
+            return null;
+        }
+        return end($this->chainStack)['result'];
+    }
 }
