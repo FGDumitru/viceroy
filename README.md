@@ -2,18 +2,19 @@
 
 ## Table of Contents
 1. [Introduction](#introduction)
-2. [Core Components](#core-components)
+2. [Installation](#installation)
+3. [Core Components](#core-components)
    - [Configuration Management](#configuration-management)
    - [Connection Handling](#connection-handling)
    - [Request/Response Handling](#requestresponse-handling)
    - [Conversation Management](#conversation-management)
-3. [Usage Example](#usage-example)
-4. [Key Features](#key-features)
-5. [Class Relationships](#class-relationships)
-6. [Configuration Details](#configuration-details)
-7. [Advanced Features](#advanced-features)
-8. [Troubleshooting](#troubleshooting)
-9. [Example Files](#example-files)
+4. [Usage Example](#usage-example)
+5. [Key Features](#key-features)
+6. [Class Relationships](#class-relationships)
+7. [Configuration Details](#configuration-details)
+8. [Advanced Features](#advanced-features)
+9. [Troubleshooting](#troubleshooting)
+10. [Example Files](#example-files)
 
 ## Introduction
 Viceroy provides a PHP framework for interacting with OpenAI-compatible LLM APIs. The library handles configuration management, API communication, conversation state, and response processing.
