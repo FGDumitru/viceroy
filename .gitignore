@@ -12,3 +12,4 @@ examples/benchmark_stats.csv
 /memory-bank/
 /default-mode/
 .clinerules-default
+/examples/benchmark_results/

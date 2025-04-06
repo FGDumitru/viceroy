@@ -1,6 +1,6 @@
 <?php
 
-namespace Viceroy\Plugins;
+namespace Viceroy\Core;
 
 class PluginManager {
     private array $plugins = [];

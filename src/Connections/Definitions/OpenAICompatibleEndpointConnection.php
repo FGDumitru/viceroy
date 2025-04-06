@@ -5,14 +5,14 @@ namespace Viceroy\Connections\Definitions;
 use Exception;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
+use RuntimeException;
 use Viceroy\Configuration\ConfigManager;
 use Viceroy\Configuration\ConfigObjects;
-use Viceroy\Core\Request;
+use Viceroy\Core\PluginInterface;
+use Viceroy\Core\PluginManager;
 use Viceroy\Core\Response;
 use Viceroy\Core\RolesManager;
-use RuntimeException;
-use Viceroy\Plugins\PluginInterface;
-use Viceroy\Plugins\PluginManager;
+
 /**
  * Represents a connection to an OpenAI-compatible API endpoint.
  * Implements OpenAICompatibleEndpointInterface to provide methods for interacting with the API.
@@ -33,11 +33,6 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      * @var ConfigObjects $configuration Configuration objects container
      */
     private ConfigObjects $configuration;
-
-    /**
-     * @var ConfigManager $configManager Configuration manager instance
-     */
-    private ConfigManager $configManager;
 
     /**
      * @var float|null $queryTime Time taken for last query in seconds
@@ -90,7 +85,6 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     private string $completionPath = '/v1/chat/completions';
     private string $modelsPath = '/v1/models';
     private PluginManager $pluginManager;
-    private bool $chainMode = false;
     private array $chainStack = [];
     /**
      * Gets the endpoint URI
@@ -217,6 +211,12 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         return $this;
     }
 
+    public function getParameter(string $key): mixed
+    {
+        return $this->parameters[$key] ?? ($this->getDefaultParameters()[$key] ?? null);
+    }
+
+
     /**
      * Gets default parameters for API requests
      *
@@ -262,7 +262,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         $guzzleRequest = [
             'json' => $promptJson,
             'headers' => ['Content-Type' => 'application/json'],
-            'timeout' => 0,
+            'timeout' => 300, // default connection
             'stream' => TRUE
         ];
 
@@ -312,7 +312,13 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                             } else {
                                 $this->setCurrentTokensPerSecond($numberOfTokensReceived);
                             }
-                            call_user_func($streamCallback, $decoded['choices'][0]['delta']['content'], $this->getCurrentTokensPerSecond());
+                            $streamResult = call_user_func($streamCallback, $decoded['choices'][0]['delta']['content'], $this->getCurrentTokensPerSecond());
+
+                            if (FALSE === $streamResult) {
+                                // If we receive a FALSE return value from the callback assume we want to break the streaming.
+                                break;
+                            }
+
                             $streamedData .= $decoded['choices'][0]['delta']['content'];
                             $buffer = '';
                         } else {
@@ -475,16 +481,17 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      *
      * @param int $timeout Timeout in seconds
      */
-    public function setGuzzleConnectionTimeout(int $timeout)
+    public function setConnectionTimeout(int $timeout): static
     {
         $this->guzzleCustomOptions['timeout'] = $timeout;
+        return $this;
     }
 
     /**
      * Sets the API key
      *
      * @param string $apiKey The API key string
-     * @return self Chainable instance
+     * @return self instance
      */
     public function setApiKey(string $apiKey): OpenAICompatibleEndpointConnection
     {
@@ -496,8 +503,9 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      * Gets available models from the API
      *
      * @return array Available models
+     * @throws GuzzleException
      */
-    public function getAvailableModels()
+    public function getAvailableModels(): array
     {
         $uri = $this->getEndpointUri() . $this->getModelsPath();
         $response = $this->guzzleObject->get($uri, $this->getGuzzleCustomOptions());
@@ -543,15 +551,9 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     }
 
 
-    public function addPlugin(PluginInterface $plugin): self {
+    public function registerPlugin(PluginInterface $plugin): self {
         $plugin->initialize($this);
         $this->pluginManager->add($plugin);
-        return $this;
-    }
-
-    public function setChainMode(bool $enabled): self {
-        $this->chainMode = $enabled;
-        $this->chainStack = [];
         return $this;
     }
 
@@ -559,26 +561,24 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         foreach ($this->pluginManager->getAll() as $plugin) {
             if ($plugin->canHandle($method)) {
                 $result = $plugin->handleMethodCall($method, $arguments);
-                
-                if ($this->chainMode) {
-                    $this->chainStack[] = [
-                        'method' => $method,
-                        'arguments' => $arguments,
-                        'result' => $result
-                    ];
-                    return $this;
-                }
-                
                 return $result;
             }
         }
         throw new \BadMethodCallException("Method $method does not exist");
     }
 
-    public function getLastResponse() {
-        if (empty($this->chainStack)) {
-            return null;
+    public function getLastResponse(): Response|null
+    {
+        return $this->response;
+    }
+
+    public function readBearerTokenFromFile(string $bearerTokenFile): OpenAICompatibleEndpointConnection {
+        if (!file_exists($bearerTokenFile)) {
+            throw new \InvalidArgumentException("Bearer token file does not exist");
         }
-        return end($this->chainStack)['result'];
+
+        $this->setBearedToken(file_get_contents($bearerTokenFile));
+
+        return $this;
     }
 }

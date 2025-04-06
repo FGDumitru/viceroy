@@ -14,7 +14,7 @@ use Viceroy\Plugins\SelfDefiningFunctionsPlugin;
 
 $llm = new OpenAICompatibleEndpointConnection();
 $plugin = new SelfDefiningFunctionsPlugin();
-$llm->addPlugin($plugin);
+$llm->registerPlugin($plugin);
 
 // Define various function types
 $plugin->addNewFunction('capitalize', 'Capitalize all letters from the following string: [Parameter 1]');
@@ -26,48 +26,26 @@ $plugin->addNewFunction('extract_json_value', 'Extract the value of key "[Parame
 
 // Test basic functions
 echo "=== Basic Function Tests ===\n";
-echo "Capitalize 'hello': " . json_decode($llm->capitalize('hello'))->response . PHP_EOL;
-echo "Sum 1 + 2 + 3: " . json_decode($llm->sum(1, 2, 3))->response . PHP_EOL;
-echo "Reverse 'abc': " . json_decode($llm->reverse('abc'))->response . PHP_EOL;
-echo "Contains 'hello world' 'world': " . json_decode($llm->contains('hello world', 'world'))->response . PHP_EOL;
-echo "Length of 'test': " . json_decode($llm->length('test'))->response . PHP_EOL;
+echo "Capitalize 'hello': " . $llm->capitalize('hello') . PHP_EOL;
+echo "Sum 1 + 2 + 3: " . $llm->sum(1, 2, 3) . PHP_EOL;
+echo "Reverse 'abc': " . $llm->reverse('abc') . PHP_EOL;
+echo "Contains 'hello world' 'world': " . $llm->contains('hello world', 'world')  ? 'True' : 'False'. PHP_EOL;
+echo "Length of 'test': " . $llm->length('test') . PHP_EOL;
 
-// Test function chaining
-echo "\n=== Function Chaining Tests ===\n";
 
-// Basic chaining examples
-$reversedCapitalized = $llm->reverse($llm->capitalize('chain'));
-echo "Reverse of capitalized 'chain': " . json_decode($reversedCapitalized)->response . PHP_EOL;
 
-$jsonResponse = $llm->capitalize('test');
-var_dump($jsonResponse);
-die;
-$extractedValue = $llm->extract_json_value('response', $jsonResponse);
-echo "Extracted value from JSON response: " . $extractedValue . PHP_EOL;
-die;
 // Advanced chaining example
 $chainLLM = new OpenAICompatibleEndpointConnection();
 $chainPlugin = new SelfDefiningFunctionsPlugin();
-$chainLLM->addPlugin($chainPlugin);
+$chainPlugin->setChainMode();
+
+$chainLLM->registerPlugin($chainPlugin);
 
 $chainPlugin->addNewFunction('add', 'Add all numeric values provided in the parameters. Return the total sum.');
 $chainPlugin->addNewFunction('multiply', 'Multiply all numeric values provided in the parameters. Return the product.');
-$chainPlugin->addNewFunction('numberToLiteral', 'Convert a numeric value to its literal form.');
+$chainPlugin->addNewFunction('numberToLiteral', 'Convert a numeric value to its literal form. E.g. The literal value of number 1 is one.');
 
 // Advanced chaining with chain mode
-$chainLLM->setChainMode(true);
 $literal = $chainLLM->add(5, 3)->multiply(2)->numberToLiteral()->getLastResponse();
-echo "Chaining result (add(5,3)->multiply(2)->numberToLiteral()): " . json_decode($literal)->response . PHP_EOL;
+echo "Chaining result of: add(5,3)->multiply(2)->numberToLiteral()->getLastResponse() is `" . $chainPlugin->getLastResponse() . '`' . PHP_EOL;
 
-// Test error case
-echo "\n=== Error Handling Test ===\n";
-try {
-    echo "Calling undefined function: " . $llm->undefinedFunction() . PHP_EOL;
-} catch (Exception $e) {
-    echo "Error caught: " . $e->getMessage() . PHP_EOL;
-}
-
-// Debug output
-echo "\n=== Debug Information ===\n";
-echo "Last Prompt Sent:\n";
-print_r($llm->getRolesManager()->getMessages());

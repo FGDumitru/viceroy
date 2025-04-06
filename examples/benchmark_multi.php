@@ -30,10 +30,13 @@
 require_once '../vendor/autoload.php';
 use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
+// Maximum number of tokens per response.
+const MAX_OUTPUT_CONTEXT = 8192;
+
 // ======================= Configuration =======================
 // Initialize connection with maximum possible timeout
 $llmConnection = new OpenAICompatibleEndpointConnection();
-$llmConnection->setGuzzleConnectionTimeout(PHP_INT_MAX); // No timeout
+$llmConnection->setConnectionTimeout(3600 * 4); // 4h timeout for a single response.
 
 $results = [];
 $benchmarkJsonFile = 'benchmark_runs.json'; // Changed from INI to JSON
@@ -243,7 +246,7 @@ if (empty($models)) {
 
 // Reorganize DeepSeek models
 [$deepseek, $others] = array_reduce($models, function($carry, $model) {
-    stripos($model, 'deepseek') !== false ? $carry[0][] = $model : $carry[1][] = $model;
+    stripos($model['id'], 'deepseek') !== false ? $carry[0][] = $model : $carry[1][] = $model;
     return $carry;
 }, [[], []]);
 
@@ -256,19 +259,21 @@ $models = array_merge($others, $deepseek);
 foreach ($models as $modelIndex => $model) {
     // Initialize model-specific counters and timers
 
+    $modelId = $model['id'];
+
     // Apply model filtering if specified
     if (!empty($filterModels)) {
         $match = false;
         // Check if model matches any filter pattern
         foreach ($filterModels as $filter) {
-            if (fnmatch(strtolower($filter), strtolower($model))) {
+            if (fnmatch(strtolower($filter), strtolower($modelId))) {
                 $match = true;
                 break;
             }
         }
         // Skip non-matching models
         if (!$match) {
-            echo "\n\033[1;33mSkipping model (does not match filter): $model\033[0m\n";
+            echo "\n\033[1;33mSkipping model (does not match filter): $modelId\033[0m\n";
             continue;
         }
     }
@@ -277,24 +282,24 @@ foreach ($models as $modelIndex => $model) {
     if (!empty($ignoredModels)) {
         $match = false;
         foreach ($ignoredModels as $filter) {
-            if (fnmatch(strtolower($filter), strtolower($model))) {
+            if (fnmatch(strtolower($filter), strtolower($modelId))) {
                 $match = true;
                 break;
             }
         }
         if ($match) {
-            echo "\n\033[1;33mIgnoring model (matched filter): $model\033[0m\n";
+            echo "\n\033[1;33mIgnoring model (matched filter): $modelId\033[0m\n";
             continue;
         }
     }
 
-    $llmConnection->setLLMmodelName($model);
+    $llmConnection->setLLMmodelName($model['id']);
     $modelResults = [];
     $correctCount = 0;
     $incorrectCount = 0;
     $currentQuestion = 0;
 
-    echo "\n\033[1;34m=== Model " . ($modelIndex+1) . "/" . count($models) . ": $model ===\033[0m\n";
+    echo "\n\033[1;34m=== Model " . ($modelIndex+1) . "/" . count($models) . ": $modelId ===\033[0m\n";
 
     $startTime = microtime(true);
     $modelStartTime = $startTime;
@@ -313,7 +318,7 @@ foreach ($models as $modelIndex => $model) {
             echo "Options: $options\n";
         }
 
-        $existingAttempts = $benchmarkJsonData[$model][$qIndex] ?? []; // Now uses JSON data
+        $existingAttempts = $benchmarkJsonData[$model['id']][$qIndex] ?? []; // Now uses JSON data
         $numAttempts = count($existingAttempts);
         $remainingAttempts = $totalRequiredAnswersPerQuestion - $numAttempts;
 
@@ -343,7 +348,7 @@ foreach ($models as $modelIndex => $model) {
                 $averageTimePerQuestion = $done > 0 ? $timePassed / $done : 0;
                 $eta = $averageTimePerQuestion * ($totalQuestions - $done);
 
-                echo "\n\033[1mQuestion $currentQuestion/$totalQuestions | Model $model\033[0m\n";
+                echo "\n\033[1mQuestion $currentQuestion/$totalQuestions | Model $modelId\033[0m\n";
                 echo "Progress: $progress\n";
                 echo "Time Passed: " . gmdate("H:i:s", (int) $timePassed) . "\n";
                 echo "ETA: " . gmdate("H:i:s", (int) $eta) . "\n";
@@ -357,10 +362,19 @@ foreach ($models as $modelIndex => $model) {
 
                     // Set deterministic parameters for reproducible results
                     $parameters = $llmConnection->getDefaultParameters();
-                    $parameters['seed'] = 0; // Fixed seed for consistency
+                    $parameters['seed'] = 0.3; // Fixed seed for consistency
+                    $llmConnection->setParameter('n_predict', MAX_OUTPUT_CONTEXT);
+                    $llmConnection->setParameter('seed', 0.35);
+                    $stopWords = $llmConnection->getParameter("stop") ?? [];
+                    $stopWords[] = '<done>';
+                    $stopWords[] = '/<done>';
+                    $llmConnection->setParameter('stop', $stopWords);
+
 
                     // Execute the query and get response
-                    $response = $llmConnection->queryPost($parameters);
+                    $response = $llmConnection->queryPost([], function($chunk) {
+                        echo $chunk;
+                    });
 
                     if (FALSE === $response) { // we had an error
 
@@ -374,7 +388,7 @@ foreach ($models as $modelIndex => $model) {
                         $rawContent = json_decode($llmConnection->getResponse()->getRawContent(), TRUE);
 
                         $verboseResponse = $rawContent['__verbose'] ?? [];
-                        echo json_encode($rawContent['timings'] ?? []) . "\n";
+                        echo PHP_EOL . json_encode($llmConnection->getQuerytimings() ?? []) . "\n";
                         $reasoning = $llmConnection->getThinkContent();
                         $isCorrect = validateResponse($entry, $content);
                         $responseTime = $llmConnection->getLastQueryMicrotime();
@@ -398,13 +412,12 @@ foreach ($models as $modelIndex => $model) {
                 ];
 
                 // After updating attempts
-                $benchmarkJsonData[$model][$qIndex] = $existingAttempts;
+                $benchmarkJsonData[$modelId][$qIndex] = $existingAttempts;
                 saveBenchmarkJson($benchmarkJsonData); // Save to JSON after each attempt
                 //
 
                 $status = $isCorrect ? '👍' : '🚫';
                 echo "\n\t### Attempt " . ($numAttempts + $i + 1) . "/$totalRequiredAnswersPerQuestion $status\n";
-                echo "\tResponse: $content\n";
             }
 
             $correctAttempts = count(array_filter($existingAttempts, fn($a) => $a['correct']));
@@ -436,12 +449,12 @@ foreach ($models as $modelIndex => $model) {
     // Final model summary
     $endTime = microtime(true);
     $timePassed = $endTime - $modelStartTime;
-    echo "\n\033[32mModel Complete! [ $model ]\033[0m";
+    echo "\n\033[32mModel Complete! [ $modelId ]\033[0m";
     echo "\nFinal Score: $correctCount/$totalQuestions";
     echo "\nTime Passed: " . gmdate("H:i:s", $timePassed);
     echo "\n" . generateProgressBar($totalQuestions, $totalQuestions, $correctCount, $totalQuestions - $correctCount) . "\n";
 
-    $results[$model] = [
+    $results[$modelId] = [
         'score' => $correctCount,
         'details' => $modelResults
     ];

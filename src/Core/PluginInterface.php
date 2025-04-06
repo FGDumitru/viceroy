@@ -1,6 +1,6 @@
 <?php
 
-namespace Viceroy\Plugins;
+namespace Viceroy\Core;
 
 use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 

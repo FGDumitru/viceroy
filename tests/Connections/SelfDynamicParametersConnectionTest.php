@@ -86,8 +86,8 @@ class SelfDynamicParametersConnectionTestHelper extends SelfDynamicParametersCon
     public function __construct($config = null)
     {
         parent::__construct($config);
-        $this->addPlugin(new \Viceroy\Plugins\SelfDefiningFunctionsPlugin());
-        $this->addPlugin(new \Viceroy\Plugins\SelfDefiningFunctionsPlugin());
+        $this->registerPlugin(new \Viceroy\Plugins\SelfDefiningFunctionsPlugin());
+        $this->registerPlugin(new \Viceroy\Plugins\SelfDefiningFunctionsPlugin());
         $this->definedFunctions = [];
         $this->debugMode = false;
         $this->chainMode = false;

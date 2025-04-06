@@ -69,7 +69,8 @@ function formatMessage($role, $message, $useColors) {
  * @param string $message The message content
  * @param bool $useColors Whether to use terminal colors
  */
-function displayChatMessage($role, $message, $useColors) {
+function displayChatMessage(string $role, string $message, bool $useColors): void
+{
     // Render formatted message with visual separators
     $formatted = formatMessage($role, $message, $useColors);
 
