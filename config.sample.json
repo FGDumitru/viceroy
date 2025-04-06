@@ -1,5 +1,0 @@
-{
-  "apiEndpoint": "https://api.openai.com",
-  "preferredModel": "gpt-4o",
-  "bearer": ""
-}
