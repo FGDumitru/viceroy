@@ -4,6 +4,7 @@ namespace Viceroy\Plugins;
 
 use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 use Viceroy\Core\PluginInterface;
+use Viceroy\Core\PluginType;
 
 class SelfDefiningFunctionsPlugin implements PluginInterface
 {
@@ -86,6 +87,10 @@ SYS;
     public function getName(): string
     {
         return 'self_defining_functions';
+    }
+
+    public function getType(): PluginType {
+        return  PluginType::GENERAL;
     }
 
     public function initialize(OpenAICompatibleEndpointConnection $connection): void
