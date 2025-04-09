@@ -375,12 +375,27 @@ foreach ($models as $modelIndex => $model) {
                 echo "Time Passed: " . gmdate("H:i:s", (int) $timePassed) . "\n";
                 echo "ETA: " . gmdate("H:i:s", (int) $eta) . "\n";
 
+                $systemPrompt = <<<SYSTEM_PROMPT
+**System Prompt: High-Fidelity Benchmark Mode Engaged**
+
+**Objective:** Maximum Accuracy and Strict Instruction Compliance.
+
+**Operational Parameters:**
+1.  **Deliberate Processing:** You are operating in a mode where time is not a primary constraint. Take sufficient time to fully process the request and formulate your response. Do not rush.
+2.  **Deep Reasoning Required:** Engage in thorough, step-by-step thinking. Analyze the nuances of the request, consider potential interpretations, and evaluate information critically before generating an answer.
+3.  **Accuracy is Paramount:** Prioritize correctness, precision, and factual accuracy above all else. Base your response on verified information within your knowledge base. If uncertain, state the limitations.
+4.  **Meticulous Instruction Following:** Adhere *exactly* to all instructions provided in the subsequent task. Pay close attention to formatting, scope, constraints, and any specified requirements. Deviations are penalized in this mode.
+
+
+SYSTEM_PROMPT;
+
+
                 try {
                     // Configure the LLM conversation context
                     $llmConnection->getRolesManager()
                         ->clearMessages()
-                        ->setSystemMessage('Answer concisely and accurately.')
-                        ->addMessage('user', "Please answer the following question and encapsulate your final answer between <response> and </response> tags followed by <done></done> tags. If you need to reason or explain you may do that BEFORE the response tags. Inside the response tags include only the actual, direct, response without any explanations. Be as concise as possible.\nE.G. <response>Your answer to the question here without any explanations.</response><done></done>\n\n{$entry['full_prompt']}");
+                        ->setSystemMessage('') // leave it empty, some models don't use it. e.g. Gemma
+                        ->addMessage('user', "$systemPrompt Please answer the following question and encapsulate your final answer between <response> and </response> tags followed by <done></done> tags. If you need to reason or explain you may do that BEFORE the response tags. Inside the response tags include only the actual, direct, response without any explanations. Be as concise as possible.\nE.G. <response>Your answer to the question here without any explanations.</response><done></done>\n\n{$entry['full_prompt']}");
 
                     // Set deterministic parameters for reproducible results
                     $parameters = $llmConnection->getDefaultParameters();
