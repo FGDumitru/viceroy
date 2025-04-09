@@ -123,6 +123,10 @@ function generateProgressBar($current, $total, $correct, $wrong) {
 function prepareQuestion(&$entry) {
     // Shuffle multiple-choice options if present
     if ($entry['type'] === 'mcq' && !empty($entry['options'])) {
+
+        // Override the instruction field for multiple case questions.
+        $entry['instruction'] = "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).";
+
         $options = $entry['options'];
         // Randomize option order using uksort with random comparator
         uksort($options, fn() => rand() - getrandmax()/2);
@@ -328,7 +332,7 @@ foreach ($models as $modelIndex => $model) {
         prepareQuestion($entry); // Shuffle options and build full prompt
 
         $questionString = $benchmarkData[$qIndex]['q'];
-        $instructionString = $benchmarkData[$qIndex]['instruction'];
+        $instructionString = $entry['instruction'];
         $options = json_encode($entry['shuffled_options'] ?? null);
         $expectedAnswer = implode(' || ',$benchmarkData[$qIndex]['answers']);
         echo "\nQuestion #$currentQuestion: " . $questionString . "\nInstruction: " . $instructionString . "\nExpected answer: [" . $expectedAnswer . "]\n";
