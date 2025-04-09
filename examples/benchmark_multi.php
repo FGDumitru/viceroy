@@ -203,10 +203,28 @@ function validateResponse($entry, $response) {
             if (str_contains($clean, $pa)) {
                 return true;
             }
+
+            if (str_match_wildcard($clean, $pa)) {
+                return true;
+            }
         }
     }
     return false;
 }
+
+function str_match_wildcard(string $haystack, string $pattern, bool $caseInsensitive = false): bool {
+    // Convert wildcards to regex equivalents, but leave ^ and $ untouched
+    $regex = preg_replace_callback('/[^*?^$]+/', function ($matches) {
+        return preg_quote($matches[0], '/');
+    }, $pattern);
+
+    $regex = str_replace(['*', '?'], ['.*', '.'], $regex);
+
+    // Final regex pattern
+    $flags = $caseInsensitive ? 'i' : '';
+    return preg_match("/{$regex}/{$flags}", $haystack) === 1;
+}
+
 
 function loadBenchmarkJson() {
     global $benchmarkJsonFile;

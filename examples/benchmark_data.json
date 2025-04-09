@@ -18,7 +18,7 @@
     "type": "mcq",
     "q": "Please answer the following question in Drupal 10 context. Which Symfony components are required by Drupal 10 core?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
-    "answers": ["a", "c", "e", "f"],
+    "answers": ["a", "c", "e"],
     "options": {
       "a": "HttpKernel",
       "b": "SwiftMailer",
@@ -88,9 +88,9 @@
   },
   {
     "type": "mcq",
-    "q": "Please answer the following question in Drupal 10 context. Which Twig function handles translation in templates?",
+    "q": "Please answer the following question in Drupal 10 context. Which Twig function(s) handles translation in templates?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
-    "answers": ["a"],
+    "answers": ["a","b"],
     "options": {
       "a": "t",
       "b": "trans",
@@ -119,7 +119,7 @@
     "type": "mcq",
     "q": "Please answer the following question in Drupal 10 context. Which event is fired before entity saving?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
-    "answers": ["d"],
+    "answers": ["c"],
     "options": {
       "a": "EntitySaveEvent",
       "b": "PreEntitySave",
@@ -274,7 +274,7 @@
     "type": "mcq",
     "q": "What is the correct return type for a hook_help() implementation in Drupal 10?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
-    "answers": ["a"],
+    "answers": ["a","b"],
     "options": {
       "a": "string",
       "b": "array",
@@ -579,7 +579,8 @@
     "instruction": "Provide the answer only by using logical symbols without any explanations inside the response tags.",
     "answers": [
       "\u00acY \u2192 \u00acX",
-      "\\(\\neg Y \\rightarrow \\neg X\\)"
+      "\\(\\neg Y \\rightarrow \\neg X\\)",
+      "*neg Y*rightarrow*neg X*"
     ]
   },
   {
