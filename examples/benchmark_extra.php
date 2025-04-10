@@ -242,10 +242,19 @@ function displayModelStats(SQLiteDatabase $db): void {
  * Generates a visual progress bar with emoji indicators
  */
 function generateProgressBar($current, $total, $correct, $wrong) {
+
+    
+    
     $done = $correct + $wrong;
     $remaining = $total - $done;
 
-    $bar = "[$done/$total ";
+    $runNumber = intdiv($done - 1, $total) + 1;
+
+    if ($done > $total) {
+        $done = $done - ($runNumber - 1) * $total;
+    }
+
+    $bar = "[Loop $runNumber | $done/$total ";
 
     if ($correct > 0) {
         $bar .= str_repeat('👍', $correct);   // Correct answers
@@ -539,6 +548,8 @@ foreach ($models as $modelIndex => $model) {
                     $correctCount,
                     $incorrectCount
                 );
+                //$runNumber = intdiv($currentQuestion - 1, $totalQuestions) + 1;
+                //echo "Progress: [Question {$currentQuestion}/{$totalQuestions}] - Run #{$runNumber}\n";
 
                 $currentTime = microtime(true);
                 $timePassed = $currentTime - $modelStartTime;
@@ -679,10 +690,11 @@ SYSTEM_PROMPT;
                     // Display updated stats after each question
                     $currentStats = $db->getModelStats($modelId);
                     if ($currentStats) {
-                        echo "\nCurrent Stats:\n";
-                        echo "Correct: {$currentStats['correct_answers']} (" . number_format($currentStats['percentage_correct'], 1) . "%)\n";
-                        echo "Avg Time: " . number_format($currentStats['avg_response_time'], 3) . "s\n";
-                        echo "Tokens/s: " . number_format($currentStats['avg_tokens_per_second'], 1) . "\n";
+                        echo "\n\033[1;34mCurrent Stats: \033[0m";
+                        echo "\033[1;32mCorrect: {$currentStats['correct_answers']} (" . number_format($currentStats['percentage_correct'], 1) . "%)\033[0m, ";
+                        echo "\033[1;31mFailed: {$currentStats['incorrect_answers']}\033[0m, ";
+                        echo "\033[1;33mAvg Time: " . number_format($currentStats['avg_response_time'], 3) . "s, ";
+                        echo "Tokens/s: " . number_format($currentStats['avg_tokens_per_second'], 1) . "\033[0m\n";
                     }
                 } catch (Exception $e) {
                     $db->rollback();
