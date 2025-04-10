@@ -185,7 +185,8 @@ function displayModelStats(SQLiteDatabase $db): void {
     $header = [
         'Model',
         'Correct %',
-        'Avg Time',
+        'Q-OK',
+        'Q_FAIL',
         'Prompt Time',
         'Pred Time',
         'Tokens/s',
@@ -199,7 +200,8 @@ function displayModelStats(SQLiteDatabase $db): void {
             $model['total_questions'] > 0 ?
                 number_format(($model['correct_answers'] / $model['total_questions']) * 100, 1) . '%' :
                 '0.0%',
-            number_format($model['avg_response_time'], 3) . 's',
+            $model['correct_answers'],
+            $model['incorrect_answers'],
             number_format($model['avg_prompt_time'], 3) . 's',
             number_format($model['avg_predicted_time'], 3) . 's',
             number_format($model['avg_tokens_per_second'], 1),
