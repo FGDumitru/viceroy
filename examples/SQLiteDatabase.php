@@ -119,8 +119,7 @@ class SQLiteDatabase {
             $promptTime,
             $predictedTokens,
             $predictedTime,
-            $tokensPerSecond,
-            $accuracy
+            $tokensPerSecond
         ]);
         
         // Update aggregated stats

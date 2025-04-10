@@ -611,7 +611,7 @@ SYSTEM_PROMPT;
                         // Check speed limits after minimum attempts
                         $attemptCount = count($existingAttempts) + 1;
                         if ($attemptCount >= MIN_ANSWERS_FOR_EVALUATION && !$ignoreSpeedLimits) {
-                            if ($promptSpeed < MIN_PROMPT_SPEED || $genSpeed < MIN_TOKEN_GENERATION || $promptSpeed < $genSpeed) {
+                            if ($promptSpeed < MIN_PROMPT_SPEED || $genSpeed < MIN_TOKEN_GENERATION) {
                                 echo "\n\033[1;31mSpeed limit violation - prompt: {$promptSpeed}t/s, generation: {$genSpeed}t/s\033[0m\n";
                                 echo "Skipping to next model...\n";
                                 break 2; // Break out of both question and model loops
