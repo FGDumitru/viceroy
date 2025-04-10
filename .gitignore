@@ -6,6 +6,7 @@
 .vscode/
 examples/benchmark_*.json
 examples/benchmark_stats.csv
+examples/benchmark.db
 .roomodes
 .rooignore
 /.roo/
