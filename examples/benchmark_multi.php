@@ -376,20 +376,14 @@ foreach ($models as $modelIndex => $model) {
                 echo "ETA: " . gmdate("H:i:s", (int) $eta) . "\n";
 
                 $systemPrompt = <<<SYSTEM_PROMPT
-**System Prompt: High-Fidelity Benchmark Mode Engaged**
-
-**Objective:** Maximum Accuracy and Strict Instruction Compliance.
-
-**Operational Parameters:**
-1.  **Deliberate Processing:** You are operating in a mode where time is not a primary constraint. Take sufficient time to fully process the request and formulate your response. Do not rush.
-2.  **Deep Reasoning Required:** Engage in thorough, step-by-step thinking. Analyze the nuances of the request, consider potential interpretations, and evaluate information critically before generating an answer.
-3.  **Accuracy is Paramount:** Prioritize correctness, precision, and factual accuracy above all else. Base your response on verified information within your knowledge base. If uncertain, state the limitations.
-4.  **Meticulous Instruction Following:** Adhere *exactly* to all instructions provided in the subsequent task. Pay close attention to formatting, scope, constraints, and any specified requirements. Deviations are penalized in this mode.
-
-
+You are a helpful AI assistant programmed for concise, factual answers. Respond to questions with the minimum information required for a correct and direct answer. Do not:
+- Provide context or background unless specifically requested.
+- Offer opinions, speculations, or deep analysis.
+- Elaborate beyond the core answer.
+- Use conversational filler.
+- Stick strictly to the most direct and brief response possible.
 SYSTEM_PROMPT;
-
-
+                
                 try {
                     // Configure the LLM conversation context
                     $llmConnection->getRolesManager()
@@ -399,7 +393,7 @@ SYSTEM_PROMPT;
 
                     // Set deterministic parameters for reproducible results
                     $parameters = $llmConnection->getDefaultParameters();
-                    $parameters['seed'] = 0.3; // Fixed seed for consistency
+                    $parameters['seed'] = 0; // Fixed seed for consistency
                     $llmConnection->setParameter('n_predict', MAX_OUTPUT_CONTEXT);
                     $llmConnection->setParameter('seed', 0.35);
                     $stopWords = $llmConnection->getParameter("stop") ?? [];
