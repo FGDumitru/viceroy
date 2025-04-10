@@ -62,7 +62,7 @@ HELP;
  * Key Features:
  * 1. Model Filtering: Supports pattern-based inclusion/exclusion of models
  * 2. Multi-Attempt Validation: Tracks multiple response attempts per question
- * 3. Detailed Metrics: Captures timing data and correctness statistics
+ * 3. Detailed Metrics: Captures timing data
  * 4. Output Formats: Produces both human-readable CSV and machine-readable JSON
  * 5. Error Handling: Gracefully manages API timeouts and exceptions
  *
@@ -185,7 +185,6 @@ function displayModelStats(SQLiteDatabase $db): void {
     $header = [
         'Model',
         'Correct %',
-        'Accuracy %',
         'Avg Time',
         'Prompt Time',
         'Pred Time',
@@ -200,7 +199,6 @@ function displayModelStats(SQLiteDatabase $db): void {
             $model['total_questions'] > 0 ?
                 number_format(($model['correct_answers'] / $model['total_questions']) * 100, 1) . '%' :
                 '0.0%',
-            number_format($model['avg_question_accuracy'] ?? 0, 1) . '%',
             number_format($model['avg_response_time'], 3) . 's',
             number_format($model['avg_prompt_time'], 3) . 's',
             number_format($model['avg_predicted_time'], 3) . 's',
@@ -640,8 +638,6 @@ SYSTEM_PROMPT;
                 $db->beginTransaction();
                 try {
                     foreach ($existingAttempts as $attemptId => $attempt) {
-                        // Calculate accuracy as percentage (0-100)
-                        $accuracy = $attempt['correct'] ? 100.0 : 0.0;
                         $db->saveBenchmarkRun(
                             $modelId,
                             $qIndex,
@@ -656,8 +652,7 @@ SYSTEM_PROMPT;
                             $timingData['prompt_ms'] ? $timingData['prompt_ms'] / 1000 : null,
                             $timingData['predicted_n'] ?? null,
                             $timingData['predicted_ms'] ? $timingData['predicted_ms'] / 1000 : null,
-                            $timingData['predicted_per_second'] ?? null,
-                            $accuracy
+                            $timingData['predicted_per_second'] ?? null
                         );
                     }
                     

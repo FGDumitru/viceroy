@@ -38,7 +38,6 @@ class SQLiteDatabase {
                 predicted_tokens INTEGER,
                 predicted_time REAL,
                 tokens_per_second REAL,
-                accuracy REAL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(model_id, question_id, attempt_id)
             );
@@ -62,7 +61,6 @@ class SQLiteDatabase {
                 avg_predicted_time REAL DEFAULT 0,
                 avg_tokens_per_second REAL DEFAULT 0,
                 percentage_correct REAL DEFAULT 0,
-                avg_question_accuracy REAL DEFAULT 0,
                 last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         ');
@@ -95,14 +93,13 @@ class SQLiteDatabase {
         ?int $predictedTokens = null,
         ?float $predictedTime = null,
         ?float $tokensPerSecond = null,
-        ?float $accuracy = null
     ): void {
         $stmt = $this->db->prepare('
             INSERT OR REPLACE INTO benchmark_runs 
             (model_id, question_id, attempt_id, response, correct, reasoning, response_time,
              question_no, verbose, prompt_tokens, prompt_time, predicted_tokens,
-             predicted_time, tokens_per_second, accuracy)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             predicted_time, tokens_per_second)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ');
         
         $stmt->execute([
@@ -152,25 +149,6 @@ class SQLiteDatabase {
     }
 
     public function calculateModelStats(string $modelId): array {
-        // Get per-question accuracy
-        $stmt = $this->db->prepare('
-            SELECT
-                question_id,
-                AVG(accuracy) as question_accuracy
-            FROM benchmark_runs
-            WHERE model_id = ?
-            GROUP BY question_id
-        ');
-        $stmt->execute([$modelId]);
-        $questionAccuracies = $stmt->fetchAll();
-        
-        // Calculate average question accuracy
-        $avgQuestionAccuracy = 0;
-        if (!empty($questionAccuracies)) {
-            $sum = array_sum(array_column($questionAccuracies, 'question_accuracy'));
-            $avgQuestionAccuracy = $sum / count($questionAccuracies);
-        }
-        
         // Get basic counts
         $stmt = $this->db->prepare('
             SELECT
@@ -207,7 +185,6 @@ class SQLiteDatabase {
             'percentage_correct' => $counts['total_questions'] > 0
                 ? round(($counts['correct_answers'] / $counts['total_questions']) * 100, 2)
                 : 0,
-            'avg_question_accuracy' => (float)$avgQuestionAccuracy
         ];
     }
 
