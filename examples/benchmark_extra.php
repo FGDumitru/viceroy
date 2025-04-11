@@ -634,7 +634,10 @@ foreach ($models as $modelIndex => $model) {
                 $currentTime = microtime(true);
                 $timePassed = $currentTime - $modelStartTime;
                 $averageTimePerQuestion = $done > 0 ? $timePassed / $done : 0;
-                $eta = $averageTimePerQuestion * ($totalQuestions - $done);
+                $remainingQuestions = $questionCountLimit ?
+                    min($questionCountLimit, $totalQuestions) - $done :
+                    $totalQuestions - $done;
+                $eta = $averageTimePerQuestion * $remainingQuestions;
 
                 echo "\n\033[1mQuestion $currentQuestion/$totalQuestions | Model $modelId\033[0m\n";
                 echo "Progress: $progress\n";
