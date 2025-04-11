@@ -10,6 +10,10 @@ class SQLiteDatabase {
         $this->initializeSchema();
     }
 
+    public function getPDO(): PDO {
+        return $this->db;
+    }
+
     private function connect(): void {
         try {
             $this->db = new PDO("sqlite:{$this->dbPath}");

@@ -237,6 +237,35 @@ function displayModelStats(SQLiteDatabase $db): void {
     }
     echo str_repeat('-', $totalWidth) . "\n";
 
+    // Fetch and display questions with zero correct answers
+    $query = "
+        SELECT
+            question_id,
+            actual_question
+        FROM
+            benchmark_runs
+        GROUP BY
+            question_id, actual_question
+        HAVING
+            SUM(correct) = 0
+        ORDER BY
+            question_id ASC;
+    ";
+    $questionsWithZeroCorrect = $db->getPDO()->query($query)->fetchAll(PDO::FETCH_ASSOC);
+
+    if (!empty($questionsWithZeroCorrect)) {
+        echo "\n\033[1mQuestions with Zero Correct Answers\033[0m\n";
+        echo str_repeat('-', 40) . "\n";
+        foreach ($questionsWithZeroCorrect as $question) {
+            echo "Question ID: {$question['question_id']}\n";
+            echo "Question: {$question['actual_question']}\n";
+            echo str_repeat('-', 40) . "\n";
+        }
+        echo str_repeat('-', 40) . "\n";
+    } else {
+        echo "\nAll questions have been answered correctly by at least one model.\n";
+    }
+
     /**
      * SQL query that display question accuracy and which model(s) correctly answered.
      * 
@@ -250,6 +279,8 @@ FROM
     benchmark_runs
 GROUP BY
     question_id
+HAVING
+    SUM(correct) = 0
 ORDER BY
     accuracy_percent ASC;
 
