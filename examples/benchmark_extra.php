@@ -398,6 +398,17 @@ function validateResponse($entry, $response) {
     return false;
 }
 
+function extractCleanResponse($response) {
+    preg_match_all('/<response>(.*?)<\/response>/s', $response, $matches);
+    $finalResponse = $matches[1][0] ?? '';
+    
+    $clean = strtolower(trim($finalResponse));
+    $clean = trim($clean, '.');
+    $clean = str_replace(' ', '', $clean);
+
+    return $clean;
+}
+
 function str_match_wildcard(string $haystack, string $pattern, bool $caseInsensitive = false): bool {
     $regex = preg_replace_callback('/[^*?^$]+/', function ($matches) {
         return preg_quote($matches[0], '/');
@@ -700,6 +711,7 @@ SYSTEM_PROMPT;
                 $db->beginTransaction();
                 try {
                     foreach ($existingAttempts as $attemptId => $attempt) {
+                        $cleanResponse = extractCleanResponse($attempt['response']);
                         $db->saveBenchmarkRun(
                             $modelId,
                             $qIndex,
@@ -717,7 +729,8 @@ SYSTEM_PROMPT;
                             $timingData['predicted_per_second'] ?? null,
                             $questionString,
                             $options,
-                            $expectedAnswer
+                            $expectedAnswer,
+                            $cleanResponse
                         );
                     }
                     
