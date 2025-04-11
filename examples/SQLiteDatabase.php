@@ -76,6 +76,8 @@ class SQLiteDatabase {
                 avg_tokens_per_second REAL DEFAULT 0,
                 avg_prompt_eval_per_second REAL DEFAULT 0,
                 percentage_correct REAL DEFAULT 0,
+                avg_prompt_tokens REAL DEFAULT 0,
+                avg_predicted_tokens REAL DEFAULT 0,
                 last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         ');
@@ -157,8 +159,9 @@ class SQLiteDatabase {
             INSERT OR REPLACE INTO model_stats
             (model_id, total_questions, correct_answers, incorrect_answers,
              avg_response_time, avg_prompt_time, avg_predicted_time,
-             avg_tokens_per_second, avg_prompt_eval_per_second, percentage_correct)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             avg_tokens_per_second, avg_prompt_eval_per_second, percentage_correct,
+             avg_prompt_tokens, avg_predicted_tokens)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ');
         
         $stmt->execute([
@@ -171,7 +174,9 @@ class SQLiteDatabase {
             $stats['avg_predicted_time'],
             $stats['avg_tokens_per_second'],
             $stats['avg_prompt_eval_per_second'],
-            $stats['percentage_correct']
+            $stats['percentage_correct'],
+            $stats['avg_prompt_tokens'],
+            $stats['avg_predicted_tokens']
         ]);
     }
 
@@ -196,7 +201,9 @@ class SQLiteDatabase {
                 AVG(CASE WHEN prompt_time > 0 THEN prompt_time ELSE NULL END) as avg_prompt_time,
                 AVG(CASE WHEN predicted_time > 0 THEN predicted_time ELSE NULL END) as avg_predicted_time,
                 AVG(CASE WHEN tokens_per_second > 0 THEN tokens_per_second ELSE NULL END) as avg_tokens_per_second,
-                AVG(CASE WHEN prompt_eval_per_second > 0 THEN prompt_eval_per_second ELSE NULL END) as avg_prompt_eval_per_second
+                AVG(CASE WHEN prompt_eval_per_second > 0 THEN prompt_eval_per_second ELSE NULL END) as avg_prompt_eval_per_second,
+                AVG(CASE WHEN prompt_tokens > 0 THEN prompt_tokens ELSE NULL END) as avg_prompt_tokens,
+                AVG(CASE WHEN predicted_tokens > 0 THEN predicted_tokens ELSE NULL END) as avg_predicted_tokens
             FROM benchmark_runs
             WHERE model_id = ?
         ');
@@ -212,6 +219,8 @@ class SQLiteDatabase {
             'avg_predicted_time' => (float)$timings['avg_predicted_time'],
             'avg_tokens_per_second' => (float)$timings['avg_tokens_per_second'],
             'avg_prompt_eval_per_second' => (float)$timings['avg_prompt_eval_per_second'],
+            'avg_prompt_tokens' => (float)$timings['avg_prompt_tokens'],
+            'avg_predicted_tokens' => (float)$timings['avg_predicted_tokens'],
             'percentage_correct' => $counts['total_questions'] > 0
                 ? round(($counts['correct_answers'] / $counts['total_questions']) * 100, 2)
                 : 0,
@@ -286,9 +295,7 @@ class SQLiteDatabase {
     }
 
     public function resetBenchmarkData(): void {
-        $this->db->exec('DELETE FROM benchmark_runs');
-        $this->db->exec('DELETE FROM benchmark_state');
-        $this->db->exec('DELETE FROM model_stats');
+        unlink('benchmark.db');
     }
 
     public function getDistinctModels(): array {

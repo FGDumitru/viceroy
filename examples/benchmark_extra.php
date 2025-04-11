@@ -112,9 +112,16 @@ $llmConnection = new OpenAICompatibleEndpointConnection();
 $llmConnection->setConnectionTimeout(3600 * 4); // 4h timeout for a single response.
 
 $results = [];
+
+$resetBenchmark = in_array('--reset', $argv);
+
+if ($resetBenchmark) {
+    unlink('benchmark.db');
+}
+
 // Initialize SQLite database
 $db = new SQLiteDatabase('benchmark.db');
-$resetBenchmark = in_array('--reset', $argv);
+
 $filterModels = [];
 $ignoredModels = [];
 $showStats = in_array('--show-stats', $argv);
@@ -196,6 +203,8 @@ function displayModelStats(SQLiteDatabase $db): void {
         'Pred Time',
         'PromptTokens/s',
         'Tokens/s',
+        'AvgPromptTk',
+        'AvgGenTk',
         'Questions'
     ];
     
@@ -213,6 +222,8 @@ function displayModelStats(SQLiteDatabase $db): void {
             $model['avg_predicted_time'] >= 0 ? number_format($model['avg_predicted_time'], 3) . 's' : 'N/A',
             $model['avg_prompt_eval_per_second'] >= 0 ? number_format($model['avg_prompt_eval_per_second'], 1) : 'N/A',
             $model['avg_tokens_per_second'] >= 0 ? number_format($model['avg_tokens_per_second'], 1) : 'N/A',
+            $model['avg_prompt_tokens'] >= 0 ? number_format($model['avg_prompt_tokens'], 0) : 'N/A',
+            $model['avg_predicted_tokens'] >= 0 ? number_format($model['avg_predicted_tokens'], 0) : 'N/A',
             $model['total_questions']
         ];
     }, $stats);
@@ -221,7 +232,11 @@ function displayModelStats(SQLiteDatabase $db): void {
     $widths = array_map(function($col) use ($rows, $header) {
         $maxValueLength = max(array_map('strlen', array_column($rows, $col)));
         $headerLength = strlen($header[$col]);
-        return max($maxValueLength, $headerLength) + 1; // Add 1 for extra padding
+        // Add extra width for token count columns
+        $baseWidth = max($maxValueLength, $headerLength) + 1;
+        return in_array($header[$col], ['AvgPromptTk', 'AvgGenTk']) ?
+            max($baseWidth, 10) : // Ensure minimum width of 10 for token columns
+            $baseWidth;
     }, array_keys($header));
     
     // Calculate total table width
@@ -455,9 +470,6 @@ function loadBenchmarkJson() {
 }
 
 // ======================= Main Execution =======================
-if ($resetBenchmark) {
-    $db->resetBenchmarkData();
-}
 
 $benchmarkJsonData = loadBenchmarkJson();
 
