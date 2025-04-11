@@ -33,6 +33,9 @@ class SQLiteDatabase {
                 response_time REAL,
                 question_no INTEGER,
                 verbose TEXT,
+                actual_question TEXT,
+                possible_answers TEXT,
+                correct_answers TEXT,
                 prompt_tokens INTEGER,
                 prompt_time REAL,
                 predicted_tokens INTEGER,
@@ -93,13 +96,16 @@ class SQLiteDatabase {
         ?int $predictedTokens = null,
         ?float $predictedTime = null,
         ?float $tokensPerSecond = null,
+        ?string $actualQuestion = null,
+        ?string $possibleAnswers = null,
+        ?string $correctAnswers = null,
     ): void {
         $stmt = $this->db->prepare('
             INSERT OR REPLACE INTO benchmark_runs 
             (model_id, question_id, attempt_id, response, correct, reasoning, response_time,
              question_no, verbose, prompt_tokens, prompt_time, predicted_tokens,
-             predicted_time, tokens_per_second)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             predicted_time, tokens_per_second, actual_question,possible_answers,correct_answers)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)
         ');
         
         $stmt->execute([
@@ -116,7 +122,10 @@ class SQLiteDatabase {
             $promptTime,
             $predictedTokens,
             $predictedTime,
-            $tokensPerSecond
+            $tokensPerSecond,
+            $actualQuestion,
+            $possibleAnswers,
+            $correctAnswers
         ]);
         
         // Update aggregated stats

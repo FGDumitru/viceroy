@@ -236,6 +236,24 @@ function displayModelStats(SQLiteDatabase $db): void {
         echo "|\n";
     }
     echo str_repeat('-', $totalWidth) . "\n";
+
+    /**
+     * SQL query that display question accuracy and which model(s) correctly answered.
+     * 
+     * SELECT
+    question_id,
+    COUNT(*) AS total_attempts,
+    SUM(correct) AS correct_answers,
+    ROUND(100.0 * SUM(correct) / COUNT(*), 2) AS accuracy_percent,
+    GROUP_CONCAT(DISTINCT CASE WHEN correct = 1 THEN model_id END) AS correct_model_ids
+FROM
+    benchmark_runs
+GROUP BY
+    question_id
+ORDER BY
+    accuracy_percent ASC;
+
+     */
 }
 
 /**
@@ -665,7 +683,10 @@ SYSTEM_PROMPT;
                             $timingData['prompt_ms'] ? $timingData['prompt_ms'] / 1000 : null,
                             $timingData['predicted_n'] ?? null,
                             $timingData['predicted_ms'] ? $timingData['predicted_ms'] / 1000 : null,
-                            $timingData['predicted_per_second'] ?? null
+                            $timingData['predicted_per_second'] ?? null,
+                            $questionString,
+                            $options,
+                            $expectedAnswer
                         );
                     }
                     
