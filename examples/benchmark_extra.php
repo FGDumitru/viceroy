@@ -197,8 +197,8 @@ function displayModelStats(SQLiteDatabase $db): void {
     $header = [
         'Model',
         'Correct %',
-        'Q-OK',
-        'Q_FAIL',
+        'A_OK',
+        'A_FAIL',
         'Prompt Time',
         'Pred Time',
         'PromptTokens/s',
