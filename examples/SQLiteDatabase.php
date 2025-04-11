@@ -8,6 +8,11 @@ class SQLiteDatabase {
         $this->dbPath = $dbPath;
         $this->connect();
         $this->initializeSchema();
+        
+        if (!$this->verifySchema()) {
+            throw new \RuntimeException("Database schema verification failed. Required tables or columns are missing.");
+        }
+        
     }
 
     public function getPDO(): PDO {
@@ -45,6 +50,7 @@ class SQLiteDatabase {
                 prompt_time REAL,
                 predicted_tokens INTEGER,
                 predicted_time REAL,
+                prompt_eval_per_second REAL,
                 tokens_per_second REAL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(model_id, question_id, attempt_id)
@@ -68,6 +74,7 @@ class SQLiteDatabase {
                 avg_prompt_time REAL DEFAULT 0,
                 avg_predicted_time REAL DEFAULT 0,
                 avg_tokens_per_second REAL DEFAULT 0,
+                avg_prompt_eval_per_second REAL DEFAULT 0,
                 percentage_correct REAL DEFAULT 0,
                 last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
@@ -104,14 +111,15 @@ class SQLiteDatabase {
         ?string $actualQuestion = null,
         ?string $possibleAnswers = null,
         ?string $correctAnswers = null,
-        string $cleanResponse
+        string $cleanResponse,
+        ?float $predictedPerSecond = null,
     ): void {
         $stmt = $this->db->prepare('
             INSERT OR REPLACE INTO benchmark_runs 
             (model_id, question_id, attempt_id, response, correct, reasoning, response_time,
              question_no, verbose, prompt_tokens, prompt_time, predicted_tokens,
-             predicted_time, tokens_per_second, actual_question, possible_answers, correct_answers, clean_response)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             predicted_time, tokens_per_second, actual_question, possible_answers, correct_answers, clean_response, prompt_eval_per_second)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
         ');
         
         $stmt->execute([
@@ -132,7 +140,8 @@ class SQLiteDatabase {
             $actualQuestion,
             $possibleAnswers,
             $correctAnswers,
-            $cleanResponse
+            $cleanResponse,
+            $predictedPerSecond
         ]);
         
         // Update aggregated stats
@@ -143,12 +152,13 @@ class SQLiteDatabase {
         // Calculate new stats
         $stats = $this->calculateModelStats($modelId);
         
+        
         $stmt = $this->db->prepare('
-            INSERT OR REPLACE INTO model_stats 
+            INSERT OR REPLACE INTO model_stats
             (model_id, total_questions, correct_answers, incorrect_answers,
              avg_response_time, avg_prompt_time, avg_predicted_time,
-             avg_tokens_per_second, percentage_correct)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+             avg_tokens_per_second, avg_prompt_eval_per_second, percentage_correct)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ');
         
         $stmt->execute([
@@ -160,11 +170,13 @@ class SQLiteDatabase {
             $stats['avg_prompt_time'],
             $stats['avg_predicted_time'],
             $stats['avg_tokens_per_second'],
+            $stats['avg_prompt_eval_per_second'],
             $stats['percentage_correct']
         ]);
     }
 
     public function calculateModelStats(string $modelId): array {
+        
         // Get basic counts
         $stmt = $this->db->prepare('
             SELECT
@@ -177,20 +189,21 @@ class SQLiteDatabase {
         $stmt->execute([$modelId]);
         $counts = $stmt->fetch();
         
-        // Get timing averages
+        // Get timing averages with validation
         $stmt = $this->db->prepare('
             SELECT
                 AVG(response_time) as avg_response_time,
-                AVG(prompt_time) as avg_prompt_time,
-                AVG(predicted_time) as avg_predicted_time,
-                AVG(tokens_per_second) as avg_tokens_per_second
+                AVG(CASE WHEN prompt_time > 0 THEN prompt_time ELSE NULL END) as avg_prompt_time,
+                AVG(CASE WHEN predicted_time > 0 THEN predicted_time ELSE NULL END) as avg_predicted_time,
+                AVG(CASE WHEN tokens_per_second > 0 THEN tokens_per_second ELSE NULL END) as avg_tokens_per_second,
+                AVG(CASE WHEN prompt_eval_per_second > 0 THEN prompt_eval_per_second ELSE NULL END) as avg_prompt_eval_per_second
             FROM benchmark_runs
             WHERE model_id = ?
         ');
         $stmt->execute([$modelId]);
         $timings = $stmt->fetch();
         
-        return [
+        $stats = [
             'total_questions' => (int)$counts['total_questions'],
             'correct_answers' => (int)$counts['correct_answers'],
             'incorrect_answers' => (int)$counts['incorrect_answers'],
@@ -198,10 +211,14 @@ class SQLiteDatabase {
             'avg_prompt_time' => (float)$timings['avg_prompt_time'],
             'avg_predicted_time' => (float)$timings['avg_predicted_time'],
             'avg_tokens_per_second' => (float)$timings['avg_tokens_per_second'],
+            'avg_prompt_eval_per_second' => (float)$timings['avg_prompt_eval_per_second'],
             'percentage_correct' => $counts['total_questions'] > 0
                 ? round(($counts['correct_answers'] / $counts['total_questions']) * 100, 2)
                 : 0,
         ];
+
+
+        return $stats;
     }
 
     public function getModelStats(string $modelId): ?array {
@@ -284,5 +301,41 @@ class SQLiteDatabase {
         $stmt = $this->db->prepare('SELECT DISTINCT question_id FROM benchmark_runs WHERE model_id = ?');
         $stmt->execute([$modelId]);
         return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
+
+    public function verifySchema(): bool {
+        $requiredTables = [
+            'benchmark_runs' => [
+                'model_id', 'question_id', 'attempt_id', 'response', 'correct',
+                'response_time', 'prompt_tokens', 'prompt_time', 'predicted_tokens',
+                'predicted_time', 'tokens_per_second', 'prompt_eval_per_second'
+            ],
+            'model_stats' => [
+                'model_id', 'avg_prompt_eval_per_second', 'avg_tokens_per_second',
+                'avg_response_time', 'avg_prompt_time', 'avg_predicted_time'
+            ]
+        ];
+
+        foreach ($requiredTables as $table => $columns) {
+            try {
+                // Check table exists
+                $stmt = $this->db->prepare("SELECT 1 FROM $table LIMIT 1");
+                $stmt->execute();
+
+                // Check columns exist
+                $stmt = $this->db->prepare("PRAGMA table_info($table)");
+                $stmt->execute();
+                $existingColumns = array_column($stmt->fetchAll(), 'name');
+
+                $missingColumns = array_diff($columns, $existingColumns);
+                if (!empty($missingColumns)) {
+                    return false;
+                }
+            } catch (PDOException $e) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

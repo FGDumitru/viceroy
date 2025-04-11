@@ -147,8 +147,13 @@ foreach ($argv as $arg) {
 
 // If only showing stats, display and exit
 if ($showStats) {
-    displayModelStats($db);
-    exit(0);
+    try {
+        displayModelStats($db);
+        exit(0);
+    } catch (Exception $e) {
+        echo "\n\033[1;31mError displaying statistics: " . $e->getMessage() . "\033[0m\n";
+        exit(1);
+    }
 }
 
 // Debug output for --model parameter
@@ -189,22 +194,25 @@ function displayModelStats(SQLiteDatabase $db): void {
         'Q_FAIL',
         'Prompt Time',
         'Pred Time',
+        'PromptTokens/s',
         'Tokens/s',
         'Questions'
     ];
     
+
     // Format table rows
     $rows = array_map(function($model) {
         return [
             substr($model['model_id'], 0, 50),
-            $model['total_questions'] > 0 ?
-                number_format(($model['correct_answers'] / $model['total_questions']) * 100, 1) . '%' :
+            $model['total_questions'] > 0 && $model['correct_answers'] >= 0 ?
+                number_format(($model['correct_answers'] / max(1, $model['total_questions'])) * 100, 1) . '%' :
                 '0.0%',
             $model['correct_answers'],
             $model['incorrect_answers'],
-            number_format($model['avg_prompt_time'], 3) . 's',
-            number_format($model['avg_predicted_time'], 3) . 's',
-            number_format($model['avg_tokens_per_second'], 1),
+            $model['avg_prompt_time'] >= 0 ? number_format($model['avg_prompt_time'], 3) . 's' : 'N/A',
+            $model['avg_predicted_time'] >= 0 ? number_format($model['avg_predicted_time'], 3) . 's' : 'N/A',
+            $model['avg_prompt_eval_per_second'] >= 0 ? number_format($model['avg_prompt_eval_per_second'], 1) : 'N/A',
+            $model['avg_tokens_per_second'] >= 0 ? number_format($model['avg_tokens_per_second'], 1) : 'N/A',
             $model['total_questions']
         ];
     }, $stats);
@@ -730,7 +738,10 @@ SYSTEM_PROMPT;
                             $questionString,
                             $options,
                             $expectedAnswer,
-                            $cleanResponse
+                            $cleanResponse,
+                            isset($timingData['prompt_per_second']) && $timingData['prompt_per_second'] > 0
+                                ? $timingData['prompt_per_second']
+                                : null
                         );
                     }
                     
