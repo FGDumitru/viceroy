@@ -46,6 +46,8 @@ class SQLiteDatabase {
                 possible_answers TEXT,
                 correct_answers TEXT,
                 clean_response TEXT,
+                category TEXT,
+                subcategory TEXT,
                 prompt_tokens INTEGER,
                 prompt_time REAL,
                 predicted_tokens INTEGER,
@@ -115,13 +117,16 @@ class SQLiteDatabase {
         ?string $correctAnswers = null,
         string $cleanResponse,
         ?float $predictedPerSecond = null,
+        ?string $category = null,
+        ?string $subcategory = null,
     ): void {
         $stmt = $this->db->prepare('
-            INSERT OR REPLACE INTO benchmark_runs 
+            INSERT OR REPLACE INTO benchmark_runs
             (model_id, question_id, attempt_id, response, correct, reasoning, response_time,
              question_no, verbose, prompt_tokens, prompt_time, predicted_tokens,
-             predicted_time, tokens_per_second, actual_question, possible_answers, correct_answers, clean_response, prompt_eval_per_second)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
+             predicted_time, tokens_per_second, actual_question, possible_answers, correct_answers, clean_response, prompt_eval_per_second,
+             category, subcategory)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ');
         
         $stmt->execute([
@@ -143,7 +148,9 @@ class SQLiteDatabase {
             $possibleAnswers,
             $correctAnswers,
             $cleanResponse,
-            $predictedPerSecond
+            $predictedPerSecond,
+            $category,
+            $subcategory
         ]);
         
         // Update aggregated stats

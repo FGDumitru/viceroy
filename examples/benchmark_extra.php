@@ -122,6 +122,24 @@ if ($resetBenchmark) {
 // Initialize SQLite database
 $db = new SQLiteDatabase('benchmark.db');
 
+// Check and add category/subcategory columns if they don't exist
+$pdo = $db->getPDO();
+$columns = $pdo->query("PRAGMA table_info(benchmark_runs)")->fetchAll();
+$hasCategory = false;
+$hasSubcategory = false;
+
+foreach ($columns as $col) {
+    if ($col['name'] === 'category') $hasCategory = true;
+    if ($col['name'] === 'subcategory') $hasSubcategory = true;
+}
+
+if (!$hasCategory) {
+    $pdo->exec("ALTER TABLE benchmark_runs ADD COLUMN category TEXT");
+}
+if (!$hasSubcategory) {
+    $pdo->exec("ALTER TABLE benchmark_runs ADD COLUMN subcategory TEXT");
+}
+
 $filterModels = [];
 $ignoredModels = [];
 $showStats = in_array('--show-stats', $argv);
@@ -756,7 +774,9 @@ SYSTEM_PROMPT;
                             $cleanResponse,
                             isset($timingData['prompt_per_second']) && $timingData['prompt_per_second'] > 0
                                 ? $timingData['prompt_per_second']
-                                : null
+                                : null,
+                            $benchmarkData[$qIndex]['category'] ?? null,
+                            $benchmarkData[$qIndex]['subcategory'] ?? null
                         );
                     }
                     
