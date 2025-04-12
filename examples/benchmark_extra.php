@@ -27,6 +27,7 @@ OPTIONS:
 --model=pattern, -m=pattern  Filter models using shell-style wildcards (e.g. "*-13b")
 --ignore=pattern, -i=pattern Exclude models matching pattern (e.g. "llama*")
 --reset                   Clear all previous benchmark data from database
+--reset-model=name, -rm=name Clear data for specific model only
 --total-required-answers=N, -a=N Number of attempts per question (default:1, range:1-10)
 --required-correct-answers=N, -c=N Minimum correct answers required (default:1)
 --show-stats              Display aggregated model statistics table and exit
@@ -129,6 +130,8 @@ $llmConnection->setConnectionTimeout(3600 * 4); // 4h timeout for a single respo
 $results = [];
 
 $resetBenchmark = in_array('--reset', $argv);
+$resetModel = null;
+
 
 if ($resetBenchmark) {
     unlink('benchmark.db');
@@ -196,6 +199,10 @@ foreach ($argv as $arg) {
     elseif (str_starts_with($arg, '--min-prompt-speed=') || str_starts_with($arg, '-ps=')) {
         $minPromptSpeed = (float) substr($arg, strpos($arg, '=') + 1);
     }
+    // Handle model reset (--reset-model or -rm)
+    elseif (str_starts_with($arg, '--reset-model=') || str_starts_with($arg, '-rm=')) {
+        $resetModel = substr($arg, strpos($arg, '=') + 1);
+    }
     // Set minimum token generation speed (--min-token-speed or -ts)
     elseif (str_starts_with($arg, '--min-token-speed=') || str_starts_with($arg, '-ts=')) {
         $minTokenGeneration = (float) substr($arg, strpos($arg, '=') + 1);
@@ -208,9 +215,43 @@ foreach ($argv as $arg) {
     elseif (str_starts_with($arg, '--max-context=') || str_starts_with($arg, '-mc=')) {
         $maxOutputContext = (int) substr($arg, strpos($arg, '=') + 1);
     }
+    // Handle model reset (--reset-model or -rm)
+    elseif (str_starts_with($arg, '--reset-model=') || str_starts_with($arg, '-rm=')) {
+        $resetModel = substr($arg, strpos($arg, '=') + 1);
+    }
 
     // DEBUG
     //$questionCountLimit = 100;
+}
+
+if ($resetModel) {
+    $db = new SQLiteDatabase('benchmark.db');
+    $pdo = $db->getPDO();
+    
+    try {
+        $pdo->beginTransaction();
+        
+        // Delete from benchmark_runs and get count
+        $stmt1 = $pdo->prepare("DELETE FROM benchmark_runs WHERE model_id = ?");
+        $stmt1->execute([$resetModel]);
+        $benchmarkRunsDeleted = $stmt1->rowCount();
+        
+        // Delete from model_stats and get count
+        $stmt2 = $pdo->prepare("DELETE FROM model_stats WHERE model_id = ?");
+        $stmt2->execute([$resetModel]);
+        $modelStatsDeleted = $stmt2->rowCount();
+        
+        $pdo->commit();
+        
+        echo "Reset data for model: $resetModel\n";
+        echo "Deleted $benchmarkRunsDeleted records from benchmark_runs\n";
+        echo "Deleted $modelStatsDeleted records from model_stats\n";
+        exit(0);
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        echo "Error resetting model data: " . $e->getMessage() . "\n";
+        exit(1);
+    }
 }
 
 // If only showing stats, display and exit
