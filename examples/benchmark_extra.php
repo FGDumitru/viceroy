@@ -144,6 +144,8 @@ $filterModels = [];
 $ignoredModels = [];
 $showStats = in_array('--show-stats', $argv);
 
+$verboseOutput = in_array('--verbose', $argv) || in_array('-v', $argv);
+
 //DEBUG
 //$showStats = TRUE;
 
@@ -516,30 +518,12 @@ if (empty($models)) {
 
 // Reorganize DeepSeek models
 [$deepseek, $others] = array_reduce($models, function($carry, $model) {
-    stripos($model['id'], 'deepseek') !== false ? $carry[0][] = $model : $carry[1][] = $model;
+    stripos(strtolower($model['id']), 'deepseek') !== false ? $carry[0][] = $model : $carry[1][] = $model;
     return $carry;
 }, [[], []]);
 
 sort($others);
 $models = array_merge($others, $deepseek);
-
-// Convert API model objects to expected format
-$modelsJson = @file_get_contents('http://127.0.0.1:8855/v1/models');
-
-
-if ($modelsJson === false) {
-    die("\033[1;31mError: Could not retrieve models from API endpoint\033[0m\n");
-}
-$modelsData = json_decode($modelsJson, true);
-if (json_last_error() !== JSON_ERROR_NONE) {
-    die("\033[1;31mError decoding models data: " . json_last_error_msg() . "\033[0m\n");
-}
-$models = array_map(function($m) {
-    return ['id' => $m['id']];
-}, $modelsData['data']);
-
-// Keep test model for initial validation
-// array_unshift($models, ['id' => 'Qwen2.5-7B-Instruct-1M-Q8_0_CTX-750K']);
 
 // Initialize model performance tracking
 $modelPerformance = array_fill_keys(array_column($models, 'id'), [
@@ -553,9 +537,9 @@ $modelPerformance = array_fill_keys(array_column($models, 'id'), [
 // Initialize benchmark state from database
 $benchmarkState = [];
 
-usort($models, function ($a, $b) {
-    return strcmp($a['id'], $b['id']);
-});
+// usort($models, function ($a, $b) {
+//     return strcmp($a['id'], $b['id']);
+// });
 
 
 // DEBUG
@@ -618,8 +602,16 @@ foreach ($models as $modelIndex => $model) {
     $incorrectCount = 0;
     $currentQuestion = 0;
 
+    $allStats = $db->getAllModelStats();
+    $rank = 0; $performance = 0; 
+    foreach($allStats as $r => $stat) {
+        if ($stat['model_id'] === $modelId) {
+            $rank = $r;
+            $performance = $stat['percentage_correct'];
+        }
+    }
     echo "\n\033[1;34m=== Model " . ($modelIndex+1) . "/" . count($models) . ": $modelId ===\033[0m\n";
-    echo "Rank: " . ($modelIndex+1) . "/" . count($models) . "\n";
+    echo "Rank: " . ($rank + 1) . "/" . count($models) . ". Model accuracy: $performance%\n";
 
     $startTime = microtime(true);
     $modelStartTime = $startTime;
@@ -635,14 +627,17 @@ foreach ($models as $modelIndex => $model) {
         $category = $entry['category'];
         $subcategory = $entry['subcategory'];
 
+        
         $questionString = "The following question main category is `$category` and its subcategory is `$subcategory`.\n\n$questionString";
         
         $instructionString = $entry['instruction'];
         $options = json_encode($entry['shuffled_options'] ?? null);
         $expectedAnswer = implode(' || ',$benchmarkData[$qIndex]['answers']);
-        echo "\nQuestion #$currentQuestion: " . $questionString . "\nInstruction: " . $instructionString . "\nExpected answer: [" . $expectedAnswer . "]\n";
-        if ('null' !== $options) {
-            echo "Options: $options\n";
+        if ($verboseOutput) {
+            echo "\nQuestion #$currentQuestion: " . $questionString . "\nInstruction: " . $instructionString . "\nExpected answer: [" . $expectedAnswer . "]\n";
+            if ('null' !== $options) {
+                echo "Options: $options\n";
+            }
         }
 
         $existingAttempts = $benchmarkJsonData[$model['id']][$qIndex] ?? [];
@@ -652,8 +647,6 @@ foreach ($models as $modelIndex => $model) {
         if ($numAttempts >= $totalRequiredAnswersPerQuestion) {
             $correctAttempts = count(array_filter($existingAttempts, fn($a) => $a['correct']));
             $isCorrectOverall = $correctAttempts >= $requiredCorrectAnswers;
-            echo "\nModel ID: $modelId\n";
-            echo "\tExpected response: " . json_encode($entry['answers']);
 
             $isCorrect = $existingAttempts[0]['correct'];
 
@@ -665,7 +658,11 @@ foreach ($models as $modelIndex => $model) {
 
             $status = $isCorrect ? 'Correct! 👍' : 'INCORRECT! 🚫';
 
-            echo "\n\tProvided response is $status: " . $existingAttempts[0]['clean_response'] . "\n";
+            if ($verboseOutput) {
+                echo "\nModel ID: $modelId\n";
+                echo "\tExpected response: " . json_encode($entry['answers']);
+                echo "\n\tProvided response is $status: " . $existingAttempts[0]['clean_response'] . "\n";
+            }
 
 
         } else {
