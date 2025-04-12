@@ -24,15 +24,26 @@ USAGE:
 php benchmark_extra.php [options]
 
 OPTIONS:
---model=pattern           Filter models using shell-style wildcards (e.g. "*-13b")
---ignore=pattern          Exclude models matching pattern (e.g. "llama*")
+--model=pattern, -m=pattern  Filter models using shell-style wildcards (e.g. "*-13b")
+--ignore=pattern, -i=pattern Exclude models matching pattern (e.g. "llama*")
 --reset                   Clear all previous benchmark data from database
---total-required-answers=N Number of attempts per question (default:1, range:1-10)
---required-correct-answers=N Minimum correct answers required (default:1)
+--total-required-answers=N, -a=N Number of attempts per question (default:1, range:1-10)
+--required-correct-answers=N, -c=N Minimum correct answers required (default:1)
 --show-stats              Display aggregated model statistics table and exit
---qcnt=N                 Limit benchmark to first N questions (default:all)
---ignore-speed-limits     Skip token generation speed validation (-isl shortcut)
+--details, -d            Show detailed performance breakdown by category/subcategory
+--exclude-subcategories, -e  Show category-level stats only (must be used with -d)
+--qcnt=N, -q=N           Limit benchmark to first N questions (default: all)
+--ignore-speed-limits, -isl Skip token generation speed validation
+--verbose, -v            Show detailed question/response information
 --help, -h               Show this help message and exit
+
+DETAILED USAGE:
+- For basic benchmarking: php benchmark_extra.php
+- To compare specific models: php benchmark_extra.php --model=model1 --model=model2
+- For category analysis: php benchmark_extra.php --details
+- For category-only summary: php benchmark_extra.php --details --exclude-subcategories
+- To limit questions: php benchmark_extra.php --qcnt=50
+- To ignore speed limits: php benchmark_extra.php --ignore-speed-limits
 
 EXAMPLES:
 1. Basic benchmark run:
@@ -143,6 +154,8 @@ if (!$hasSubcategory) {
 $filterModels = [];
 $ignoredModels = [];
 $showStats = in_array('--show-stats', $argv);
+$showDetails = in_array('--details', $argv) || in_array('-d', $argv);
+$excludeSubcategories = in_array('--exclude-subcategories', $argv) || in_array('-e', $argv);
 
 $verboseOutput = in_array('--verbose', $argv) || in_array('-v', $argv);
 
@@ -155,24 +168,25 @@ $questionCountLimit = null;
 
 // Parse command-line parameters
 foreach ($argv as $arg) {
-    // Handle model filtering
-    if (str_starts_with($arg, '--model=')) {
-        $filterModels[] = substr($arg, 8); // Add to model filter list
+    // Handle model filtering (--model or -m)
+    if (str_starts_with($arg, '--model=') || str_starts_with($arg, '-m=')) {
+        $filterModels[] = substr($arg, strpos($arg, '=') + 1);
     }
-    // Set number of attempts per question
-    elseif (str_starts_with($arg, '--total-required-answers=')) {
-        $totalRequiredAnswersPerQuestion = (int) substr($arg, strlen('--total-required-answers='));
+    // Set number of attempts per question (--total-required-answers or -a)
+    elseif (str_starts_with($arg, '--total-required-answers=') || str_starts_with($arg, '-a=')) {
+        $totalRequiredAnswersPerQuestion = (int) substr($arg, strpos($arg, '=') + 1);
     }
-    // Set required correct answers threshold
-    elseif (str_starts_with($arg, '--required-correct-answers=')) {
-        $requiredCorrectAnswers = (int) substr($arg, strlen('--required-correct-answers='));
+    // Set required correct answers threshold (--required-correct-answers or -c)
+    elseif (str_starts_with($arg, '--required-correct-answers=') || str_starts_with($arg, '-c=')) {
+        $requiredCorrectAnswers = (int) substr($arg, strpos($arg, '=') + 1);
     }
-    // Handle model exclusions
-    elseif (str_starts_with($arg, '--ignore=')) {
-        $ignoredModels[] = substr($arg, 9); // Add to ignore list
+    // Handle model exclusions (--ignore or -i)
+    elseif (str_starts_with($arg, '--ignore=') || str_starts_with($arg, '-i=')) {
+        $ignoredModels[] = substr($arg, strpos($arg, '=') + 1);
     }
-    elseif (str_starts_with($arg, '--qcnt=')) {
-        $questionCountLimit = (int) substr($arg, strlen('--qcnt='));
+    // Limit questions (--qcnt or -q)
+    elseif (str_starts_with($arg, '--qcnt=') || str_starts_with($arg, '-q=')) {
+        $questionCountLimit = (int) substr($arg, strpos($arg, '=') + 1);
     }
 
     // DEBUG
@@ -186,7 +200,7 @@ if ($showStats) {
         foreach ($models as $modelId) {
             $db->updateModelStats($modelId);
         }
-        displayModelStats($db);
+        displayModelStats($db, $showDetails, $excludeSubcategories);
         exit(0);
     } catch (Exception $e) {
         echo "\n\033[1;31mError displaying statistics: " . $e->getMessage() . "\033[0m\n";
@@ -213,9 +227,14 @@ $totalQuestions = count($benchmarkData);
 
 // ======================= Core Functions =======================
 /**
- * Displays model statistics in a formatted table
+ * Displays model statistics in a formatted table with optional category breakdown
+ *
+ * @param SQLiteDatabase $db Database connection
+ * @param bool $showDetails Show category/subcategory breakdown when true
+ * @param bool $excludeSubcategories Show only category-level stats when true (requires $showDetails)
+ * @return void
  */
-function displayModelStats(SQLiteDatabase $db): void {
+function displayModelStats(SQLiteDatabase $db, bool $showDetails = false, bool $excludeSubcategories = false): void {
 
     // Fetch and display questions with zero correct answers
     $query = "
@@ -320,6 +339,157 @@ function displayModelStats(SQLiteDatabase $db): void {
         echo "|\n";
     }
     echo str_repeat('-', $totalWidth) . "\n";
+
+    if ($showDetails) {
+        // Get category breakdown stats
+        $categoryQuery = "
+            SELECT
+                category,
+                subcategory,
+                model_id,
+                COUNT(*) as total_questions,
+                SUM(correct) as correct_answers,
+                AVG(response_time) as avg_response_time,
+                AVG(prompt_time) as avg_prompt_time,
+                AVG(predicted_time) as avg_predicted_time,
+                AVG(tokens_per_second) as avg_tokens_per_second,
+                AVG(prompt_eval_per_second) as avg_prompt_eval_per_second
+            FROM benchmark_runs
+            GROUP BY category, subcategory, model_id
+            ORDER BY category, subcategory, (SUM(correct)/COUNT(*)) DESC
+        ";
+        $categoryStats = $db->getPDO()->query($categoryQuery)->fetchAll(PDO::FETCH_ASSOC);
+
+        if (!empty($categoryStats)) {
+            // Group by category
+            $groupedStats = [];
+            foreach ($categoryStats as $stat) {
+                $groupedStats[$stat['category']][$stat['subcategory']][$stat['model_id']] = $stat;
+            }
+
+            // Display category breakdown
+            echo "\n\033[1mDetailed Performance by Category\033[0m\n";
+            foreach ($groupedStats as $category => $subcategories) {
+                echo "\n\033[1;34mCategory: $category\033[0m\n";
+                echo str_repeat('-', 60) . "\n";
+                
+                if ($excludeSubcategories) {
+                    // Combine all subcategories for this category
+                    $combinedModels = [];
+                    foreach ($subcategories as $subcategory => $models) {
+                        foreach ($models as $modelId => $modelStats) {
+                            if (!isset($combinedModels[$modelId])) {
+                                $combinedModels[$modelId] = $modelStats;
+                            } else {
+                                $combinedModels[$modelId]['total_questions'] += $modelStats['total_questions'];
+                                $combinedModels[$modelId]['correct_answers'] += $modelStats['correct_answers'];
+                            }
+                        }
+                    }
+                    
+                    // Format table header
+                    $header = [
+                        'Model',
+                        'Correct %',
+                        'Correct',
+                        'Total',
+                        'Avg Time'
+                    ];
+                    
+                    // Format table rows sorted by accuracy
+                    $rows = array_map(function($modelStats) {
+                        return [
+                            substr($modelStats['model_id'], 0, 30),
+                            $modelStats['total_questions'] > 0 ?
+                                number_format(($modelStats['correct_answers'] / $modelStats['total_questions']) * 100, 1) . '%' :
+                                '0.0%',
+                            $modelStats['correct_answers'],
+                            $modelStats['total_questions'],
+                            number_format($modelStats['avg_response_time'], 3) . 's'
+                        ];
+                    }, $combinedModels);
+                    
+                    // Sort by accuracy (descending)
+                    usort($rows, function($a, $b) {
+                        return floatval($b[1]) <=> floatval($a[1]);
+                    });
+                    
+                    // Calculate column widths
+                    $widths = array_map(function($col) use ($rows, $header) {
+                        $maxValueLength = max(array_map('strlen', array_column($rows, $col)));
+                        return max($maxValueLength, strlen($header[$col])) + 1;
+                    }, array_keys($header));
+                    
+                    // Print table header
+                    foreach ($header as $i => $title) {
+                        echo str_pad($title, $widths[$i], ' ', STR_PAD_RIGHT) . ' ';
+                    }
+                    echo "\n";
+                    echo str_repeat('-', array_sum($widths) + count($widths)) . "\n";
+                    
+                    // Print table rows
+                    foreach ($rows as $row) {
+                        foreach ($row as $i => $value) {
+                            echo str_pad($value, $widths[$i], ' ', STR_PAD_RIGHT) . ' ';
+                        }
+                        echo "\n";
+                    }
+                } else {
+                    foreach ($subcategories as $subcategory => $models) {
+                        echo "\n\033[1;33mCategory: $category > Subcategory: $subcategory\033[0m\n";
+                        
+                        // Format table header
+                        $header = [
+                            'Model',
+                            'Correct %',
+                            'Correct',
+                            'Total',
+                            'Avg Time'
+                        ];
+                        
+                        // Format table rows
+                        $rows = array_map(function($modelStats) {
+                            return [
+                                substr($modelStats['model_id'], 0, 30),
+                                $modelStats['total_questions'] > 0 ?
+                                    number_format(($modelStats['correct_answers'] / $modelStats['total_questions']) * 100, 1) . '%' :
+                                    '0.0%',
+                                $modelStats['correct_answers'],
+                                $modelStats['total_questions'],
+                                number_format($modelStats['avg_response_time'], 3) . 's'
+                            ];
+                        }, $models);
+                        
+                        // Sort by accuracy (descending)
+                        usort($rows, function($a, $b) {
+                            return floatval($b[1]) <=> floatval($a[1]);
+                        });
+                        
+                        // Calculate column widths
+                        $widths = array_map(function($col) use ($rows, $header) {
+                            $maxValueLength = max(array_map('strlen', array_column($rows, $col)));
+                            return max($maxValueLength, strlen($header[$col])) + 1;
+                        }, array_keys($header));
+                        
+                        // Print table header
+                        foreach ($header as $i => $title) {
+                            echo str_pad($title, $widths[$i], ' ', STR_PAD_RIGHT) . ' ';
+                        }
+                        echo "\n";
+                        echo str_repeat('-', array_sum($widths) + count($widths)) . "\n";
+                        
+                        // Print table rows
+                        foreach ($rows as $row) {
+                            foreach ($row as $i => $value) {
+                                echo str_pad($value, $widths[$i], ' ', STR_PAD_RIGHT) . ' ';
+                            }
+                            echo "\n";
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 
 
@@ -486,6 +656,19 @@ function loadBenchmarkJson() {
 }
 
 // ======================= Main Execution =======================
+/*
+ * Benchmark Execution Flow:
+ * 1. Load benchmark data from JSON file
+ * 2. Load authentication token if available
+ * 3. Get available LLM models
+ * 4. Filter models based on speed limits (unless disabled)
+ * 5. Process each model through all questions:
+ *    - Checks for existing attempts
+ *    - Generates prompts
+ *    - Validates responses
+ *    - Records results
+ * 6. Display final statistics
+ */
 
 $benchmarkJsonData = loadBenchmarkJson();
 
@@ -546,24 +729,29 @@ $benchmarkState = [];
 //$models = [['id' => 'qwen_QwQ-32B-Q8_0']];
 //$models = [['id' => 'za_DeepSeek-V3-0324-UD-Q2_K_XL-CTX_1024_benchmark']];
 
-// Main benchmark loop - test each model
+/**
+ * Main benchmark loop - processes each model through all questions
+ *
+ * For each model:
+ * 1. Initializes tracking variables
+ * 2. Applies model filters if specified
+ * 3. Sets up LLM connection
+ * 4. Processes each question:
+ *    - Prepares question prompt
+ *    - Makes API call
+ *    - Validates response
+ *    - Records attempt
+ *    - Updates progress display
+ * 5. Handles timeouts and errors
+ */
 foreach ($models as $modelIndex => $model) {
     $modelId = $model['id'];
     
-    // Check if model progress exists in database
-    $modelState = $db->getBenchmarkState($modelId);
-    if ($modelState !== null) {
-        echo "\n\033[1;34mResuming model $modelId from saved state.\033[0m\n";
-        $modelResults = $modelState['results'];
-        $correctCount = $modelState['correctCount'];
-        $incorrectCount = $modelState['incorrectCount'];
-        $currentQuestion = $modelState['currentQuestion'];
-    } else {
-        $modelResults = [];
-        $correctCount = 0;
-        $incorrectCount = 0;
-        $currentQuestion = 0;
-    }
+    // Initialize fresh state for each model
+    $modelResults = [];
+    $correctCount = 0;
+    $incorrectCount = 0;
+    $currentQuestion = 0;
 
     $modelId = $model['id'];
 
@@ -817,14 +1005,6 @@ SYSTEM_PROMPT;
                     }
                     
                     $modelResults[$qIndex] = $existingAttempts;
-                    $db->saveBenchmarkState(
-                        $modelId,
-                        $modelResults,
-                        $correctCount,
-                        $incorrectCount,
-                        $currentQuestion
-                    );
-                    
                     $db->commit();
                     
                     // Display updated stats after each question
@@ -847,5 +1027,5 @@ SYSTEM_PROMPT;
 
 // Display final stats if any models were processed
 if (count($models) > 0) {
-    displayModelStats($db);
+    displayModelStats($db, $showDetails, $excludeSubcategories);
 }

@@ -58,15 +58,6 @@ class SQLiteDatabase {
                 UNIQUE(model_id, question_id, attempt_id)
             );
             
-            CREATE TABLE IF NOT EXISTS benchmark_state (
-                model_id TEXT PRIMARY KEY,
-                results TEXT,
-                correct_count INTEGER,
-                incorrect_count INTEGER,
-                current_question INTEGER,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-            
             CREATE TABLE IF NOT EXISTS model_stats (
                 model_id TEXT PRIMARY KEY,
                 total_questions INTEGER DEFAULT 0,
@@ -262,44 +253,7 @@ class SQLiteDatabase {
         return $stmt->fetchAll();
     }
 
-    public function saveBenchmarkState(
-        string $modelId,
-        array $results,
-        int $correctCount,
-        int $incorrectCount,
-        int $currentQuestion
-    ): void {
-        $stmt = $this->db->prepare('
-            INSERT OR REPLACE INTO benchmark_state 
-            (model_id, results, correct_count, incorrect_count, current_question)
-            VALUES (?, ?, ?, ?, ?)
-        ');
-        
-        $stmt->execute([
-            $modelId,
-            json_encode($results),
-            $correctCount,
-            $incorrectCount,
-            $currentQuestion
-        ]);
-    }
 
-    public function getBenchmarkState(string $modelId): ?array {
-        $stmt = $this->db->prepare('SELECT * FROM benchmark_state WHERE model_id = ?');
-        $stmt->execute([$modelId]);
-        $result = $stmt->fetch();
-        
-        if (!$result) {
-            return null;
-        }
-        
-        return [
-            'results' => json_decode($result['results'], true),
-            'correctCount' => $result['correct_count'],
-            'incorrectCount' => $result['incorrect_count'],
-            'currentQuestion' => $result['current_question']
-        ];
-    }
 
     public function resetBenchmarkData(): void {
         unlink('benchmark.db');
