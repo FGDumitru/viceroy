@@ -493,6 +493,21 @@ $llmConnection->readBearerTokenFromFile('.bearer_token');
 $models = $llmConnection->getAvailableModels();
 sort($models);
 
+if (!$ignoreSpeedLimits) {
+    for ($i=0; $i<count($models); $i++) {
+        $stats = $db->getModelStats($models[$i]['id']);
+
+        if (isset($stats['avg_prompt_eval_per_second'])) {
+            $modelPromptPerSecond = round($stats['avg_prompt_eval_per_second'], 2);
+            $modelTokensPerSecond = round($stats['avg_tokens_per_second'], 2);
+            
+            if ($modelPromptPerSecond < MIN_PROMPT_SPEED || $modelTokensPerSecond < MIN_TOKEN_GENERATION) {
+                echo "\033[34;40m\nSlow model skipped: " . $models[$i]['id'] . " (Speeds - prompt eval: $modelPromptPerSecond/s | tokens per second: $modelTokensPerSecond/s)\033[0m\n";
+                unset($models[$i]);
+            }
+        }
+    }
+}
 
 if (empty($models)) {
     echo "\n\tError retrieving models list. \n";
