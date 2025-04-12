@@ -317,25 +317,6 @@ function displayModelStats(SQLiteDatabase $db): void {
         echo "\nAll questions have been answered correctly by at least one model.\n";
     }
 
-    /**
-     * SQL query that display question accuracy and which model(s) correctly answered.
-     * 
-     * SELECT
-    question_id,
-    COUNT(*) AS total_attempts,
-    SUM(correct) AS correct_answers,
-    ROUND(100.0 * SUM(correct) / COUNT(*), 2) AS accuracy_percent,
-    GROUP_CONCAT(DISTINCT CASE WHEN correct = 1 THEN model_id END) AS correct_model_ids
-FROM
-    benchmark_runs
-GROUP BY
-    question_id
-HAVING
-    SUM(correct) = 0
-ORDER BY
-    accuracy_percent ASC;
-
-     */
 }
 
 /**
@@ -484,6 +465,7 @@ function loadBenchmarkJson() {
             $results[$modelId][$questionId] = array_map(function($run) {
                 return [
                     'response' => $run['response'],
+                    'clean_response' => $run['clean_response'],
                     'correct' => (bool)$run['correct'],
                     'reasoning' => $run['reasoning'],
                     'response_time' => $run['response_time'],
@@ -623,6 +605,9 @@ foreach ($models as $modelIndex => $model) {
     $startTime = microtime(true);
     $modelStartTime = $startTime;
 
+    // DEBUG
+    $questionCountLimit = 100;
+
     // Process each question for the current model
     $questionsToProcess = $questionCountLimit ? array_slice($benchmarkData, 0, $questionCountLimit, true) : $benchmarkData;
     foreach ($questionsToProcess as $qIndex => $entry) {
@@ -645,8 +630,21 @@ foreach ($models as $modelIndex => $model) {
         if ($numAttempts >= $totalRequiredAnswersPerQuestion) {
             $correctAttempts = count(array_filter($existingAttempts, fn($a) => $a['correct']));
             $isCorrectOverall = $correctAttempts >= $requiredCorrectAnswers;
-            echo "\nExpected response: " . json_encode($entry['answers']);
-            echo "\nProvided response: " . $existingAttempts[0]['response'] . "\n";
+            echo "\nModel ID: $modelId\n";
+            echo "\tExpected response: " . json_encode($entry['answers']);
+
+            $isCorrect = $existingAttempts[0]['correct'];
+
+            if ($isCorrect) {
+                $correctCount++;
+            } else {
+                $incorrectCount++;
+            }
+
+            $status = $isCorrect ? 'Correct! 👍' : 'INCORRECT! 🚫';
+
+            echo "\n\tProvided response is $status: " . $existingAttempts[0]['clean_response'] . "\n";
+
 
         } else {
             for ($i = 0; $i < $remainingAttempts; $i++) {
