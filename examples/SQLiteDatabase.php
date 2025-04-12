@@ -157,7 +157,7 @@ class SQLiteDatabase {
         $this->updateModelStats($modelId, $correct);
     }
 
-    public function updateModelStats(string $modelId, bool $isCorrect): void {
+    public function updateModelStats(string $modelId): void {
         // Calculate new stats
         $stats = $this->calculateModelStats($modelId);
         

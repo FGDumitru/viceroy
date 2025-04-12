@@ -143,6 +143,10 @@ if (!$hasSubcategory) {
 $filterModels = [];
 $ignoredModels = [];
 $showStats = in_array('--show-stats', $argv);
+
+//DEBUG
+//$showStats = TRUE;
+
 $ignoreSpeedLimits = in_array('--ignore-speed-limits', $argv) || in_array('-isl', $argv);
 
 $questionCountLimit = null;
@@ -168,11 +172,18 @@ foreach ($argv as $arg) {
     elseif (str_starts_with($arg, '--qcnt=')) {
         $questionCountLimit = (int) substr($arg, strlen('--qcnt='));
     }
+
+    // DEBUG
+    //$questionCountLimit = 100;
 }
 
 // If only showing stats, display and exit
 if ($showStats) {
     try {
+        $models = $db->getDistinctModels();
+        foreach ($models as $modelId) {
+            $db->updateModelStats($modelId);
+        }
         displayModelStats($db);
         exit(0);
     } catch (Exception $e) {
@@ -181,7 +192,6 @@ if ($showStats) {
     }
 }
 
-// Debug output for --model parameter
 if (!empty($filterModels)) {
     echo "\n\033[1;33mFiltering models using patterns: " . implode(', ', $filterModels) . "\033[0m\n";
 }
@@ -549,6 +559,7 @@ usort($models, function ($a, $b) {
 
 // DEBUG
 //$models = [['id' => 'qwen_QwQ-32B-Q8_0']];
+//$models = [['id' => 'za_DeepSeek-V3-0324-UD-Q2_K_XL-CTX_1024_benchmark']];
 
 // Main benchmark loop - test each model
 foreach ($models as $modelIndex => $model) {

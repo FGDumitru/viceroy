@@ -1,3 +1,4 @@
+      
 [
   {
     "type": "mcq",
@@ -15,11 +16,12 @@
       "d": "Cache Bins",
       "e": "Cache Keys"
     },
-    "tag": "Drupal 10/11 Cache API"
+    "category": "Drupal",
+    "subcategory": "Cache API"
   },
   {
     "type": "mcq",
-    "q": "In Drupal 10/11, which of these are valid ways to define a dependency on another module within your custom module's `*.info.yml` file?",
+    "q": "In Drupal, which of these are valid ways to define a dependency on another module within your custom module's `*.info.yml` file?",
     "instruction": "Select ALL correct answers by providing the corresponding letter(s) as a comma-separated list (e.g., \"a, c\").",
     "answers": [
       "a",
@@ -32,11 +34,12 @@
       "d": "dependencies:\n  - node",
       "e": "uses:\n  - drupal/node"
     },
-    "tag": "Drupal 10/11 Module Development"
+    "category": "Drupal",
+    "subcategory": "Module Development"
   },
   {
     "type": "mcq",
-    "q": "Which core Drupal 10/11 concepts directly leverage Symfony components?",
+    "q": "Which core Drupal concepts directly leverage Symfony components?",
     "instruction": "Select ALL correct answers by providing the corresponding letter(s) as a comma-separated list (e.g., \"a, c\").",
     "answers": [
       "a",
@@ -51,7 +54,8 @@
       "d": "Event Dispatcher",
       "e": "HTTP Request/Response Handling"
     },
-    "tag": "Drupal 10/11 Architecture"
+    "category": "Drupal",
+    "subcategory": "Architecture"
   },
   {
     "type": "mcq",
@@ -69,11 +73,12 @@
       "d": "form",
       "e": "translation"
     },
-    "tag": "Drupal 10/11 Entity API"
+    "category": "Drupal",
+    "subcategory": "Entity API"
   },
   {
     "type": "mcq",
-    "q": "Which of the following are considered best practices for security when developing Drupal 10/11 modules?",
+    "q": "Which of the following are considered best practices for security when developing Drupal modules?",
     "instruction": "Select ALL recommended security practices.",
     "answers": [
       "a",
@@ -88,7 +93,8 @@
       "d": "Implementing appropriate access checks for routes and entity operations.",
       "e": "Validating and sanitizing all external input (e.g., from forms, URLs)."
     },
-    "tag": "Drupal 10/11 Security"
+    "category": "Drupal",
+    "subcategory": "Security"
   },
   {
     "type": "mcq",
@@ -106,11 +112,12 @@
       "d": "Managing database schema updates.",
       "e": "Handling JavaScript library dependencies."
     },
-    "tag": "Drupal 10/11 Typed Data API"
+    "category": "Drupal",
+    "subcategory": "Typed Data API"
   },
   {
     "type": "mcq",
-    "q": "Which of these PHP features became more prominent or required in Drupal 10/11 development due to dependencies like Symfony 6/7 and minimum PHP version requirements?",
+    "q": "Which of these PHP features became more prominent or required in Drupal development due to dependencies like newer Symfony versions and minimum PHP version requirements?",
     "instruction": "Select ALL relevant PHP features.",
     "answers": [
       "a",
@@ -124,7 +131,8 @@
       "d": "Strict Type Declarations (scalar types, return types)",
       "e": "Magic Quotes"
     },
-    "tag": "Drupal 10/11 PHP"
+    "category": "Drupal",
+    "subcategory": "PHP Integration"
   },
   {
     "type": "mcq",
@@ -141,7 +149,8 @@
       "d": "validate()",
       "e": "massageFormValues()"
     },
-    "tag": "Drupal 10/11 Entity API"
+    "category": "Drupal",
+    "subcategory": "Entity API"
   },
   {
     "type": "mcq",
@@ -159,7 +168,8 @@
       "d": "session",
       "e": "data"
     },
-    "tag": "Drupal 10/11 Cache API"
+    "category": "Drupal",
+    "subcategory": "Cache API"
   },
   {
     "type": "mcq",
@@ -178,7 +188,8 @@
       "d": "Automatically caching the results of processed items.",
       "e": "Handling tasks that need to be retried upon failure."
     },
-    "tag": "Drupal 10/11 Queue API"
+    "category": "Drupal",
+    "subcategory": "Queue API"
   },
   {
     "type": "mcq",
@@ -196,7 +207,8 @@
       "d": "Adds specific cache tags (e.g., node_list, user:UID) to its rendered output, enabling Drupal's caching system to automatically invalidate the view when tagged data changes.",
       "e": "Provides an event subscriber that directly listens for entity presave/predelete events for all entity types to proactively update View results."
     },
-    "tag": "Drupal 10/11 Views"
+    "category": "Drupal",
+    "subcategory": "Views"
   },
   {
     "type": "mcq",
@@ -214,7 +226,8 @@
       "d": "Testing theme rendering and CSS.",
       "e": "Testing API integrations at the PHP level."
     },
-    "tag": "Drupal 10/11 Testing"
+    "category": "Drupal",
+    "subcategory": "Testing"
   },
   {
     "type": "mcq",
@@ -233,7 +246,8 @@
       "d": "Often involves defining an interface and a base class.",
       "e": "Managed by Plugin Manager services."
     },
-    "tag": "Drupal 10/11 Plugin API"
+    "category": "Drupal",
+    "subcategory": "Plugin API"
   },
   {
     "type": "mcq",
@@ -251,7 +265,8 @@
       "d": "Updating configuration entities programmatically.",
       "e": "Clearing specific cache bins after a code change."
     },
-    "tag": "Drupal 10/11 Module Development"
+    "category": "Drupal",
+    "subcategory": "Module Development"
   },
   {
     "type": "mcq",
@@ -269,11 +284,12 @@
       "d": "Sortable elements (e.g., dragging table rows)",
       "e": "Core toolbar"
     },
-    "tag": "Drupal 11 Frontend"
+    "category": "Drupal",
+    "subcategory": "Frontend"
   },
   {
     "type": "mcq",
-    "q": "Which options are valid ways to alter the definition of routes defined by other modules in Drupal 10/11?",
+    "q": "Which options are valid ways to alter the definition of routes defined by other modules in Drupal?",
     "instruction": "Select ALL valid methods.",
     "answers": [
       "b",
@@ -286,11 +302,12 @@
       "d": "Overriding the `*.routing.yml` file in a custom theme.",
       "e": "Using '\\Drupal::service('router.builder')->alterRoutes()`."
     },
-    "tag": "Drupal 10/11 Routing"
+    "category": "Drupal",
+    "subcategory": "Routing"
   },
   {
     "type": "mcq",
-    "q": "What are the key goals of the 'Automatic Updates' initiative in Drupal 10/11?",
+    "q": "What are the key goals of the 'Automatic Updates' initiative in Drupal?",
     "instruction": "Select ALL key goals.",
     "answers": [
       "a",
@@ -304,7 +321,8 @@
       "d": "Automatically fix PHP compatibility issues during updates.",
       "e": "Lower the maintenance burden for site owners."
     },
-    "tag": "Drupal 10/11 Automatic Updates"
+    "category": "Drupal",
+    "subcategory": "Automatic Updates"
   },
   {
     "type": "mcq",
@@ -322,7 +340,8 @@
       "d": "It provides metadata, including translatability information for configuration values.",
       "e": "It defines the database tables used to store configuration."
     },
-    "tag": "Drupal 10/11 Configuration"
+    "category": "Drupal",
+    "subcategory": "Configuration"
   },
   {
     "type": "mcq",
@@ -341,7 +360,8 @@
       "d": "Fetching relationships and included related resources.",
       "e": "Creating, updating, and deleting entities (with proper permissions)."
     },
-    "tag": "Drupal 10/11 Decoupled"
+    "category": "Drupal",
+    "subcategory": "Decoupled / JSON:API"
   },
   {
     "type": "mcq",
@@ -359,7 +379,8 @@
       "d": "#[Route]",
       "e": "#[Action]"
     },
-    "tag": "Drupal 10/11 Plugin API"
+    "category": "Drupal",
+    "subcategory": "Plugin API"
   },
   {
     "type": "mcq",
@@ -379,13 +400,15 @@
       "d": "Aggregating CSS and JavaScript files.",
       "e": "Leveraging BigPipe for rendering dynamic page elements."
     },
-    "tag": "Drupal 10/11 Performance"
+    "category": "Drupal",
+    "subcategory": "Performance"
   },
   {
     "type": "mcq",
-    "q": "Which core modules provide foundational APIs for multilingual capabilities in Drupal 10/11?",
+    "q": "Which core modules provide foundational APIs for multilingual capabilities in Drupal?",
     "instruction": "Select ALL relevant core modules.",
     "answers": [
+      "a",
       "b",
       "d",
       "e"
@@ -397,7 +420,8 @@
       "d": "Config Translation (Translating configuration)",
       "e": "Content Translation (Translating content entities)"
     },
-    "tag": "Drupal 10/11 Multilingual"
+    "category": "Drupal",
+    "subcategory": "Multilingual"
   },
   {
     "type": "mcq",
@@ -416,7 +440,8 @@
       "d": "A running web server serving the Drupal site.",
       "e": "Mink library for browser abstraction."
     },
-    "tag": "Drupal 10/11 Testing"
+    "category": "Drupal",
+    "subcategory": "Testing"
   },
   {
     "type": "mcq",
@@ -434,11 +459,12 @@
       "d": "node_type:T (where T is the node bundle/type)",
       "e": "rendered"
     },
-    "tag": "Drupal 10/11 Cache API"
+    "category": "Drupal",
+    "subcategory": "Cache API"
   },
   {
     "type": "mcq",
-    "q": "What are the roles of service providers (`ServiceProviderInterface`) in Drupal 10/11?",
+    "q": "What are the roles of service providers (`ServiceProviderInterface`) in Drupal?",
     "instruction": "Select ALL roles.",
     "answers": [
       "b",
@@ -451,7 +477,8 @@
       "d": "To register compiler passes.",
       "e": "To define custom entity types."
     },
-    "tag": "Drupal 10/11 Services"
+    "category": "Drupal",
+    "subcategory": "Services"
   },
   {
     "type": "mcq",
@@ -469,7 +496,8 @@
       "d": "hook_form_validate()",
       "e": "hook_form_BASE_FORM_ID_alter()"
     },
-    "tag": "Drupal 10/11 Form API"
+    "category": "Drupal",
+    "subcategory": "Form API"
   },
   {
     "type": "mcq",
@@ -487,11 +515,12 @@
       "d": "Semi-persistent data like last cron run time.",
       "e": "Field definitions for entities."
     },
-    "tag": "Drupal 10/11 APIs"
+    "category": "Drupal",
+    "subcategory": "APIs"
   },
   {
     "type": "mcq",
-    "q": "Which Twig constructs are available in Drupal 10/11 templates for controlling output and logic?",
+    "q": "Which Twig constructs are available in Drupal templates for controlling output and logic?",
     "instruction": "Select ALL available Twig constructs.",
     "answers": [
       "a",
@@ -507,7 +536,8 @@
       "d": "Template inheritance (`{% extends %}`, `{% block %}`)",
       "e": "Macros (`{% macro %}`, `{% import %}`)"
     },
-    "tag": "Drupal 10/11 Theming"
+    "category": "Drupal",
+    "subcategory": "Theming"
   },
   {
     "type": "mcq",
@@ -527,11 +557,12 @@
       "d": "Database transactions.",
       "e": "Replica server support for read queries."
     },
-    "tag": "Drupal 10/11 Database API"
+    "category": "Drupal",
+    "subcategory": "Database API"
   },
   {
     "type": "mcq",
-    "q": "Which of the following represent valid methods for adding JavaScript assets to a Drupal 10/11 page?",
+    "q": "Which of the following represent valid methods for adding JavaScript assets to a Drupal page?",
     "instruction": "Select ALL valid methods.",
     "answers": [
       "a",
@@ -545,7 +576,8 @@
       "d": "Placing JavaScript files directly in the theme's `/js` folder for automatic loading.",
       "e": "Attaching a library within a preprocess function."
     },
-    "tag": "Drupal 10/11 Frontend"
+    "category": "Drupal",
+    "subcategory": "Frontend"
   },
   {
     "type": "mcq",
@@ -564,7 +596,8 @@
       "d": "Installed modules and themes list.",
       "e": "User roles and permissions."
     },
-    "tag": "Drupal 10/11 Configuration"
+    "category": "Drupal",
+    "subcategory": "Configuration"
   },
   {
     "type": "mcq",
@@ -583,7 +616,8 @@
       "d": "Configuring text formats to restrict allowed HTML tags for user input.",
       "e": "Avoiding the use of the `|raw` filter in Twig unless absolutely necessary and the source is trusted."
     },
-    "tag": "Drupal 10/11 Security"
+    "category": "Drupal",
+    "subcategory": "Security"
   },
   {
     "type": "mcq",
@@ -603,7 +637,8 @@
       "d": "Includes storage, access control, and rendering handlers.",
       "e": "Supports revisions and translations."
     },
-    "tag": "Drupal 10/11 Entity API"
+    "category": "Drupal",
+    "subcategory": "Entity API"
   },
   {
     "type": "mcq",
@@ -623,11 +658,12 @@
       "d": "Access Control system (to check permissions).",
       "e": "Database API (to persist the entity data)."
     },
-    "tag": "Drupal 10/11 Architecture"
+    "category": "Drupal",
+    "subcategory": "Architecture"
   },
   {
     "type": "mcq",
-    "q": "Which of the following are valid sections within a Drupal module's `*.routing.yml` file for defining a single route?",
+    "q": "Which of the following represent valid sections within a Drupal module's `*.routing.yml` file for defining a single route?",
     "instruction": "Select ALL valid top-level keys for a route definition.",
     "answers": [
       "a",
@@ -642,7 +678,8 @@
       "d": "methods (This goes under requirements or options typically)",
       "e": "options"
     },
-    "tag": "Drupal 10/11 Routing"
+    "category": "Drupal",
+    "subcategory": "Routing"
   },
   {
     "type": "mcq",
@@ -661,7 +698,8 @@
       "d": "Provides layout plugins that define different column structures.",
       "e": "Mechanism for exporting/importing layouts as configuration."
     },
-    "tag": "Drupal 10/11 Core Modules"
+    "category": "Drupal",
+    "subcategory": "Core Modules"
   },
   {
     "type": "mcq",
@@ -680,7 +718,8 @@
       "d": "Dependency on the current theme.",
       "e": "The number of items in a list."
     },
-    "tag": "Drupal 10/11 Cache API"
+    "category": "Drupal",
+    "subcategory": "Cache API"
   },
   {
     "type": "mcq",
@@ -697,7 +736,8 @@
       "d": "request",
       "e": "global"
     },
-    "tag": "Drupal 10/11 Services"
+    "category": "Drupal",
+    "subcategory": "Services"
   },
   {
     "type": "mcq",
@@ -716,7 +756,8 @@
       "d": "Migrate API (dispatches events during migration processes)",
       "e": "Entity API (dispatches events like presave, insert, update, delete - via hooks mostly, but events exist)"
     },
-    "tag": "Drupal 10/11 Events"
+    "category": "Drupal",
+    "subcategory": "Events"
   },
   {
     "type": "mcq",
@@ -735,7 +776,8 @@
       "d": "Replacement of Twig with a different templating engine.",
       "e": "Updating underlying dependencies like Symfony and PHP to newer versions."
     },
-    "tag": "Drupal 11 Initiatives"
+    "category": "Drupal",
+    "subcategory": "Initiatives"
   },
   {
     "type": "mcq",
@@ -753,11 +795,12 @@
       "d": "Dedicated caching system backend (e.g., Redis, Memcached via contrib).",
       "e": "Configuration sync directory."
     },
-    "tag": "Drupal 10/11 APIs"
+    "category": "Drupal",
+    "subcategory": "APIs"
   },
   {
     "type": "mcq",
-    "q": "What are valid ways to invalidate cache tags in Drupal 10/11?",
+    "q": "What are valid ways to invalidate cache tags in Drupal?",
     "instruction": "Select ALL valid methods.",
     "answers": [
       "a",
@@ -771,7 +814,8 @@
       "d": "Using `drush cache:invalidate tags tag1 tag2`.",
       "e": "Setting the `max-age` to 0."
     },
-    "tag": "Drupal 10/11 Cache API"
+    "category": "Drupal",
+    "subcategory": "Cache API"
   },
   {
     "type": "mcq",
@@ -788,7 +832,8 @@
       "d": "@EntityStorage",
       "e": "@EntityHandler"
     },
-    "tag": "Drupal 10/11 Entity API"
+    "category": "Drupal",
+    "subcategory": "Entity API"
   },
   {
     "type": "mcq",
@@ -804,7 +849,8 @@
       "d": "An array of constructor arguments.",
       "e": "A boolean indicating if the service should be lazy-loaded."
     },
-    "tag": "Drupal 10/11 Services"
+    "category": "Drupal",
+    "subcategory": "Services"
   },
   {
     "type": "mcq",
@@ -817,13 +863,13 @@
       "e"
     ],
     "options": {
-      "a": "Serving stale content to users.",
-      "b": "Serving personalized content intended for one user to another user.",
+      "a": "Serving personalized content intended for one user to another user.",
       "c": "Improved site performance due to less cache invalidation.",
       "d": "Poor performance due to excessive cache variations or unnecessary invalidations.",
       "e": "Breaking dynamic functionality that relies on correct context."
     },
-    "tag": "Drupal 10/11 Cache API"
+    "category": "Drupal",
+    "subcategory": "Cache API"
   },
   {
     "type": "mcq",
@@ -840,11 +886,12 @@
       "d": "hal",
       "e": "typed_data"
     },
-    "tag": "Drupal 10/11 Decoupled"
+    "category": "Drupal",
+    "subcategory": "Decoupled / JSON:API"
   },
   {
     "type": "mcq",
-    "q": "Which types of operations typically require a Drupal Kernel boot for testing (e.g., using `KernelTestBase`)?",
+    "q": "What types of operations typically require a Drupal Kernel boot for testing (e.g., using `KernelTestBase`)?",
     "instruction": "Select ALL operations requiring a kernel.",
     "answers": [
       "a",
@@ -860,7 +907,8 @@
       "d": "Interacting with the database via Drupal's API.",
       "e": "Using the Plugin system."
     },
-    "tag": "Drupal 10/11 Testing"
+    "category": "Drupal",
+    "subcategory": "Testing"
   },
   {
     "type": "mcq",
@@ -879,7 +927,8 @@
       "d": "Entity field definitions.",
       "e": "Private file system path (`$settings['file_private_path']`)."
     },
-    "tag": "Drupal 10/11 Configuration"
+    "category": "Drupal",
+    "subcategory": "Configuration"
   },
   {
     "type": "mcq",
@@ -897,11 +946,12 @@
       "d": "doSomethingOnRequest() (custom name)",
       "e": "handleKernelRequest()"
     },
-    "tag": "Drupal 10/11 Events"
+    "category": "Drupal",
+    "subcategory": "Events"
   },
   {
     "type": "mcq",
-    "q": "In Drupal 10/11, when defining a custom service in `services.yml`, what is the primary purpose of using the `decorates` keyword?",
+    "q": "In Drupal, when defining a custom service in `services.yml`, what is the primary purpose of using the `decorates` keyword?",
     "instruction": "Select the best description.",
     "answers": [
       "b"
@@ -913,9 +963,10 @@
       "d": "To tag the service for collection by a service collector.",
       "e": "To make the service public instead of private."
     },
-    "tag": "Drupal 10/11 Services"
+    "category": "Drupal",
+    "subcategory": "Services"
   },
-  {
+    {
     "type": "mcq",
     "q": "What Symfony event, dispatched by the HttpKernel, allows modification of a controller's return value *before* Drupal's main render pipeline processes it (assuming the controller returned a render array or other non-Response object)?",
     "instruction": "Select the relevant event class.",
@@ -928,11 +979,12 @@
       "c": "Drupal\\Core\\Render\\PageDisplayVariantSelectionEvent",
       "d": "Drupal\\Core\\Render\\MainContent\\HtmlRendererEvents::RENDER"
     },
-    "tag": "Drupal 10/11 Events"
+    "category": "Drupal",
+    "subcategory": "Events"
   },
   {
     "type": "mcq",
-    "q": "Which Symfony component provides the foundation for Drupal 10/11's routing system?",
+    "q": "Which Symfony component provides the foundation for Drupal's routing system?",
     "instruction": "Select the core component.",
     "answers": [
       "a"
@@ -944,7 +996,8 @@
       "d": "Symfony\\Component\\HttpFoundation",
       "e": "Symfony\\Component\\DependencyInjection"
     },
-    "tag": "Drupal 10/11 Architecture"
+    "category": "Drupal",
+    "subcategory": "Architecture"
   },
   {
     "type": "mcq",
@@ -959,7 +1012,8 @@
       "c": "The listener class and the service tag",
       "d": "The priority and the event name"
     },
-    "tag": "Drupal 10/11 Hooks"
+    "category": "Drupal",
+    "subcategory": "Hooks"
   },
   {
     "type": "mcq",
@@ -974,7 +1028,8 @@
       "c": "8.3",
       "d": "8.4"
     },
-    "tag": "Drupal 11 Requirements"
+    "category": "Drupal",
+    "subcategory": "Requirements"
   },
   {
     "type": "direct",
@@ -983,7 +1038,8 @@
     "answers": [
       "state"
     ],
-    "tag": "Drupal 10/11 Services"
+    "category": "Drupal",
+    "subcategory": "Services"
   },
   {
     "type": "mcq",
@@ -999,7 +1055,8 @@
       "d": "To define render elements that should only be visible to administrators.",
       "e": "To dynamically add CSS classes based on context."
     },
-    "tag": "Drupal 10/11 Render API"
+    "category": "Drupal",
+    "subcategory": "Render API"
   },
   {
     "type": "direct",
@@ -1008,7 +1065,8 @@
     "answers": [
       "default_widget"
     ],
-    "tag": "Drupal 10/11 Entity API"
+    "category": "Drupal",
+    "subcategory": "Entity API"
   },
   {
     "type": "mcq",
@@ -1024,7 +1082,8 @@
       "d": "session",
       "e": "route"
     },
-    "tag": "Drupal 10/11 Cache API"
+    "category": "Drupal",
+    "subcategory": "Cache API"
   },
   {
     "type": "direct",
@@ -1034,11 +1093,12 @@
       "drush config:status",
       "drush cst"
     ],
-    "tag": "Drupal 10/11 Drush"
+    "category": "Drupal",
+    "subcategory": "Drush / Console"
   },
   {
     "type": "mcq",
-    "q": "Drupal 10/11's configuration system stores configuration primarily as:",
+    "q": "Drupal's configuration system stores configuration primarily as:",
     "instruction": "Select the format.",
     "answers": [
       "a"
@@ -1050,7 +1110,8 @@
       "d": "Database tables",
       "e": "XML files"
     },
-    "tag": "Drupal 10/11 Configuration"
+    "category": "Drupal",
+    "subcategory": "Configuration"
   },
   {
     "type": "direct",
@@ -1059,7 +1120,8 @@
     "answers": [
       "Drupal\\Core\\Database\\Query\\ConditionInterface"
     ],
-    "tag": "Drupal 10/11 Database API"
+    "category": "Drupal",
+    "subcategory": "Database API"
   },
   {
     "type": "mcq",
@@ -1074,7 +1136,8 @@
       "c": "State API",
       "d": "Event API"
     },
-    "tag": "Drupal 10/11 Queue API"
+    "category": "Drupal",
+    "subcategory": "Queue API"
   },
   {
     "type": "direct",
@@ -1083,7 +1146,8 @@
     "answers": [
       "access"
     ],
-    "tag": "Drupal 10/11 Entity API"
+    "category": "Drupal",
+    "subcategory": "Entity API"
   },
   {
     "type": "mcq",
@@ -1099,7 +1163,8 @@
       "d": "hook_PLUGIN_TYPE_info_alter()",
       "e": "hook_PLUGIN_TYPE_alter()"
     },
-    "tag": "Drupal 10/11 Plugin API"
+    "category": "Drupal",
+    "subcategory": "Plugin API"
   },
   {
     "type": "direct",
@@ -1108,11 +1173,12 @@
     "answers": [
       "url"
     ],
-    "tag": "Drupal 10/11 Theming"
+    "category": "Drupal",
+    "subcategory": "Theming"
   },
   {
     "type": "mcq",
-    "q": "Which serialization format is primarily used by Drupal 10/11's core JSON:API module for exposing entity data?",
+    "q": "Which serialization format is primarily used by Drupal's core JSON:API module for exposing entity data?",
     "instruction": "Select the standard.",
     "answers": [
       "a"
@@ -1124,7 +1190,8 @@
       "d": "Plain JSON",
       "e": "YAML"
     },
-    "tag": "Drupal 10/11 Decoupled"
+    "category": "Drupal",
+    "subcategory": "Decoupled / JSON:API"
   },
   {
     "type": "direct",
@@ -1134,7 +1201,8 @@
       "composer update",
       "composer update drupal/core --with-all-dependencies"
     ],
-    "tag": "Drupal 10/11 Composer"
+    "category": "Drupal",
+    "subcategory": "Composer"
   },
   {
     "type": "mcq",
@@ -1150,7 +1218,8 @@
       "d": "To trigger an asynchronous request to the server and update parts of the form or page without a full page reload.",
       "e": "To submit the form to an external URL."
     },
-    "tag": "Drupal 10/11 Form API"
+    "category": "Drupal",
+    "subcategory": "Form API"
   },
   {
     "type": "direct",
@@ -1161,7 +1230,8 @@
       "drush cache:rebuild",
       "drush cr"
     ],
-    "tag": "Drupal 10/11 Console"
+    "category": "Drupal",
+    "subcategory": "Drush / Console"
   },
   {
     "type": "mcq",
@@ -1177,7 +1247,8 @@
       "d": "jQuery Form",
       "e": "jQuery Validate"
     },
-    "tag": "Drupal 10 Frontend"
+    "category": "Drupal",
+    "subcategory": "Frontend"
   },
   {
     "type": "direct",
@@ -1186,7 +1257,8 @@
     "answers": [
       "process"
     ],
-    "tag": "Drupal 10/11 Migrate API"
+    "category": "Drupal",
+    "subcategory": "Migrate API"
   },
   {
     "type": "mcq",
@@ -1202,17 +1274,19 @@
       "d": "@ComplexData",
       "e": "@DataType(\"string\") (or other type within @DataType)"
     },
-    "tag": "Drupal 10/11 Typed Data API"
+    "category": "Drupal",
+    "subcategory": "Typed Data API"
   },
   {
     "type": "direct",
-    "q": "Which Drupal core module provides the infrastructure for the Automatic Updates feature introduced and developed for Drupal 10/11?",
+    "q": "Which Drupal core module provides the infrastructure for the Automatic Updates feature introduced and developed for Drupal?",
     "instruction": "Provide the machine name of the module.",
     "answers": [
       "automatic_updates",
       "package_manager"
     ],
-    "tag": "Drupal 10/11 Automatic Updates"
+    "category": "Drupal",
+    "subcategory": "Automatic Updates"
   },
   {
     "type": "mcq",
@@ -1228,7 +1302,8 @@
       "d": "$this->drupalPostForm()",
       "e": "$this->assertSession()->assertWaitOnAjaxRequest()"
     },
-    "tag": "Drupal 10/11 Testing"
+    "category": "Drupal",
+    "subcategory": "Testing"
   },
   {
     "type": "direct",
@@ -1237,7 +1312,8 @@
     "answers": [
       "user.onetime_login_generator"
     ],
-    "tag": "Drupal 10/11 Services"
+    "category": "Drupal",
+    "subcategory": "Services"
   },
   {
     "type": "mcq",
@@ -1253,7 +1329,8 @@
       "d": "Drupal\\Core\\StackMiddleware\\Session",
       "e": "Drupal\\Core\\StackMiddleware\\NegotiationMiddleware"
     },
-    "tag": "Drupal 10/11 Architecture"
+    "category": "Drupal",
+    "subcategory": "Architecture"
   },
   {
     "type": "direct",
@@ -1262,7 +1339,8 @@
     "answers": [
       "dependencies"
     ],
-    "tag": "Drupal 10/11 Plugin API"
+    "category": "Drupal",
+    "subcategory": "Plugin API"
   },
   {
     "type": "mcq",
@@ -1278,7 +1356,8 @@
       "d": "State API is only for core, Config API is for contrib modules.",
       "e": "State API is for temporary, environment-specific data not meant for deployment, while Config API is for site configuration intended to be deployed between environments."
     },
-    "tag": "Drupal 10/11 APIs"
+    "category": "Drupal",
+    "subcategory": "APIs"
   },
   {
     "type": "direct",
@@ -1287,7 +1366,8 @@
     "answers": [
       "@self"
     ],
-    "tag": "Drupal 10/11 Theming"
+    "category": "Drupal",
+    "subcategory": "Theming"
   },
   {
     "type": "mcq",
@@ -1303,7 +1383,8 @@
       "d": "Drupal\\Core\\Site\\SettingsChangeEvent",
       "e": "Drupal\\Core\\Database\\DatabaseEvents::CONNECT"
     },
-    "tag": "Drupal 10/11 Events"
+    "category": "Drupal",
+    "subcategory": "Events"
   },
   {
     "type": "direct",
@@ -1312,7 +1393,8 @@
     "answers": [
       "_permission"
     ],
-    "tag": "Drupal 10/11 Routing"
+    "category": "Drupal",
+    "subcategory": "Routing"
   },
   {
     "type": "mcq",
@@ -1328,7 +1410,8 @@
       "d": "Deferring JavaScript execution until user interaction.",
       "e": "Implementing aggressive browser caching."
     },
-    "tag": "Drupal 10/11 Performance"
+    "category": "Drupal",
+    "subcategory": "Performance"
   },
   {
     "type": "direct",
@@ -1337,11 +1420,12 @@
     "answers": [
       "hasPermission"
     ],
-    "tag": "Drupal 10/11 Access Control"
+    "category": "Drupal",
+    "subcategory": "Access Control"
   },
   {
     "type": "mcq",
-    "q": "In Drupal 10/11, when defining a custom block plugin, which interface should it typically implement to provide configuration options via a form?",
+    "q": "In Drupal, when defining a custom block plugin, which interface should it typically implement to provide configuration options via a form?",
     "instruction": "Select the relevant interface.",
     "answers": [
       "d"
@@ -1353,7 +1437,8 @@
       "d": "Drupal\\Core\\Block\\BlockPluginInterface (implicitly uses form methods if defined)",
       "e": "Drupal\\Core\\Config\\Entity\\ConfigEntityInterface"
     },
-    "tag": "Drupal 10/11 Plugin API"
+    "category": "Drupal",
+    "subcategory": "Plugin API"
   },
   {
     "type": "direct",
@@ -1362,11 +1447,12 @@
     "answers": [
       "deriver"
     ],
-    "tag": "Drupal 10/11 Plugin API"
+    "category": "Drupal",
+    "subcategory": "Plugin API"
   },
   {
     "type": "mcq",
-    "q": "When adding JavaScript to a Drupal 10/11 site via a library definition in `*.libraries.yml`, what key is used to specify that this library depends on another library (e.g., `core/drupal`)?",
+    "q": "When adding JavaScript to a Drupal site via a library definition in `*.libraries.yml`, what key is used to specify that this library depends on another library (e.g., `core/drupal`)?",
     "instruction": "Select the YAML key.",
     "answers": [
       "c"
@@ -1378,7 +1464,8 @@
       "d": "imports",
       "e": "uses"
     },
-    "tag": "Drupal 10/11 Frontend"
+    "category": "Drupal",
+    "subcategory": "Frontend"
   },
   {
     "type": "direct",
@@ -1387,11 +1474,12 @@
     "answers": [
       "ControllerTrait"
     ],
-    "tag": "Drupal 10/11 Routing"
+    "category": "Drupal",
+    "subcategory": "Routing"
   },
   {
     "type": "mcq",
-    "q": "Which Symfony component is leveraged by Drupal 10/11's Configuration Management system for validating the structure of configuration data against schema definitions?",
+    "q": "Which Symfony component is leveraged by Drupal's Configuration Management system for validating the structure of configuration data against schema definitions?",
     "instruction": "Select the relevant component.",
     "answers": [
       "b"
@@ -1403,7 +1491,8 @@
       "d": "Symfony\\Component\\Yaml",
       "e": "Symfony\\Component\\ExpressionLanguage"
     },
-    "tag": "Drupal 10/11 Configuration"
+    "category": "Drupal",
+    "subcategory": "Configuration"
   },
   {
     "type": "direct",
@@ -1412,7 +1501,8 @@
     "answers": [
       "loadMultiple"
     ],
-    "tag": "Drupal 10/11 Entity API"
+    "category": "Drupal",
+    "subcategory": "Entity API"
   },
   {
     "type": "mcq",
@@ -1428,7 +1518,8 @@
       "d": "|striptags",
       "e": "|sanitize"
     },
-    "tag": "Drupal 10/11 Security"
+    "category": "Drupal",
+    "subcategory": "Security"
   },
   {
     "type": "direct",
@@ -1437,7 +1528,8 @@
     "answers": [
       "olivero"
     ],
-    "tag": "Drupal 10 Theming"
+    "category": "Drupal",
+    "subcategory": "Theming"
   },
   {
     "type": "mcq",
@@ -1453,7 +1545,8 @@
       "d": "arguments: ['@database']",
       "e": "calls: [setDatabase, ['@database']]"
     },
-    "tag": "Drupal 10/11 Services"
+    "category": "Drupal",
+    "subcategory": "Services"
   },
   {
     "type": "direct",
@@ -1462,11 +1555,12 @@
     "answers": [
       "user:UID"
     ],
-    "tag": "Drupal 10/11 Cache API"
+    "category": "Drupal",
+    "subcategory": "Cache API"
   },
   {
     "type": "mcq",
-    "q": "What is the primary role of the `settings.php` file in a Drupal 10/11 installation?",
+    "q": "What is the primary role of the `settings.php` file in a Drupal installation?",
     "instruction": "Select the best description.",
     "answers": [
       "a"
@@ -1478,7 +1572,8 @@
       "d": "To register custom service definitions.",
       "e": "To list enabled modules and themes."
     },
-    "tag": "Drupal 10/11 Configuration"
+    "category": "Drupal",
+    "subcategory": "Configuration"
   },
   {
     "type": "direct",
@@ -1487,11 +1582,12 @@
     "answers": [
       "results"
     ],
-    "tag": "Drupal 10/11 Batch API"
+    "category": "Drupal",
+    "subcategory": "Batch API"
   },
   {
     "type": "mcq",
-    "q": "Drupal 10/11's JavaScript behaviors (`Drupal.behaviors`) are designed to be called:",
+    "q": "Drupal's JavaScript behaviors (`Drupal.behaviors`) are designed to be called:",
     "instruction": "Select when behaviors are typically invoked.",
     "answers": [
       "c"
@@ -1503,278 +1599,22 @@
       "d": "Only when the user interacts with a specific element.",
       "e": "Before the DOM is fully ready."
     },
-    "tag": "Drupal 10/11 Frontend"
+    "category": "Drupal",
+    "subcategory": "Frontend"
   },
   {
     "type": "direct",
-    "q": "What PHP attribute is used in Drupal 10/11 to mark a service definition as deprecated?",
+    "q": "What PHP attribute is used in Drupal to mark a service definition as deprecated?",
     "instruction": "Provide the attribute name (without namespace or brackets).",
     "answers": [
       "Deprecated"
     ],
-    "tag": "Drupal 10/11 Services"
+    "category": "Drupal",
+    "subcategory": "Services"
   },
   {
     "type": "mcq",
-    "q": "Which Drupal concept allows modules to provide different implementations ('variants') of configuration based on certain conditions, often used for development vs. production settings?",
-    "instruction": "Select the relevant *contributed module* commonly used for this.",
-    "answers": [
-      "b"
-    ],
-    "options": {
-      "a": "Configuration Schema",
-      "b": "Configuration Split",
-      "c": "Configuration Override System (settings.php)",
-      "d": "State API",
-      "e": "Plugin Derivatives"
-    },
-    "tag": "Drupal 10/11 Configuration"
-  },
-  {
-    "type": "direct",
-    "q": "When implementing a custom Twig extension in Drupal, what method must be defined in the extension class to register new functions?",
-    "instruction": "Provide the method name.",
-    "answers": [
-      "getFunctions"
-    ],
-    "tag": "Drupal 10/11 Theming"
-  },
-  {
-    "type": "mcq",
-    "q": "To perform a database query that explicitly targets a replica (read) database server in a multi-server setup, what option should be passed to the connection service?",
-    "instruction": "Select the correct option target.",
-    "answers": [
-      "c"
-    ],
-    "options": {
-      "a": "['target' => 'read']",
-      "b": "['target' => 'slave']",
-      "c": "['target' => 'replica']",
-      "d": "['read_only' => TRUE]",
-      "e": "['database' => 'replica']"
-    },
-    "tag": "Drupal 10/11 Database API"
-  },
-  {
-    "type": "direct",
-    "q": "What is the name of the interface that defines the structure for response objects returned by Drupal controllers?",
-    "instruction": "Provide the fully qualified interface name.",
-    "answers": [
-      "Symfony\\Component\\HttpFoundation\\Response"
-    ],
-    "tag": "Drupal 10/11 Routing"
-  },
-  {
-    "type": "mcq",
-    "q": "What is the purpose of defining a `requirements` section in a module's `*.info.yml` file?",
-    "instruction": "Select the best description.",
-    "answers": [
-      "d"
-    ],
-    "options": {
-      "a": "To list PHP extensions required by the module.",
-      "b": "To specify the minimum Drupal core version.",
-      "c": "To declare dependencies on other Drupal modules.",
-      "d": "To specify minimum versions for PHP or dependent modules/projects.",
-      "e": "To define Composer dependencies."
-    },
-    "tag": "Drupal 10/11 Module Development"
-  },
-  {
-    "type": "direct",
-    "q": "What Drupal core service allows you to trigger the garbage collection process for entities that support it?",
-    "instruction": "Provide the service ID.",
-    "answers": [
-      "entity_gc",
-      "entity.gc"
-    ],
-    "tag": "Drupal 10/11 Services"
-  },
-  {
-    "type": "mcq",
-    "q": "Which of the following is NOT a standard entity key defined by Drupal core (though it might be used by contrib or custom entities)?",
-    "instruction": "Select the non-standard core key.",
-    "answers": [
-      "e"
-    ],
-    "options": {
-      "a": "id",
-      "b": "uuid",
-      "c": "bundle",
-      "d": "label",
-      "e": "slug"
-    },
-    "tag": "Drupal 10/11 Entity API"
-  },
-  {
-    "type": "direct",
-    "q": "In Drupal's Mail API, what service is typically used to format and send emails, often replaced by modules like Symfony Mailer?",
-    "instruction": "Provide the core service ID.",
-    "answers": [
-      "plugin.manager.mail",
-      "mailManager"
-    ],
-    "tag": "Drupal 10/11 Services"
-  },
-  {
-    "type": "mcq",
-    "q": "When defining a custom entity type, setting the `field_ui_base_route` annotation allows Drupal to automatically generate routes for:",
-    "instruction": "Select the generated UI pages.",
-    "answers": [
-      "a"
-    ],
-    "options": {
-      "a": "Managing fields, form displays, and view displays for the entity type.",
-      "b": "Listing all entities of that type.",
-      "c": "Creating new entities of that type.",
-      "d": "Viewing individual entities.",
-      "e": "Deleting entities."
-    },
-    "tag": "Drupal 10/11 Entity API"
-  },
-  {
-    "type": "direct",
-    "q": "What Symfony event is dispatched by Drupal after configuration changes are imported, allowing modules to react to these changes?",
-    "instruction": "Provide the event constant name (e.g., ConfigEvents::EVENT_NAME).",
-    "answers": [
-      "ConfigEvents::IMPORT"
-    ],
-    "tag": "Drupal 10/11 Events"
-  },
-  {
-    "type": "mcq",
-    "q": "The `hook_update_N()` functions in a `.install` file are executed during:",
-    "instruction": "Select when these hooks run.",
-    "answers": [
-      "c"
-    ],
-    "options": {
-      "a": "Module installation.",
-      "b": "Module uninstallation.",
-      "c": "Database updates (usually via `drush updb` or `/update.php`).",
-      "d": "Configuration import/export.",
-      "e": "Cron runs."
-    },
-    "tag": "Drupal 10/11 Module Development"
-  },
-  {
-    "type": "direct",
-    "q": "What is the name of the interface that custom field formatters must implement?",
-    "instruction": "Provide the fully qualified interface name.",
-    "answers": [
-      "Drupal\\Core\\Field\\FormatterInterface"
-    ],
-    "tag": "Drupal 10/11 Entity API"
-  },
-  {
-    "type": "mcq",
-    "q": "To add CSS or JavaScript assets conditionally based on PHP logic within a controller or hook, which object should typically be attached to the render array?",
-    "instruction": "Select the key used in the render array.",
-    "answers": [
-      "b"
-    ],
-    "options": {
-      "a": "#scripts",
-      "b": "#attached",
-      "c": "#assets",
-      "d": "#libraries",
-      "e": "#javascript"
-    },
-    "tag": "Drupal 10/11 Render API"
-  },
-  {
-    "type": "direct",
-    "q": "What is the name of the initiative focused on making it easier for site builders to find and install modules directly within the Drupal UI?",
-    "instruction": "Provide the initiative name.",
-    "answers": [
-      "Project Browser"
-    ],
-    "tag": "Drupal 11 Initiatives"
-  },
-  {
-    "type": "mcq",
-    "q": "In Drupal's database API, what is the primary benefit of using prepared statements (placeholders like ':value' or '?') instead of directly embedding variables into query strings?",
-    "instruction": "Select the main benefit.",
-    "answers": [
-      "d"
-    ],
-    "options": {
-      "a": "Improved query execution speed.",
-      "b": "Easier debugging of complex queries.",
-      "c": "Automatic caching of query results.",
-      "d": "Prevention of SQL injection vulnerabilities.",
-      "e": "Better compatibility with different database types."
-    },
-    "tag": "Drupal 10/11 Security"
-  },
-  {
-    "type": "direct",
-    "q": "What class serves as the base class for most Drupal Kernel tests?",
-    "instruction": "Provide the fully qualified class name.",
-    "answers": [
-      "Drupal\\KernelTests\\KernelTestBase"
-    ],
-    "tag": "Drupal 10/11 Testing"
-  },
-  {
-    "type": "mcq",
-    "q": "Which core search module was removed in Drupal 10, encouraging users to migrate to other solutions like the core Search API integration or external search services?",
-    "instruction": "Select the removed module.",
-    "answers": [
-      "a"
-    ],
-    "options": {
-      "a": "Search (the original node search implementation)",
-      "b": "Search API",
-      "c": "Tracker",
-      "d": "Forum",
-      "e": "Statistics"
-    },
-    "tag": "Drupal 10"
-  },
-  {
-    "type": "direct",
-    "q": "What is the primary command-line tool recommended for managing third-party PHP libraries (dependencies) in a Drupal 10/11 project?",
-    "instruction": "Provide the tool name.",
-    "answers": [
-      "Composer"
-    ],
-    "tag": "Drupal 10/11 Tools"
-  },
-  {
-    "type": "mcq",
-    "q": "When defining a service, using the `factory` directive allows you to:",
-    "instruction": "Select the purpose of the `factory` directive.",
-    "answers": [
-      "c"
-    ],
-    "options": {
-      "a": "Define the class name for the service.",
-      "b": "Inject dependencies into the service.",
-      "c": "Specify a static method or another service method responsible for creating the service instance.",
-      "d": "Make the service lazy-loaded.",
-      "e": "Alias the service to a different ID."
-    },
-    "tag": "Drupal 10/11 Services"
-  },
-  {
-    "type": "mcq",
-    "q": "In Drupal's Render API cacheability metadata, what does setting `#cache['max-age']` to 0 signify?",
-    "instruction": "Select the correct meaning.",
-    "answers": [
-      "c"
-    ],
-    "options": {
-      "a": "Cache forever until invalidated by tags.",
-      "b": "Cache for the default system duration.",
-      "c": "The item should not be cached.",
-      "d": "Cache only in the user's browser, not on the server."
-    },
-    "tag": "Drupal 10/11 Cache API"
-  },
-  {
-    "type": "mcq",
-    "q": "Which Drupal core concept allows modules or themes to alter the variables available in a Twig template before it is rendered?",
+    "q": "Which Drupal concept allows modules or themes to alter the variables available in a Twig template before it is rendered?",
     "instruction": "Select the primary mechanism.",
     "answers": [
       "a"
@@ -1786,7 +1626,8 @@
       "d": "Cache tags",
       "e": "Route enhancers"
     },
-    "tag": "Drupal 10/11 Theming"
+    "category": "Drupal",
+    "subcategory": "Theming"
   },
   {
     "type": "mcq",
@@ -1801,7 +1642,8 @@
       "c": "To specify the cache contexts used to generate the response.",
       "d": "To confirm if the response was served from Drupal's internal page cache (HIT/MISS)."
     },
-    "tag": "Drupal 10/11 Cache API"
+    "category": "Drupal",
+    "subcategory": "Cache API"
   },
   {
     "type": "mcq",
@@ -1817,7 +1659,8 @@
       "d": "EntityReferenceSource",
       "e": "EntityReferenceSelection"
     },
-    "tag": "Drupal 10/11 Plugin API"
+    "category": "Drupal",
+    "subcategory": "Plugin API"
   },
   {
     "type": "direct",
@@ -1826,7 +1669,8 @@
     "answers": [
       "core/drupal"
     ],
-    "tag": "Drupal 10/11 Frontend"
+    "category": "Drupal",
+    "subcategory": "Frontend"
   },
   {
     "type": "mcq",
@@ -1842,16 +1686,18 @@
       "d": "Automatic resolution of scalar arguments.",
       "e": "Deprecated use of `@required` annotation."
     },
-    "tag": "Drupal 11 Symfony"
+    "category": "Drupal",
+    "subcategory": "PHP Integration"
   },
   {
     "type": "direct",
-    "q": "What PHP attribute can be used on a service class in Drupal 10/11 to automatically tag it for collection by a service collector, instead of using the `tags` directive in `services.yml`?",
+    "q": "What PHP attribute can be used on a service class in Drupal to automatically tag it for collection by a service collector, instead of using the `tags` directive in `services.yml`?",
     "instruction": "Provide the attribute name (without namespace or brackets).",
     "answers": [
       "Autoconfigure"
     ],
-    "tag": "Drupal 10/11 Services"
+    "category": "Drupal",
+    "subcategory": "Services"
   },
   {
     "type": "mcq",
@@ -1867,7 +1713,8 @@
       "d": "Symfony\\Component\\HttpFoundation",
       "e": "Symfony\\Component\\DependencyInjection"
     },
-    "tag": "Drupal 10/11 Architecture"
+    "category": "Drupal",
+    "subcategory": "Architecture"
   },
   {
     "type": "direct",
@@ -1876,7 +1723,8 @@
     "answers": [
       "getTranslationFromContext"
     ],
-    "tag": "Drupal 10/11 Entity API"
+    "category": "Drupal",
+    "subcategory": "Entity API"
   },
   {
     "type": "mcq",
@@ -1892,7 +1740,8 @@
       "d": "hasAccess()",
       "e": "verify()"
     },
-    "tag": "Drupal 10/11 Routing"
+    "category": "Drupal",
+    "subcategory": "Routing"
   },
   {
     "type": "direct",
@@ -1901,7 +1750,8 @@
     "answers": [
       "phpass"
     ],
-    "tag": "Drupal 10/11 Security"
+    "category": "Drupal",
+    "subcategory": "Security"
   },
   {
     "type": "mcq",
@@ -1917,7 +1767,8 @@
       "d": "Content Moderation",
       "e": "Workspace"
     },
-    "tag": "Drupal 10/11 Core Modules"
+    "category": "Drupal",
+    "subcategory": "Core Modules"
   },
   {
     "type": "direct",
@@ -1926,11 +1777,12 @@
     "answers": [
       "sequence"
     ],
-    "tag": "Drupal 10/11 Configuration"
+    "category": "Drupal",
+    "subcategory": "Configuration"
   },
   {
     "type": "mcq",
-    "q": "In Drupal 10/11, the `hook_entity_bundle_field_info()` allows modules to dynamically add 'base field definitions' to specific bundles of an entity type. What kind of fields are typically added this way?",
+    "q": "In Drupal, the `hook_entity_bundle_field_info()` allows modules to dynamically add 'base field definitions' to specific bundles of an entity type. What kind of fields are typically added this way?",
     "instruction": "Select the best description.",
     "answers": [
       "a"
@@ -1942,7 +1794,8 @@
       "d": "Temporary fields used during migration.",
       "e": "Computed fields."
     },
-    "tag": "Drupal 10/11 Entity API"
+    "category": "Drupal",
+    "subcategory": "Entity API"
   },
   {
     "type": "direct",
@@ -1951,7 +1804,8 @@
     "answers": [
       "Drupal\\Core\\CronInterface"
     ],
-    "tag": "Drupal 10/11 Cron"
+    "category": "Drupal",
+    "subcategory": "Cron"
   },
   {
     "type": "mcq",
@@ -1967,7 +1821,8 @@
       "d": "Factory Class",
       "e": "This is generally discouraged; runtime alterations are complex. Alternatives like parameters or dynamic factories are preferred."
     },
-    "tag": "Drupal 10/11 Services"
+    "category": "Drupal",
+    "subcategory": "Services"
   },
   {
     "type": "mcq",
@@ -1982,7 +1837,8 @@
       "c": "The status of Drupal's internal Dynamic Page Cache (e.g., HIT, MISS, UNCACHEABLE).",
       "d": "The security level of the connection (HTTP/HTTPS)."
     },
-    "tag": "Drupal 10/11 Cache API"
+    "category": "Drupal",
+    "subcategory": "Cache API"
   },
   {
     "type": "mcq",
@@ -1998,7 +1854,8 @@
       "d": "Jest",
       "e": "Cypress"
     },
-    "tag": "Drupal 10/11 Testing"
+    "category": "Drupal",
+    "subcategory": "Testing"
   },
   {
     "type": "mcq",
@@ -2013,7 +1870,8 @@
       "c": "{{ content.field_image }}",
       "d": "{{ drupal_field('field_image', 'node', node.id) }}"
     },
-    "tag": "Drupal 10/11 Theming"
+    "category": "Drupal",
+    "subcategory": "Theming"
   },
   {
     "type": "mcq",
@@ -2029,7 +1887,8 @@
       "d": "Strict permission checks on routes.",
       "e": "HTTPS enforcement."
     },
-    "tag": "Drupal 10/11 Security"
+    "category": "Drupal",
+    "subcategory": "Security"
   },
   {
     "type": "direct",
@@ -2038,7 +1897,8 @@
     "answers": [
       "logger.factory"
     ],
-    "tag": "Drupal 10/11 Services"
+    "category": "Drupal",
+    "subcategory": "Services"
   },
   {
     "type": "mcq",
@@ -2054,7 +1914,8 @@
       "d": "ParamConverter system (part of Routing/HttpKernel integration)",
       "e": "Typed Data API"
     },
-    "tag": "Drupal 10/11 Routing"
+    "category": "Drupal",
+    "subcategory": "Routing"
   },
   {
     "type": "mcq",
@@ -2068,7 +1929,8 @@
       "b": "să fi agreat",
       "c": "să agreez"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "direct",
@@ -2077,7 +1939,8 @@
     "answers": [
       "Anafora"
     ],
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2092,7 +1955,8 @@
       "c": "Verb la participiu, funcție sintactică de complement circumstanțial concesiv",
       "d": "Adverb de mod"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2107,7 +1971,8 @@
       "c": "A vinde produse proaspete direct de la sursă.",
       "d": "A exagera calitățile unui produs."
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2122,7 +1987,8 @@
       "c": "Este un adverb de loc.",
       "d": "Este un adverb cu valoare conjuncțională adversativă sau concluzivă, cerând adesea modul condițional-optativ."
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "direct",
@@ -2136,7 +2002,8 @@
       "Bacovia, Blaga",
       "Arghezi, Barbu"
     ],
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2151,7 +2018,8 @@
       "c": "A se furișa, a se strecura.",
       "d": "A se îmbrăca elegant."
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "direct",
@@ -2160,7 +2028,8 @@
     "answers": [
       "Genitiv"
     ],
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2175,7 +2044,8 @@
       "c": "Adjectiv pronominal de întărire",
       "d": "Pronume de întărire"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "direct",
@@ -2184,7 +2054,8 @@
     "answers": [
       "ideile"
     ],
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2199,7 +2070,8 @@
       "c": "Mă surprinde atitudinea lui.",
       "d": "Decizia a fost luată de către comisie."
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2214,7 +2086,8 @@
       "c": "Un caz particular sau o situație concretă supusă analizei",
       "d": "O taxă administrativă"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2229,7 +2102,8 @@
       "c": "Derivare cu sufix",
       "d": "Conversiune (schimbarea valorii gramaticale)"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "direct",
@@ -2238,7 +2112,8 @@
     "answers": [
       "Caragiale, O scrisoare pierdută"
     ],
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2253,7 +2128,8 @@
       "c": "Circumstanțială de mod",
       "d": "Circumstanțială condițională"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2268,7 +2144,8 @@
       "c": "Un înalt dregător, șeful cancelariei domnești",
       "d": "Un judecător suprem"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2283,7 +2160,8 @@
       "c": "Nemulțumirea",
       "d": "Durerea"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "direct",
@@ -2292,7 +2170,8 @@
     "answers": [
       "Rotacism"
     ],
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2305,7 +2184,8 @@
       "a": "sorei",
       "b": "surorii"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "direct",
@@ -2317,7 +2197,8 @@
       "Sentință",
       "Verdict"
     ],
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2332,7 +2213,8 @@
       "c": "Condițional perfect",
       "d": "Viitor popular (prezumtiv prezent)"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2347,7 +2229,8 @@
       "c": "A pierde timpul, a nu face nimic util, a trândăvi",
       "d": "A negocia intens"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2362,7 +2245,8 @@
       "c": "Adjectiv pronominal de întărire",
       "d": "Pronume personal"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "direct",
@@ -2377,7 +2261,8 @@
       "micuț",
       "minuscul"
     ],
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2392,7 +2277,8 @@
       "c": "Colectiv",
       "d": "Moțional"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "direct",
@@ -2401,7 +2287,8 @@
     "answers": [
       "Oamenii pe care i-am întâlnit erau amabili."
     ],
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2416,7 +2303,8 @@
       "c": "Conjuncție subordonatoare (introduce o completivă directă)",
       "d": "Adverb nehotărât"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "direct",
@@ -2425,7 +2313,8 @@
     "answers": [
       "Chirilic"
     ],
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2440,7 +2329,8 @@
       "c": "Acuzativ",
       "d": "Nominativ"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "direct",
@@ -2449,7 +2339,8 @@
     "answers": [
       "Camil Petrescu, Ultima noapte de dragoste, întâia noapte de război"
     ],
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2464,7 +2355,8 @@
       "c": "Origine turcă",
       "d": "Formare internă specifică limbii române"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "direct",
@@ -2478,7 +2370,8 @@
       "Atractiv",
       "Stimulant"
     ],
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2493,7 +2386,8 @@
       "c": "Un regret referitor la o acțiune nerealizată în trecut",
       "d": "O obligație în trecut"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2508,7 +2402,8 @@
       "c": "După literatură",
       "d": "În scris"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Latin"
   },
   {
     "type": "mcq",
@@ -2523,7 +2418,8 @@
       "c": "Complement direct",
       "d": "Adverb de mod (modalizator) fără funcție sintactică / Marcă a interogației"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2538,7 +2434,8 @@
       "c": "A călători pe distanțe lungi",
       "d": "A interpreta greșit"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2553,7 +2450,8 @@
       "c": "Băiat!",
       "d": "Băiețelule!"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "direct",
@@ -2564,7 +2462,8 @@
       "Iluminism",
       "Preromantism"
     ],
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2579,7 +2478,8 @@
       "c": "Diftong descendent",
       "d": "Triftong"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "direct",
@@ -2589,7 +2489,8 @@
       "Litotă",
       "Litona"
     ],
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2604,7 +2505,8 @@
       "c": "Neamul Șoimăreștilor",
       "d": "Zodia Cancerului sau Vremea Ducăi-Vodă"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2619,7 +2521,8 @@
       "c": "Este inevitabil sau sigur că se va întâmpla",
       "d": "Este lipsit de gust sau fad"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2634,7 +2537,8 @@
       "c": "Locuțiune conjuncțională subordonatoare cauzală",
       "d": "Conjuncție coordonatoare concluzivă"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "direct",
@@ -2643,7 +2547,8 @@
     "answers": [
       "displac"
     ],
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2658,7 +2563,8 @@
       "c": "A ajunge la destinație",
       "d": "A explica ceva clar"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "direct",
@@ -2667,7 +2573,8 @@
     "answers": [
       "Neologism"
     ],
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2682,7 +2589,8 @@
       "c": "Conversiune",
       "d": "Derivare parasintetică"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "direct",
@@ -2691,7 +2599,8 @@
     "answers": [
       "Conjunctiv"
     ],
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "mcq",
@@ -2706,7 +2615,8 @@
       "c": "Direcție opusă",
       "d": "Anterioritate îndepărtată în timp sau grad de rudenie"
     },
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "direct",
@@ -2715,7 +2625,8 @@
     "answers": [
       "Convorbiri literare"
     ],
-    "tag": "Romanian Language"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "direct",
@@ -2724,7 +2635,8 @@
     "answers": [
       "Stefan-Boltzmann constant"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -2733,7 +2645,8 @@
     "answers": [
       "4"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "direct",
@@ -2742,7 +2655,8 @@
     "answers": [
       "Pericardium"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "direct",
@@ -2751,7 +2665,8 @@
     "answers": [
       "4.2"
     ],
-    "tag": "Astronomy"
+    "category": "Science",
+    "subcategory": "Astronomy"
   },
   {
     "type": "direct",
@@ -2760,7 +2675,8 @@
     "answers": [
       "7"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Number Theory"
   },
   {
     "type": "mcq",
@@ -2776,7 +2692,8 @@
       "d": "Every formal system powerful enough to express arithmetic is either inconsistent or incomplete.",
       "e": "Computability is equivalent to the ability to pass the Turing test."
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Theory"
   },
   {
     "type": "direct",
@@ -2785,7 +2702,8 @@
     "answers": [
       "313"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Ancient"
   },
   {
     "type": "direct",
@@ -2795,7 +2713,8 @@
       "James Joyce",
       "Joyce"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -2804,7 +2723,8 @@
     "answers": [
       "Dasein"
     ],
-    "tag": "Philosophy"
+    "category": "Philosophy",
+    "subcategory": "Existentialism"
   },
   {
     "type": "mcq",
@@ -2820,7 +2740,8 @@
       "d": "Gravitational Interaction",
       "e": "Higgs Interaction"
     },
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -2830,7 +2751,8 @@
       "Angel Falls",
       "Salto Ángel"
     ],
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Physical"
   },
   {
     "type": "direct",
@@ -2839,7 +2761,8 @@
     "answers": [
       "Rodin"
     ],
-    "tag": "Art"
+    "category": "Art",
+    "subcategory": "Sculpture"
   },
   {
     "type": "direct",
@@ -2848,7 +2771,8 @@
     "answers": [
       "Vibrato"
     ],
-    "tag": "Music"
+    "category": "Music",
+    "subcategory": "Technique"
   },
   {
     "type": "mcq",
@@ -2864,7 +2788,8 @@
       "d": "H₂O (Water)",
       "e": "PCl₅ (Phosphorus Pentachloride)"
     },
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "direct",
@@ -2873,7 +2798,8 @@
     "answers": [
       "I think, therefore I am"
     ],
-    "tag": "Language"
+    "category": "Language",
+    "subcategory": "Latin"
   },
   {
     "type": "direct",
@@ -2882,7 +2808,8 @@
     "answers": [
       "2^n"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Set Theory"
   },
   {
     "type": "direct",
@@ -2891,7 +2818,8 @@
     "answers": [
       "Hanbok"
     ],
-    "tag": "Culture"
+    "category": "Culture",
+    "subcategory": "Traditions"
   },
   {
     "type": "mcq",
@@ -2907,7 +2835,8 @@
       "d": "Parasitic protozoa.",
       "e": "Fungal infections of the central nervous system."
     },
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "direct",
@@ -2916,7 +2845,8 @@
     "answers": [
       "9.27x10^-24"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -2925,7 +2855,8 @@
     "answers": [
       "Carboxylic acid"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "direct",
@@ -2934,7 +2865,8 @@
     "answers": [
       "tRNA"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "mcq",
@@ -2950,7 +2882,8 @@
       "d": "Have a relatively consistent peak absolute magnitude (intrinsic brightness).",
       "e": "Result from the core collapse of massive stars."
     },
-    "tag": "Astronomy"
+    "category": "Science",
+    "subcategory": "Astronomy"
   },
   {
     "type": "direct",
@@ -2959,7 +2892,8 @@
     "answers": [
       "Aphelion"
     ],
-    "tag": "Astronomy"
+    "category": "Science",
+    "subcategory": "Astronomy"
   },
   {
     "type": "direct",
@@ -2968,7 +2902,8 @@
     "answers": [
       "20"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Geometry"
   },
   {
     "type": "direct",
@@ -2977,7 +2912,8 @@
     "answers": [
       "Tim Berners-Lee"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "History"
   },
   {
     "type": "mcq",
@@ -2993,7 +2929,8 @@
       "d": "The field of integers modulo a prime p (ℤ/pℤ)",
       "e": "The field of p-adic numbers (ℚp)"
     },
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Algebra"
   },
   {
     "type": "direct",
@@ -3002,7 +2939,8 @@
     "answers": [
       "Treaty of Versailles"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -3011,7 +2949,8 @@
     "answers": [
       "Gregor Samsa"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -3020,7 +2959,8 @@
     "answers": [
       "Nietzsche"
     ],
-    "tag": "Philosophy"
+    "category": "Philosophy",
+    "subcategory": "Modern"
   },
   {
     "type": "mcq",
@@ -3036,7 +2976,8 @@
       "d": "Indigo",
       "e": "Coffee"
     },
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -3045,7 +2986,8 @@
     "answers": [
       "Red Sea"
     ],
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Physical"
   },
   {
     "type": "direct",
@@ -3054,7 +2996,8 @@
     "answers": [
       "Gehry"
     ],
-    "tag": "Art"
+    "category": "Art",
+    "subcategory": "Architecture"
   },
   {
     "type": "direct",
@@ -3063,7 +3006,8 @@
     "answers": [
       "very soft"
     ],
-    "tag": "Music"
+    "category": "Music",
+    "subcategory": "Theory"
   },
   {
     "type": "mcq",
@@ -3079,7 +3023,8 @@
       "d": "T.S. Eliot and Ezra Pound",
       "e": "William Faulkner and Marcel Proust"
     },
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Technique"
   },
   {
     "type": "direct",
@@ -3088,7 +3033,8 @@
     "answers": [
       "Hiragana"
     ],
-    "tag": "Language"
+    "category": "Language",
+    "subcategory": "Writing Systems"
   },
   {
     "type": "direct",
@@ -3097,7 +3043,8 @@
     "answers": [
       "32"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Propositional"
   },
   {
     "type": "direct",
@@ -3107,7 +3054,8 @@
       "Bagpipes",
       "Bagpipe"
     ],
-    "tag": "Culture"
+    "category": "Culture",
+    "subcategory": "Music"
   },
   {
     "type": "mcq",
@@ -3123,7 +3071,8 @@
       "d": "The correspondence theory of truth.",
       "e": "Logical positivism's verification principle."
     },
-    "tag": "Philosophy"
+    "category": "Philosophy",
+    "subcategory": "Epistemology"
   },
   {
     "type": "direct",
@@ -3132,7 +3081,8 @@
     "answers": [
       "Diffraction"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -3141,7 +3091,8 @@
     "answers": [
       "146"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "direct",
@@ -3150,7 +3101,8 @@
     "answers": [
       "Chloroplast"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "mcq",
@@ -3166,7 +3118,8 @@
       "d": "Orogenesis",
       "e": "Metamorphism"
     },
-    "tag": "Geography"
+    "category": "Science",
+    "subcategory": "Geology"
   },
   {
     "type": "direct",
@@ -3176,7 +3129,8 @@
       "Iron oxide",
       "Rust"
     ],
-    "tag": "Astronomy"
+    "category": "Science",
+    "subcategory": "Astronomy"
   },
   {
     "type": "direct",
@@ -3185,7 +3139,8 @@
     "answers": [
       "1"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Calculus"
   },
   {
     "type": "direct",
@@ -3194,7 +3149,8 @@
     "answers": [
       "Availability"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Databases"
   },
   {
     "type": "mcq",
@@ -3210,7 +3166,8 @@
       "d": "A hazy, atmospheric effect.",
       "e": "Linear perspective to create depth."
     },
-    "tag": "Art"
+    "category": "Art",
+    "subcategory": "Technique"
   },
   {
     "type": "direct",
@@ -3219,7 +3176,8 @@
     "answers": [
       "Lenin"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -3228,7 +3186,8 @@
     "answers": [
       "Macondo"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -3237,7 +3196,8 @@
     "answers": [
       "Marcus Aurelius"
     ],
-    "tag": "Philosophy"
+    "category": "Philosophy",
+    "subcategory": "Ancient"
   },
   {
     "type": "mcq",
@@ -3253,7 +3213,8 @@
       "d": "Claude Debussy",
       "e": "Igor Stravinsky"
     },
-    "tag": "Music"
+    "category": "Music",
+    "subcategory": "History"
   },
   {
     "type": "direct",
@@ -3262,7 +3223,8 @@
     "answers": [
       "Great Barrier Reef"
     ],
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Physical"
   },
   {
     "type": "direct",
@@ -3271,7 +3233,8 @@
     "answers": [
       "Pollock"
     ],
-    "tag": "Art"
+    "category": "Art",
+    "subcategory": "Painting"
   },
   {
     "type": "direct",
@@ -3281,7 +3244,8 @@
       "Monophony",
       "Monophonic"
     ],
-    "tag": "Music"
+    "category": "Music",
+    "subcategory": "Theory"
   },
   {
     "type": "mcq",
@@ -3297,7 +3261,8 @@
       "d": "Historical Linguistics and Sociolinguistics",
       "e": "The structure of a language and the thought processes of its speakers"
     },
-    "tag": "Language"
+    "category": "Language",
+    "subcategory": "Linguistics"
   },
   {
     "type": "direct",
@@ -3306,7 +3271,8 @@
     "answers": [
       "Devanagari"
     ],
-    "tag": "Language"
+    "category": "Language",
+    "subcategory": "Writing Systems"
   },
   {
     "type": "direct",
@@ -3315,7 +3281,8 @@
     "answers": [
       "3"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Puzzles"
   },
   {
     "type": "direct",
@@ -3326,7 +3293,8 @@
       "Venice Carnival",
       "Carnevale di Venezia"
     ],
-    "tag": "Culture"
+    "category": "Culture",
+    "subcategory": "Festivals"
   },
   {
     "type": "mcq",
@@ -3342,7 +3310,8 @@
       "d": "Is necessarily inconsistent.",
       "e": "Is equivalent in power to first-order logic."
     },
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Formal"
   },
   {
     "type": "direct",
@@ -3352,7 +3321,8 @@
       "2x10^-35",
       "1x10^-35"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -3361,7 +3331,8 @@
     "answers": [
       "Halogens"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "direct",
@@ -3370,7 +3341,8 @@
     "answers": [
       "Apoptosis"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "mcq",
@@ -3386,7 +3358,8 @@
       "d": "Aramaic",
       "e": "Ancient Greek"
     },
-    "tag": "Culture"
+    "category": "Culture",
+    "subcategory": "Archaeology"
   },
   {
     "type": "direct",
@@ -3395,7 +3368,8 @@
     "answers": [
       "Search for Extraterrestrial Intelligence"
     ],
-    "tag": "Astronomy"
+    "category": "Science",
+    "subcategory": "Astronomy"
   },
   {
     "type": "direct",
@@ -3404,7 +3378,8 @@
     "answers": [
       "e^x"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Calculus"
   },
   {
     "type": "direct",
@@ -3413,7 +3388,8 @@
     "answers": [
       "443"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Networking"
   },
   {
     "type": "mcq",
@@ -3429,7 +3405,8 @@
       "d": "Behave maliciously or arbitrarily (Byzantine failures).",
       "e": "Lose network connectivity temporarily."
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Distributed Systems"
   },
   {
     "type": "direct",
@@ -3438,7 +3415,8 @@
     "answers": [
       "1989"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -3448,7 +3426,8 @@
       "Mary Shelley",
       "Mary Wollstonecraft Shelley"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Gothic"
   },
   {
     "type": "direct",
@@ -3457,7 +3436,8 @@
     "answers": [
       "Plato"
     ],
-    "tag": "Philosophy"
+    "category": "Philosophy",
+    "subcategory": "Ancient"
   },
   {
     "type": "mcq",
@@ -3473,7 +3453,8 @@
       "d": "Entangled particles remain connected regardless of distance.",
       "e": "Mass warps spacetime, causing gravity."
     },
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -3482,7 +3463,8 @@
     "answers": [
       "Volga"
     ],
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Physical"
   },
   {
     "type": "direct",
@@ -3491,7 +3473,8 @@
     "answers": [
       "Impressionism"
     ],
-    "tag": "Art"
+    "category": "Art",
+    "subcategory": "Movements"
   },
   {
     "type": "direct",
@@ -3500,7 +3483,8 @@
     "answers": [
       "5"
     ],
-    "tag": "Music"
+    "category": "Music",
+    "subcategory": "Theory"
   },
   {
     "type": "mcq",
@@ -3516,7 +3500,8 @@
       "d": "The step involving the most reactant molecules.",
       "e": "The most exothermic step in the mechanism."
     },
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "direct",
@@ -3526,7 +3511,8 @@
       "Already seen",
       "Feeling of having experienced something before"
     ],
-    "tag": "Language"
+    "category": "Language",
+    "subcategory": "French"
   },
   {
     "type": "direct",
@@ -3535,7 +3521,8 @@
     "answers": [
       "9"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Geometry"
   },
   {
     "type": "direct",
@@ -3544,7 +3531,8 @@
     "answers": [
       "Haka"
     ],
-    "tag": "Culture"
+    "category": "Culture",
+    "subcategory": "Traditions"
   },
   {
     "type": "mcq",
@@ -3560,7 +3548,8 @@
       "d": "A component of cellular respiration.",
       "e": "A protein synthesis quality control mechanism."
     },
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "direct",
@@ -3569,7 +3558,8 @@
     "answers": [
       "Amplitude"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -3578,7 +3568,8 @@
     "answers": [
       "6.02x10^23"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "direct",
@@ -3587,7 +3578,8 @@
     "answers": [
       "Ribosome"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "mcq",
@@ -3603,7 +3595,8 @@
       "d": "Radioactive decay of heavy elements.",
       "e": "Accretion of interstellar matter."
     },
-    "tag": "Astronomy"
+    "category": "Science",
+    "subcategory": "Astronomy"
   },
   {
     "type": "direct",
@@ -3612,7 +3605,8 @@
     "answers": [
       "Syzygy"
     ],
-    "tag": "Astronomy"
+    "category": "Science",
+    "subcategory": "Astronomy"
   },
   {
     "type": "direct",
@@ -3621,7 +3615,8 @@
     "answers": [
       "1"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Trigonometry"
   },
   {
     "type": "direct",
@@ -3631,7 +3626,8 @@
       "Domain Name System",
       "Domain Name Service"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Networking"
   },
   {
     "type": "mcq",
@@ -3647,7 +3643,8 @@
       "d": "Greater than 2",
       "e": "That is a prime number"
     },
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Number Theory"
   },
   {
     "type": "direct",
@@ -3656,7 +3653,8 @@
     "answers": [
       "Sarajevo"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -3665,7 +3663,8 @@
     "answers": [
       "Nick Carraway"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -3674,7 +3673,8 @@
     "answers": [
       "Hobbes"
     ],
-    "tag": "Philosophy"
+    "category": "Philosophy",
+    "subcategory": "Political"
   },
   {
     "type": "mcq",
@@ -3690,7 +3690,8 @@
       "d": "The mid-19th century (1840s-1860s)",
       "e": "The late 19th and early 20th centuries (approx. 1881-1914)"
     },
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -3700,7 +3701,8 @@
       "Ural Mountains",
       "Urals"
     ],
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Physical"
   },
   {
     "type": "direct",
@@ -3709,7 +3711,8 @@
     "answers": [
       "Picasso"
     ],
-    "tag": "Art"
+    "category": "Art",
+    "subcategory": "Painting"
   },
   {
     "type": "direct",
@@ -3718,7 +3721,8 @@
     "answers": [
       "Tenor"
     ],
-    "tag": "Music"
+    "category": "Music",
+    "subcategory": "Voice"
   },
   {
     "type": "mcq",
@@ -3734,7 +3738,8 @@
       "d": "Romantic expression of personal emotion.",
       "e": "Political satire and social commentary."
     },
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Poetry"
   },
   {
     "type": "direct",
@@ -3743,7 +3748,8 @@
     "answers": [
       "Portuguese"
     ],
-    "tag": "Language"
+    "category": "Language",
+    "subcategory": "General"
   },
   {
     "type": "direct",
@@ -3752,7 +3758,8 @@
     "answers": [
       "¬P ∧ ¬Q"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Propositional"
   },
   {
     "type": "direct",
@@ -3762,7 +3769,8 @@
       "Hieroglyphs",
       "Hieroglyphics"
     ],
-    "tag": "Culture"
+    "category": "Culture",
+    "subcategory": "Writing Systems"
   },
   {
     "type": "mcq",
@@ -3778,7 +3786,8 @@
       "d": "Immanuel Kant",
       "e": "Gottfried Wilhelm Leibniz"
     },
-    "tag": "Philosophy"
+    "category": "Philosophy",
+    "subcategory": "Epistemology"
   },
   {
     "type": "direct",
@@ -3787,7 +3796,8 @@
     "answers": [
       "Candela"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -3798,7 +3808,8 @@
       "Boiling",
       "Evaporation"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "direct",
@@ -3807,7 +3818,8 @@
     "answers": [
       "Tendon"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "mcq",
@@ -3823,7 +3835,8 @@
       "d": "Peninsula",
       "e": "Isthmus"
     },
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Physical"
   },
   {
     "type": "direct",
@@ -3833,7 +3846,8 @@
       "13.8",
       "13.7"
     ],
-    "tag": "Astronomy"
+    "category": "Science",
+    "subcategory": "Astronomy"
   },
   {
     "type": "direct",
@@ -3842,7 +3856,8 @@
     "answers": [
       "180"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Geometry"
   },
   {
     "type": "direct",
@@ -3851,7 +3866,8 @@
     "answers": [
       "McCarthy"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "History"
   },
   {
     "type": "mcq",
@@ -3867,7 +3883,8 @@
       "d": "Georges Seurat",
       "e": "Edgar Degas"
     },
-    "tag": "Art"
+    "category": "Art",
+    "subcategory": "Technique"
   },
   {
     "type": "direct",
@@ -3878,7 +3895,8 @@
       "Suleiman I",
       "Suleiman"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -3888,7 +3906,8 @@
       "Edgar Allan Poe",
       "Poe"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Poetry"
   },
   {
     "type": "mcq",
@@ -3904,7 +3923,8 @@
       "d": "Sonata form structure with exposition, development, and recapitulation.",
       "e": "Programmatic depiction of a story or scene."
     },
-    "tag": "Music"
+    "category": "Music",
+    "subcategory": "Form"
   },
   {
     "type": "mcq",
@@ -3920,7 +3940,8 @@
       "d": "Grammatical structure.",
       "e": "The spelling system."
     },
-    "tag": "Language"
+    "category": "Language",
+    "subcategory": "Historical Linguistics"
   },
   {
     "type": "mcq",
@@ -3936,7 +3957,8 @@
       "d": "Decidable but not in P.",
       "e": "Computable only by a quantum computer."
     },
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Computability"
   },
   {
     "type": "mcq",
@@ -3952,7 +3974,8 @@
       "d": "An Islamic mosque.",
       "e": "A public library and academy."
     },
-    "tag": "Culture"
+    "category": "Culture",
+    "subcategory": "Architecture"
   },
   {
     "type": "mcq",
@@ -3968,7 +3991,8 @@
       "d": "Compress data with minimal loss.",
       "e": "Test whether an element is possibly a member of a set (with potential false positives)."
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Data Structures"
   },
   {
     "type": "mcq",
@@ -3984,7 +4008,8 @@
       "d": "Electric fields and magnetic fields.",
       "e": "Particle spin and statistics."
     },
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "mcq",
@@ -4000,7 +4025,8 @@
       "d": "The disorder, randomness, or number of microscopic states corresponding to the system's macroscopic state.",
       "e": "The pressure exerted by a gas."
     },
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "mcq",
@@ -4016,7 +4042,8 @@
       "d": "Viruses that became permanent residents.",
       "e": "De novo creations specific to eukaryotes."
     },
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "mcq",
@@ -4032,7 +4059,8 @@
       "d": "The age of the universe and the cosmic microwave background temperature.",
       "e": "The size of a black hole and the strength of its gravitational field."
     },
-    "tag": "Astronomy"
+    "category": "Science",
+    "subcategory": "Astronomy"
   },
   {
     "type": "mcq",
@@ -4048,7 +4076,8 @@
       "d": "Reduced to the Halting Problem.",
       "e": "Expressed using first-order logic."
     },
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Complexity Theory"
   },
   {
     "type": "mcq",
@@ -4064,7 +4093,8 @@
       "d": "Granted universal suffrage.",
       "e": "Limited the power of the monarch and established principles of rule of law."
     },
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Medieval"
   },
   {
     "type": "mcq",
@@ -4080,7 +4110,8 @@
       "d": "Scandinavia",
       "e": "Victorian England"
     },
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Genres"
   },
   {
     "type": "mcq",
@@ -4096,7 +4127,8 @@
       "d": "John Rawls",
       "e": "Jean-Jacques Rousseau"
     },
-    "tag": "Philosophy"
+    "category": "Philosophy",
+    "subcategory": "Political"
   },
   {
     "type": "mcq",
@@ -4112,7 +4144,8 @@
       "d": "A ring-shaped reef, island, or chain of islands formed of coral.",
       "e": "A vent in the Earth's crust through which lava, steam, ashes, etc., are expelled."
     },
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Physical"
   },
   {
     "type": "mcq",
@@ -4128,7 +4161,8 @@
       "d": "Matisse and Derain",
       "e": "Kandinsky and Klee"
     },
-    "tag": "Art"
+    "category": "Art",
+    "subcategory": "Movements"
   },
   {
     "type": "mcq",
@@ -4144,7 +4178,8 @@
       "d": "Handel",
       "e": "Wagner"
     },
-    "tag": "Music"
+    "category": "Music",
+    "subcategory": "History"
   },
   {
     "type": "mcq",
@@ -4160,7 +4195,8 @@
       "d": "Grammar is learned entirely through social interaction and imitation.",
       "e": "The primary function of language is communication rather than thought."
     },
-    "tag": "Language"
+    "category": "Language",
+    "subcategory": "Linguistics"
   },
   {
     "type": "mcq",
@@ -4176,7 +4212,8 @@
       "d": "Necessity and Possibility",
       "e": "Sets and Membership"
     },
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Modal"
   },
   {
     "type": "mcq",
@@ -4192,7 +4229,8 @@
       "d": "A monotheistic religion founded in Persia.",
       "e": "A polytheistic religion practiced in ancient Rome."
     },
-    "tag": "Culture"
+    "category": "Culture",
+    "subcategory": "Religion"
   },
   {
     "type": "mcq",
@@ -4208,7 +4246,8 @@
       "d": "Compatibility across different database systems.",
       "e": "Resistance to denial-of-service attacks."
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Databases"
   },
   {
     "type": "mcq",
@@ -4224,7 +4263,8 @@
       "d": "Energy and Temperature",
       "e": "Wavelength and Frequency"
     },
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "mcq",
@@ -4240,7 +4280,8 @@
       "d": "Has a net dipole moment.",
       "e": "Cannot be superimposed on its mirror image."
     },
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "mcq",
@@ -4256,7 +4297,8 @@
       "d": "Nucleus",
       "e": "Chloroplast stroma"
     },
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "mcq",
@@ -4272,7 +4314,8 @@
       "d": "The formation of the first stars.",
       "e": "String theory."
     },
-    "tag": "Astronomy"
+    "category": "Science",
+    "subcategory": "Astronomy"
   },
   {
     "type": "mcq",
@@ -4288,7 +4331,8 @@
       "d": "V + E - F = 2",
       "e": "E - V + F = 2"
     },
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Geometry"
   },
   {
     "type": "mcq",
@@ -4304,7 +4348,8 @@
       "d": "Japan",
       "e": "Thailand"
     },
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Modern"
   },
   {
     "type": "mcq",
@@ -4320,7 +4365,8 @@
       "d": "Stream of consciousness, psychological depth, and focus on alienation.",
       "e": "Irony, fragmentation, intertextuality, metafiction, and skepticism towards grand narratives."
     },
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Postmodern"
   },
   {
     "type": "mcq",
@@ -4336,7 +4382,8 @@
       "d": "Are mathematically elegant.",
       "e": "Can be expressed most concisely."
     },
-    "tag": "Philosophy"
+    "category": "Philosophy",
+    "subcategory": "Methodology"
   },
   {
     "type": "mcq",
@@ -4352,7 +4399,8 @@
       "d": "Isostasy",
       "e": "Geosynclinal Theory"
     },
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Physical"
   },
   {
     "type": "mcq",
@@ -4368,7 +4416,8 @@
       "d": "Express the workings of the unconscious mind and dreams.",
       "e": "Abstract forms into geometric shapes."
     },
-    "tag": "Art"
+    "category": "Art",
+    "subcategory": "Movements"
   },
   {
     "type": "mcq",
@@ -4384,7 +4433,8 @@
       "d": "Dictates the instrumentation or orchestration.",
       "e": "Assigns specific modes or scales to different emotions."
     },
-    "tag": "Music"
+    "category": "Music",
+    "subcategory": "Theory"
   },
   {
     "type": "mcq",
@@ -4400,7 +4450,8 @@
       "d": "Beginning or starting.",
       "e": "Potential or hypothetical."
     },
-    "tag": "Language"
+    "category": "Language",
+    "subcategory": "Linguistics"
   },
   {
     "type": "mcq",
@@ -4416,7 +4467,8 @@
       "d": "Causality and Time",
       "e": "Motion, Infinity, and the nature of Space/Time (Continuity vs Discreteness)"
     },
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Paradoxes"
   },
   {
     "type": "mcq",
@@ -4432,7 +4484,8 @@
       "d": "Carving intricate designs into wood or stone.",
       "e": "Weaving complex patterns into textiles."
     },
-    "tag": "Culture"
+    "category": "Culture",
+    "subcategory": "Art Forms"
   },
   {
     "type": "mcq",
@@ -4448,7 +4501,8 @@
       "d": "Breaking symmetric encryption algorithms like AES.",
       "e": "Solving the subset sum problem."
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Cryptography"
   },
   {
     "type": "mcq",
@@ -4464,7 +4518,8 @@
       "d": "Mass.",
       "e": "Entropy."
     },
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "mcq",
@@ -4480,7 +4535,8 @@
       "d": "Moves in a direction that counteracts the change.",
       "e": "Breaks down completely."
     },
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "mcq",
@@ -4496,7 +4552,8 @@
       "d": "Characterized by cell swelling and lysis.",
       "e": "Only occurs in plant cells."
     },
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "mcq",
@@ -4512,7 +4569,8 @@
       "d": "Big Bang nucleosynthesis.",
       "e": "The observed accelerating expansion of the universe."
     },
-    "tag": "Astronomy"
+    "category": "Science",
+    "subcategory": "Astronomy"
   },
   {
     "type": "mcq",
@@ -4528,7 +4586,8 @@
       "d": "Existence of inverse elements: a * a⁻¹ = a⁻¹ * a = e",
       "e": "Closure: a * b is in G"
     },
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Algebra"
   },
   {
     "type": "mcq",
@@ -4544,7 +4603,8 @@
       "d": "Suppress peasant revolts.",
       "e": "Centralize political power against regional nobles."
     },
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Medieval"
   },
   {
     "type": "mcq",
@@ -4560,7 +4620,8 @@
       "d": "Federico Garcia Lorca",
       "e": "Lope de Vega"
     },
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Classic"
   },
   {
     "type": "mcq",
@@ -4576,7 +4637,8 @@
       "d": "Pleasure and the avoidance of pain.",
       "e": "Social harmony and justice."
     },
-    "tag": "Philosophy"
+    "category": "Philosophy",
+    "subcategory": "Ethics"
   },
   {
     "type": "direct",
@@ -4589,7 +4651,8 @@
       "7.297e-3",
       "7.30e-3"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -4599,7 +4662,8 @@
       "2,4,6-Trinitrotoluene",
       "2-methyl-1,3,5-trinitrobenzene"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "direct",
@@ -4608,7 +4672,8 @@
     "answers": [
       "Telomerase"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "direct",
@@ -4618,7 +4683,8 @@
       "White dwarf",
       "White dwarf star"
     ],
-    "tag": "Astronomy"
+    "category": "Science",
+    "subcategory": "Astronomy"
   },
   {
     "type": "direct",
@@ -4628,7 +4694,8 @@
       "π²/6",
       "pi^2/6"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Number Theory"
   },
   {
     "type": "direct",
@@ -4637,7 +4704,8 @@
     "answers": [
       "2.37"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Algorithms"
   },
   {
     "type": "direct",
@@ -4646,7 +4714,8 @@
     "answers": [
       "1648"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -4655,7 +4724,8 @@
     "answers": [
       "Epistolary"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Form"
   },
   {
     "type": "direct",
@@ -4664,7 +4734,8 @@
     "answers": [
       "Heraclitus"
     ],
-    "tag": "Philosophy"
+    "category": "Philosophy",
+    "subcategory": "Ancient"
   },
   {
     "type": "direct",
@@ -4674,7 +4745,8 @@
       "Strait of Magellan",
       "Magellan Strait"
     ],
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Physical"
   },
   {
     "type": "direct",
@@ -4684,7 +4756,8 @@
       "Rembrandt",
       "van Rijn"
     ],
-    "tag": "Art"
+    "category": "Art",
+    "subcategory": "Painting"
   },
   {
     "type": "direct",
@@ -4693,7 +4766,8 @@
     "answers": [
       "Imitation"
     ],
-    "tag": "Music"
+    "category": "Music",
+    "subcategory": "Technique"
   },
   {
     "type": "direct",
@@ -4702,7 +4776,8 @@
     "answers": [
       "Phoneme"
     ],
-    "tag": "Language"
+    "category": "Language",
+    "subcategory": "Linguistics"
   },
   {
     "type": "direct",
@@ -4712,7 +4787,8 @@
       "Barber Paradox",
       "Russell's Paradox"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Paradoxes"
   },
   {
     "type": "direct",
@@ -4721,7 +4797,8 @@
     "answers": [
       "India"
     ],
-    "tag": "Culture"
+    "category": "Culture",
+    "subcategory": "Festivals"
   },
   {
     "type": "direct",
@@ -4730,7 +4807,8 @@
     "answers": [
       "Gluon"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -4739,7 +4817,8 @@
     "answers": [
       "Covalent bond"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "direct",
@@ -4748,7 +4827,8 @@
     "answers": [
       "Translation"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "direct",
@@ -4757,7 +4837,8 @@
     "answers": [
       "Dark matter"
     ],
-    "tag": "Astronomy"
+    "category": "Science",
+    "subcategory": "Astronomy"
   },
   {
     "type": "direct",
@@ -4767,7 +4848,8 @@
       "Pythagorean theorem",
       "Pythagoras' theorem"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Geometry"
   },
   {
     "type": "direct",
@@ -4776,7 +4858,8 @@
     "answers": [
       "Selection Sort"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Algorithms"
   },
   {
     "type": "direct",
@@ -4786,7 +4869,8 @@
       "Thomas Jefferson",
       "Jefferson"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -4795,7 +4879,8 @@
     "answers": [
       "Tolstoy"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Classic"
   },
   {
     "type": "direct",
@@ -4804,7 +4889,8 @@
     "answers": [
       "Existentialism"
     ],
-    "tag": "Philosophy"
+    "category": "Philosophy",
+    "subcategory": "Existentialism"
   },
   {
     "type": "direct",
@@ -4813,7 +4899,8 @@
     "answers": [
       "Jordan"
     ],
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Cultural"
   },
   {
     "type": "direct",
@@ -4823,7 +4910,8 @@
       "Dalí",
       "Dali"
     ],
-    "tag": "Art"
+    "category": "Art",
+    "subcategory": "Painting"
   },
   {
     "type": "direct",
@@ -4832,7 +4920,8 @@
     "answers": [
       "Chord"
     ],
-    "tag": "Music"
+    "category": "Music",
+    "subcategory": "Theory"
   },
   {
     "type": "direct",
@@ -4841,7 +4930,8 @@
     "answers": [
       "Acronym"
     ],
-    "tag": "Language"
+    "category": "Language",
+    "subcategory": "Vocabulary"
   },
   {
     "type": "direct",
@@ -4851,7 +4941,8 @@
       "Modus Ponens",
       "Affirming the antecedent"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Propositional"
   },
   {
     "type": "direct",
@@ -4862,7 +4953,8 @@
       "Sumerians",
       "Sumer"
     ],
-    "tag": "Culture"
+    "category": "Culture",
+    "subcategory": "History"
   },
   {
     "type": "direct",
@@ -4872,7 +4964,8 @@
       "Gauss's Law",
       "Gauss Law"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -4881,7 +4974,8 @@
     "answers": [
       "Hydrogen Peroxide"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "direct",
@@ -4890,7 +4984,8 @@
     "answers": [
       "Mitochondria"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "direct",
@@ -4899,7 +4994,8 @@
     "answers": [
       "Olympus Mons"
     ],
-    "tag": "Astronomy"
+    "category": "Science",
+    "subcategory": "Astronomy"
   },
   {
     "type": "direct",
@@ -4908,7 +5004,8 @@
     "answers": [
       "Irrational number"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Number Theory"
   },
   {
     "type": "direct",
@@ -4917,7 +5014,8 @@
     "answers": [
       "SSH"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Networking"
   },
   {
     "type": "direct",
@@ -4927,7 +5025,8 @@
       "Babylonian",
       "Babylon"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Ancient"
   },
   {
     "type": "direct",
@@ -4937,7 +5036,8 @@
       "Herman Melville",
       "Melville"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Classic"
   },
   {
     "type": "direct",
@@ -4946,7 +5046,8 @@
     "answers": [
       "Epistemology"
     ],
-    "tag": "Philosophy"
+    "category": "Philosophy",
+    "subcategory": "Epistemology"
   },
   {
     "type": "direct",
@@ -4955,7 +5056,8 @@
     "answers": [
       "Russia"
     ],
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Physical"
   },
   {
     "type": "direct",
@@ -4964,7 +5066,8 @@
     "answers": [
       "Realism"
     ],
-    "tag": "Art"
+    "category": "Art",
+    "subcategory": "Movements"
   },
   {
     "type": "direct",
@@ -4973,7 +5076,8 @@
     "answers": [
       "Mozart"
     ],
-    "tag": "Music"
+    "category": "Music",
+    "subcategory": "Opera"
   },
   {
     "type": "direct",
@@ -4982,7 +5086,8 @@
     "answers": [
       "Etymology"
     ],
-    "tag": "Language"
+    "category": "Language",
+    "subcategory": "Linguistics"
   },
   {
     "type": "direct",
@@ -4991,7 +5096,8 @@
     "answers": [
       "Liar paradox"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Paradoxes"
   },
   {
     "type": "direct",
@@ -5000,7 +5106,8 @@
     "answers": [
       "Mexico"
     ],
-    "tag": "Culture"
+    "category": "Culture",
+    "subcategory": "Holidays"
   },
   {
     "type": "direct",
@@ -5010,7 +5117,8 @@
       "Newton's Third Law",
       "Newton's 3rd Law"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -5019,7 +5127,8 @@
     "answers": [
       "Catalyst"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "direct",
@@ -5028,7 +5137,8 @@
     "answers": [
       "Drosophila melanogaster"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "direct",
@@ -5039,7 +5149,8 @@
       "Andromeda",
       "M31"
     ],
-    "tag": "Astronomy"
+    "category": "Science",
+    "subcategory": "Astronomy"
   },
   {
     "type": "direct",
@@ -5048,7 +5159,8 @@
     "answers": [
       "0"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Number Theory"
   },
   {
     "type": "direct",
@@ -5057,7 +5169,8 @@
     "answers": [
       "Ransomware"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Security"
   },
   {
     "type": "direct",
@@ -5067,7 +5180,8 @@
       "Tutankhamun",
       "King Tut"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Ancient"
   },
   {
     "type": "direct",
@@ -5077,7 +5191,8 @@
       "William Shakespeare",
       "Shakespeare"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Drama"
   },
   {
     "type": "direct",
@@ -5086,7 +5201,8 @@
     "answers": [
       "Utilitarianism"
     ],
-    "tag": "Philosophy"
+    "category": "Philosophy",
+    "subcategory": "Ethics"
   },
   {
     "type": "direct",
@@ -5096,7 +5212,8 @@
       "Andes",
       "Andes Mountains"
     ],
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Physical"
   },
   {
     "type": "direct",
@@ -5105,7 +5222,8 @@
     "answers": [
       "Botticelli"
     ],
-    "tag": "Art"
+    "category": "Art",
+    "subcategory": "Painting"
   },
   {
     "type": "direct",
@@ -5114,7 +5232,8 @@
     "answers": [
       "4"
     ],
-    "tag": "Music"
+    "category": "Music",
+    "subcategory": "Instruments"
   },
   {
     "type": "direct",
@@ -5123,7 +5242,8 @@
     "answers": [
       "Homograph"
     ],
-    "tag": "Language"
+    "category": "Language",
+    "subcategory": "Vocabulary"
   },
   {
     "type": "direct",
@@ -5132,7 +5252,8 @@
     "answers": [
       "14"
     ],
-    "tag": "Logic"
+    "category": "Literature",
+    "subcategory": "Poetry"
   },
   {
     "type": "direct",
@@ -5141,7 +5262,8 @@
     "answers": [
       "Greece"
     ],
-    "tag": "Culture"
+    "category": "Culture",
+    "subcategory": "History"
   },
   {
     "type": "direct",
@@ -5150,7 +5272,8 @@
     "answers": [
       "Lepton"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -5159,7 +5282,8 @@
     "answers": [
       "7"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "direct",
@@ -5168,7 +5292,8 @@
     "answers": [
       "Chlorophyll"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "direct",
@@ -5177,7 +5302,8 @@
     "answers": [
       "Supernova"
     ],
-    "tag": "Astronomy"
+    "category": "Science",
+    "subcategory": "Astronomy"
   },
   {
     "type": "direct",
@@ -5186,7 +5312,8 @@
     "answers": [
       "Scalene triangle"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Geometry"
   },
   {
     "type": "direct",
@@ -5195,7 +5322,8 @@
     "answers": [
       "Uniform Resource Locator"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Web"
   },
   {
     "type": "direct",
@@ -5204,7 +5332,8 @@
     "answers": [
       "Magellan"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Exploration"
   },
   {
     "type": "direct",
@@ -5214,7 +5343,8 @@
       "George Orwell",
       "Eric Arthur Blair"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -5223,7 +5353,8 @@
     "answers": [
       "Socrates"
     ],
-    "tag": "Philosophy"
+    "category": "Philosophy",
+    "subcategory": "Ancient"
   },
   {
     "type": "direct",
@@ -5232,7 +5363,8 @@
     "answers": [
       "Ottawa"
     ],
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Political"
   },
   {
     "type": "direct",
@@ -5241,7 +5373,8 @@
     "answers": [
       "Munch"
     ],
-    "tag": "Art"
+    "category": "Art",
+    "subcategory": "Painting"
   },
   {
     "type": "direct",
@@ -5250,7 +5383,8 @@
     "answers": [
       "Vivaldi"
     ],
-    "tag": "Music"
+    "category": "Music",
+    "subcategory": "Baroque"
   },
   {
     "type": "direct",
@@ -5259,7 +5393,8 @@
     "answers": [
       "Metaphor"
     ],
-    "tag": "Language"
+    "category": "Language",
+    "subcategory": "Figures of Speech"
   },
   {
     "type": "direct",
@@ -5269,7 +5404,8 @@
       "Ad hominem",
       "Argument against the person"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Fallacies"
   },
   {
     "type": "direct",
@@ -5279,7 +5415,8 @@
       "Korea",
       "South Korea"
     ],
-    "tag": "Culture"
+    "category": "Culture",
+    "subcategory": "Martial Arts"
   },
   {
     "type": "direct",
@@ -5289,7 +5426,8 @@
       "Hertz",
       "Hz"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -5298,7 +5436,8 @@
     "answers": [
       "K"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "direct",
@@ -5307,7 +5446,8 @@
     "answers": [
       "Flagellum"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "direct",
@@ -5316,7 +5456,8 @@
     "answers": [
       "Geocentric"
     ],
-    "tag": "Astronomy"
+    "category": "Science",
+    "subcategory": "Astronomy"
   },
   {
     "type": "direct",
@@ -5325,7 +5466,8 @@
     "answers": [
       "Octagon"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Geometry"
   },
   {
     "type": "direct",
@@ -5334,7 +5476,8 @@
     "answers": [
       "Random Access Memory"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Hardware"
   },
   {
     "type": "direct",
@@ -5344,7 +5487,8 @@
       "George Washington",
       "Washington"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -5353,7 +5497,8 @@
     "answers": [
       "Gandalf"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Fantasy"
   },
   {
     "type": "direct",
@@ -5362,7 +5507,8 @@
     "answers": [
       "Kant"
     ],
-    "tag": "Philosophy"
+    "category": "Philosophy",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -5372,7 +5518,8 @@
       "Denali",
       "Mount McKinley"
     ],
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Physical"
   },
   {
     "type": "direct",
@@ -5382,7 +5529,8 @@
       "van Gogh",
       "Gogh"
     ],
-    "tag": "Art"
+    "category": "Art",
+    "subcategory": "Painting"
   },
   {
     "type": "direct",
@@ -5391,7 +5539,8 @@
     "answers": [
       "Woodwind"
     ],
-    "tag": "Music"
+    "category": "Music",
+    "subcategory": "Instruments"
   },
   {
     "type": "direct",
@@ -5401,7 +5550,8 @@
       "2.72",
       "2.71"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Constants"
   },
   {
     "type": "direct",
@@ -5410,7 +5560,8 @@
     "answers": [
       "Vespasian"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Ancient"
   },
   {
     "type": "mcq",
@@ -5426,7 +5577,8 @@
       "d": "Thermosphere",
       "e": "Exosphere"
     },
-    "tag": "Science"
+    "category": "Science",
+    "subcategory": "Atmosphere"
   },
   {
     "type": "direct",
@@ -5435,7 +5587,8 @@
     "answers": [
       "Persephone"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Mythology"
   },
   {
     "type": "direct",
@@ -5444,7 +5597,8 @@
     "answers": [
       "Tanzania"
     ],
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Physical"
   },
   {
     "type": "direct",
@@ -5453,7 +5607,8 @@
     "answers": [
       "Structured Query Language"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Databases"
   },
   {
     "type": "direct",
@@ -5463,7 +5618,8 @@
       "eau",
       "l'eau"
     ],
-    "tag": "Language"
+    "category": "Language",
+    "subcategory": "French"
   },
   {
     "type": "direct",
@@ -5472,7 +5628,8 @@
     "answers": [
       "No"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Syllogisms"
   },
   {
     "type": "direct",
@@ -5481,7 +5638,8 @@
     "answers": [
       "Origami"
     ],
-    "tag": "Culture"
+    "category": "Culture",
+    "subcategory": "Art Forms"
   },
   {
     "type": "direct",
@@ -5490,7 +5648,8 @@
     "answers": [
       "Photosynthesis"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "mcq",
@@ -5506,7 +5665,8 @@
       "d": "Chlorine",
       "e": "Hydrogen"
     },
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "direct",
@@ -5515,7 +5675,8 @@
     "answers": [
       "14th"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Medieval"
   },
   {
     "type": "direct",
@@ -5524,7 +5685,8 @@
     "answers": [
       "12"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Arithmetic"
   },
   {
     "type": "direct",
@@ -5534,7 +5696,8 @@
       "Strong Force",
       "Strong Nuclear Force"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -5544,7 +5707,8 @@
       "Jane Austen",
       "Austen"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Classic"
   },
   {
     "type": "direct",
@@ -5553,7 +5717,8 @@
     "answers": [
       "Greenland"
     ],
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Physical"
   },
   {
     "type": "direct",
@@ -5562,7 +5727,8 @@
     "answers": [
       ".py"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Programming Languages"
   },
   {
     "type": "direct",
@@ -5572,7 +5738,8 @@
       "Danke",
       "Danke schön"
     ],
-    "tag": "Language"
+    "category": "Language",
+    "subcategory": "German"
   },
   {
     "type": "direct",
@@ -5581,7 +5748,8 @@
     "answers": [
       "36"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Sequences"
   },
   {
     "type": "direct",
@@ -5590,7 +5758,8 @@
     "answers": [
       "Argentina"
     ],
-    "tag": "Culture"
+    "category": "Culture",
+    "subcategory": "Dance"
   },
   {
     "type": "direct",
@@ -5599,7 +5768,8 @@
     "answers": [
       "Monotreme"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "direct",
@@ -5608,7 +5778,8 @@
     "answers": [
       "Ag"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "mcq",
@@ -5624,7 +5795,8 @@
       "d": "Leonardo da Vinci",
       "e": "Niccolò Machiavelli"
     },
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Renaissance"
   },
   {
     "type": "direct",
@@ -5633,7 +5805,8 @@
     "answers": [
       "7"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Geometry"
   },
   {
     "type": "direct",
@@ -5643,7 +5816,8 @@
       "Ohm",
       "Ohms"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -5653,7 +5827,8 @@
       "To be or not to",
       "To be, or not to be"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Drama"
   },
   {
     "type": "direct",
@@ -5662,7 +5837,8 @@
     "answers": [
       "Canberra"
     ],
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Political"
   },
   {
     "type": "direct",
@@ -5671,7 +5847,8 @@
     "answers": [
       "Hypertext Transfer Protocol"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Web"
   },
   {
     "type": "direct",
@@ -5680,7 +5857,8 @@
     "answers": [
       "Hola"
     ],
-    "tag": "Language"
+    "category": "Language",
+    "subcategory": "Spanish"
   },
   {
     "type": "direct",
@@ -5689,7 +5867,8 @@
     "answers": [
       "24"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Puzzles"
   },
   {
     "type": "direct",
@@ -5700,7 +5879,8 @@
       "Incan",
       "Incas"
     ],
-    "tag": "Culture"
+    "category": "Culture",
+    "subcategory": "History"
   },
   {
     "type": "direct",
@@ -5709,7 +5889,8 @@
     "answers": [
       "A, B, AB, O"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "direct",
@@ -5718,7 +5899,8 @@
     "answers": [
       "Iron"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "direct",
@@ -5727,7 +5909,8 @@
     "answers": [
       "France"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -5736,7 +5919,8 @@
     "answers": [
       "120"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Arithmetic"
   },
   {
     "type": "direct",
@@ -5745,7 +5929,8 @@
     "answers": [
       "Photon"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -5756,7 +5941,8 @@
       "JK Rowling",
       "Joanne Rowling"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Fantasy"
   },
   {
     "type": "direct",
@@ -5765,7 +5951,8 @@
     "answers": [
       "Russia"
     ],
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Political"
   },
   {
     "type": "direct",
@@ -5774,7 +5961,8 @@
     "answers": [
       "11"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Fundamentals"
   },
   {
     "type": "direct",
@@ -5784,7 +5972,8 @@
       "Arrivederci",
       "Ciao"
     ],
-    "tag": "Language"
+    "category": "Language",
+    "subcategory": "Italian"
   },
   {
     "type": "direct",
@@ -5793,7 +5982,8 @@
     "answers": [
       "6"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Puzzles"
   },
   {
     "type": "direct",
@@ -5804,7 +5994,8 @@
       "Xiongnu",
       "Nomads"
     ],
-    "tag": "Culture"
+    "category": "Culture",
+    "subcategory": "History"
   },
   {
     "type": "direct",
@@ -5813,7 +6004,8 @@
     "answers": [
       "Skin"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "mcq",
@@ -5829,7 +6021,8 @@
       "d": "Potassium",
       "e": "Zinc"
     },
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "direct",
@@ -5838,7 +6031,8 @@
     "answers": [
       "1918"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -5847,7 +6041,8 @@
     "answers": [
       "3.14"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Constants"
   },
   {
     "type": "direct",
@@ -5856,7 +6051,8 @@
     "answers": [
       "Inertia"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -5866,7 +6062,8 @@
       "Ernest Hemingway",
       "Hemingway"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -5876,7 +6073,8 @@
       "Sahara",
       "Sahara Desert"
     ],
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Physical"
   },
   {
     "type": "direct",
@@ -5885,7 +6083,8 @@
     "answers": [
       "1066"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Medieval"
   },
   {
     "type": "direct",
@@ -5895,7 +6094,8 @@
       "3.00x10^8",
       "2.99x10^8"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -5904,7 +6104,8 @@
     "answers": [
       "A Game of Thrones"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Fantasy"
   },
   {
     "type": "direct",
@@ -5913,7 +6114,8 @@
     "answers": [
       "ATP"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "direct",
@@ -5922,7 +6124,8 @@
     "answers": [
       "Nile"
     ],
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Physical"
   },
   {
     "type": "direct",
@@ -5931,7 +6134,8 @@
     "answers": [
       "Michelangelo"
     ],
-    "tag": "Art"
+    "category": "Art",
+    "subcategory": "Painting"
   },
   {
     "type": "direct",
@@ -5940,7 +6144,8 @@
     "answers": [
       "9"
     ],
-    "tag": "Music"
+    "category": "Music",
+    "subcategory": "Classical"
   },
   {
     "type": "direct",
@@ -5950,7 +6155,8 @@
       "Socratic paradox",
       "Socratic ignorance"
     ],
-    "tag": "Philosophy"
+    "category": "Philosophy",
+    "subcategory": "Ancient"
   },
   {
     "type": "direct",
@@ -5960,7 +6166,8 @@
       "7",
       "7.0"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "direct",
@@ -5969,7 +6176,8 @@
     "answers": [
       "Event Horizon"
     ],
-    "tag": "Astronomy"
+    "category": "Science",
+    "subcategory": "Astronomy"
   },
   {
     "type": "mcq",
@@ -5985,7 +6193,8 @@
       "d": "PH and PSPACE are proven to be incomparable complexity classes.",
       "e": "PH collapses to PSPACE if P = NP."
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Theory"
   },
   {
     "type": "mcq",
@@ -6001,7 +6210,8 @@
       "d": "O(log log n)",
       "e": "O(α(n)) where α is the inverse Ackermann function"
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Data Structures"
   },
   {
     "type": "mcq",
@@ -6017,7 +6227,8 @@
       "d": "It simplifies memory management by eliminating the need for garbage collection.",
       "e": "It ensures atomic updates across multiple cache lines with minimal overhead."
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Operating Systems"
   },
   {
     "type": "mcq",
@@ -6033,7 +6244,8 @@
       "d": "The iterated dominance frontier of 'd' (DF+(d)).",
       "e": "The post-dominator tree rooted at 'd'."
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Compilers"
   },
   {
     "type": "mcq",
@@ -6049,7 +6261,8 @@
       "d": "Axioms in Zermelo-Fraenkel set theory.",
       "e": "Production rules in formal grammar theory."
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Programming Languages"
   },
   {
     "type": "mcq",
@@ -6065,7 +6278,8 @@
       "d": "Turing Machines (TM)",
       "e": "Nested Word Automata (NWA)"
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Theory"
   },
   {
     "type": "mcq",
@@ -6081,7 +6295,8 @@
       "d": "It signifies that the cache line has been prefetched speculatively.",
       "e": "It indicates the cache line is exclusively owned and modified ('M' state)."
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Architecture"
   },
   {
     "type": "mcq",
@@ -6097,7 +6312,8 @@
       "d": "A cheating prover cannot convince an honest verifier of a false statement, except with negligible probability.",
       "e": "The communication complexity of the proof is logarithmic in the size of the witness."
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Cryptography"
   },
   {
     "type": "mcq",
@@ -6113,7 +6329,8 @@
       "d": "The Ω (omega) combinator (λx.x x)",
       "e": "The Y combinator"
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Programming Languages"
   },
   {
     "type": "mcq",
@@ -6129,11 +6346,12 @@
       "d": "Phantom Reads (New rows appearing in repeated range queries)",
       "e": "Incorrect Summary Problems"
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Databases"
   },
   {
     "type": "mcq",
-    "q": "Please answer the following question in Drupal 10 context. What is the minimum PHP version requirement for Drupal 10?",
+    "q": "Please answer the following question in Drupal context. What is the minimum PHP version requirement for Drupal 10?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "c"
@@ -6144,11 +6362,12 @@
       "c": "8.1",
       "d": "8.2"
     },
-    "tag": "Drupal 10"
+    "category": "Drupal",
+    "subcategory": "Requirements"
   },
   {
     "type": "mcq",
-    "q": "Please answer the following question in Drupal 10 context. Which Symfony components are required by Drupal 10 core?",
+    "q": "Please answer the following question in Drupal context. Which Symfony components are required by Drupal 10 core?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a",
@@ -6162,11 +6381,12 @@
       "d": "Assetic",
       "e": "Routing"
     },
-    "tag": "Drupal 10"
+    "category": "Drupal",
+    "subcategory": "Architecture"
   },
   {
     "type": "mcq",
-    "q": "Please answer the following question in Drupal 10 context. What is the base class for custom block plugins?",
+    "q": "Please answer the following question in Drupal context. What is the base class for custom block plugins?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "d"
@@ -6178,11 +6398,12 @@
       "d": "Drupal\\Core\\Block\\BlockBase",
       "e": "BlockPluginBase"
     },
-    "tag": "Drupal 10"
+    "category": "Drupal",
+    "subcategory": "Plugin API"
   },
   {
     "type": "mcq",
-    "q": "Please answer the following question in Drupal 10 context. What is the fully qualified class name for the base block plugin in Drupal 10?",
+    "q": "Please answer the following question in Drupal context. What is the fully qualified class name for the base block plugin in Drupal?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a"
@@ -6194,11 +6415,12 @@
       "d": "Drupal\\Block\\BlockBase",
       "e": "Drupal\\Core\\Block\\BaseBlock"
     },
-    "tag": "Drupal 10"
+    "category": "Drupal",
+    "subcategory": "Plugin API"
   },
   {
     "type": "mcq",
-    "q": "Please answer the following question in Drupal 10 context. Which are valid cache contexts in Drupal 10?",
+    "q": "Please answer the following question in Drupal context. Which are valid cache contexts in Drupal?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "b",
@@ -6213,11 +6435,12 @@
       "d": "language",
       "e": "theme"
     },
-    "tag": "Drupal 10"
+    "category": "Drupal",
+    "subcategory": "Cache API"
   },
   {
     "type": "mcq",
-    "q": "Please answer the following question in Drupal 10 context. What is the service ID for the entity type manager?",
+    "q": "Please answer the following question in Drupal context. What is the service ID for the entity type manager?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "c"
@@ -6229,11 +6452,12 @@
       "d": "entity_type_manager",
       "e": "core.entity_manager"
     },
-    "tag": "Drupal 10"
+    "category": "Drupal",
+    "subcategory": "Services"
   },
   {
     "type": "mcq",
-    "q": "Please answer the following question in Drupal 10 context. Which Twig filter(s) handle(s) translation in templates?",
+    "q": "Please answer the following question in Drupal context. Which Twig filter(s) handle(s) translation in templates?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a"
@@ -6244,11 +6468,12 @@
       "c": "|translate",
       "d": "|i18n"
     },
-    "tag": "Drupal 10"
+    "category": "Drupal",
+    "subcategory": "Theming"
   },
   {
     "type": "mcq",
-    "q": "Please answer the following question in Drupal 10 context. Which are valid plugin types in Drupal 10?",
+    "q": "Please answer the following question in Drupal context. Which are valid plugin types in Drupal?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a",
@@ -6262,11 +6487,12 @@
       "d": "Block",
       "e": "Mail"
     },
-    "tag": "Drupal 10"
+    "category": "Drupal",
+    "subcategory": "Plugin API"
   },
   {
     "type": "mcq",
-    "q": "Please answer the following question in Drupal 10 context. Which hook is invoked just before an entity is saved (for both creates and updates)?",
+    "q": "Please answer the following question in Drupal context. Which hook is invoked just before an entity is saved (for both creates and updates)?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "b"
@@ -6277,11 +6503,12 @@
       "c": "hook_entity_update",
       "d": "hook_entity_prepare_save"
     },
-    "tag": "Drupal 10"
+    "category": "Drupal",
+    "subcategory": "Hooks"
   },
   {
     "type": "mcq",
-    "q": "Please answer the following question in Drupal 10 context. Which namespace contains core migration plugins?",
+    "q": "Please answer the following question in Drupal context. Which namespace contains core migration plugins?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "b"
@@ -6292,11 +6519,12 @@
       "c": "Drupal\\core\\Migrate\\Plugin",
       "d": "Drupal\\migrate_drupal\\Plugin"
     },
-    "tag": "Drupal 10"
+    "category": "Drupal",
+    "subcategory": "Migrate API"
   },
   {
     "type": "mcq",
-    "q": "Please answer the following question in Drupal 10 context. Which interface is used for config.factory injection?",
+    "q": "Please answer the following question in Drupal context. Which interface is used for config.factory injection?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "c"
@@ -6307,11 +6535,12 @@
       "c": "Drupal\\Core\\Config\\ConfigFactoryInterface",
       "d": "Config\\FactoryInterface"
     },
-    "tag": "Drupal 10"
+    "category": "Drupal",
+    "subcategory": "Configuration"
   },
   {
     "type": "mcq",
-    "q": "Please answer the following question in Drupal 10 context. Which are valid cache bins?",
+    "q": "Please answer the following question in Drupal context. Which are valid core cache bins?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a",
@@ -6325,11 +6554,12 @@
       "d": "entity_query",
       "e": "discovery"
     },
-    "tag": "Drupal 10"
+    "category": "Drupal",
+    "subcategory": "Cache API"
   },
   {
     "type": "mcq",
-    "q": "Please answer the following question in Drupal 10 context. What is the base class for core theme *engines* (like the Twig theme engine)?",
+    "q": "Please answer the following question in Drupal context. What is the base class for core theme *engines* (like the Twig theme engine)?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "d"
@@ -6340,11 +6570,12 @@
       "c": "Drupal\\Theme\\BaseTheme",
       "d": "Drupal\\Core\\Theme\\ThemeEngineBase"
     },
-    "tag": "Drupal 10"
+    "category": "Drupal",
+    "subcategory": "Theming"
   },
   {
     "type": "mcq",
-    "q": "Please answer the following question in Drupal 10 context. Where should custom modules be placed?",
+    "q": "Please answer the following question in Drupal context. Where should custom modules be placed?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "b"
@@ -6355,11 +6586,12 @@
       "c": "core/modules",
       "d": "modules/contrib"
     },
-    "tag": "Drupal 10"
+    "category": "Drupal",
+    "subcategory": "Module Development"
   },
   {
     "type": "mcq",
-    "q": "Please answer the following question in Drupal 10 context. What is the modern replacement for the deprecated drupal_set_message() function?",
+    "q": "Please answer the following question in Drupal context. What is the modern replacement for the deprecated drupal_set_message() function?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "e"
@@ -6371,11 +6603,12 @@
       "d": "->addMessage()",
       "e": "->messenger()->addMessage()"
     },
-    "tag": "Drupal 10"
+    "category": "Drupal",
+    "subcategory": "APIs"
   },
   {
     "type": "mcq",
-    "q": "Please answer the following question in Drupal 10 context. What is the base class for custom service providers in Drupal 10?",
+    "q": "Please answer the following question in Drupal context. What is the base class for custom service providers in Drupal?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "c"
@@ -6386,11 +6619,12 @@
       "c": "Drupal\\Core\\DependencyInjection\\ServiceProviderBase",
       "d": "ServiceProviderInterface"
     },
-    "tag": "Drupal 10"
+    "category": "Drupal",
+    "subcategory": "Services"
   },
   {
     "type": "mcq",
-    "q": "How is a lazy service declared in Drupal 10's services.yml file?",
+    "q": "How is a lazy service declared in Drupal's services.yml file?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a"
@@ -6401,11 +6635,12 @@
       "c": "lazy_service: true",
       "d": "load_lazy: true"
     },
-    "tag": "Drupal 10"
+    "category": "Drupal",
+    "subcategory": "Services"
   },
   {
     "type": "mcq",
-    "q": "What is the service ID for the current user service in Drupal 10?",
+    "q": "What is the service ID for the current user service in Drupal?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a"
@@ -6416,11 +6651,12 @@
       "c": "user",
       "d": "session.user"
     },
-    "tag": "Drupal 10"
+    "category": "Drupal",
+    "subcategory": "Services"
   },
   {
     "type": "mcq",
-    "q": "What is the correct way to create a SELECT query using Drupal 10's database API?",
+    "q": "What is the correct way to create a SELECT query using Drupal's database API?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a"
@@ -6431,11 +6667,12 @@
       "c": "\\Drupal::database()->execute()",
       "d": "\\Drupal::database()->selectQuery()"
     },
-    "tag": "Drupal 10"
+    "category": "Drupal",
+    "subcategory": "Database API"
   },
   {
     "type": "mcq",
-    "q": "What is the correct return type for a hook_help() implementation in Drupal 10?",
+    "q": "What is the correct return type for a hook_help() implementation in Drupal?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a",
@@ -6447,11 +6684,12 @@
       "c": "null",
       "d": "object"
     },
-    "tag": "Drupal 10"
+    "category": "Drupal",
+    "subcategory": "Hooks"
   },
   {
     "type": "mcq",
-    "q": "What is the Twig template naming convention for a node article template in Drupal 10?",
+    "q": "What is the Twig template naming convention for a node article template in Drupal?",
     "instruction": "Select the correct answer(s) by providing the corresponding letter(s) as a comma-separated list (e.g., \"h\" for a single answer or \"i, j\" for multiple answers).",
     "answers": [
       "a"
@@ -6462,7 +6700,8 @@
       "c": "node-article.html.twig",
       "d": "node--article.twig"
     },
-    "tag": "Drupal 10"
+    "category": "Drupal",
+    "subcategory": "Theming"
   },
   {
     "type": "direct",
@@ -6471,7 +6710,8 @@
     "answers": [
       "Paris"
     ],
-    "tag": "General Knowledge"
+    "category": "General Knowledge",
+    "subcategory": "Geography"
   },
   {
     "type": "mcq",
@@ -6487,7 +6727,8 @@
       "c": "21",
       "d": "3"
     },
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Number Theory"
   },
   {
     "type": "direct",
@@ -6496,7 +6737,8 @@
     "answers": [
       "Bună dimineața"
     ],
-    "tag": "Translation"
+    "category": "Language",
+    "subcategory": "Romanian"
   },
   {
     "type": "direct",
@@ -6505,7 +6747,8 @@
     "answers": [
       "12"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Arithmetic"
   },
   {
     "type": "direct",
@@ -6514,7 +6757,8 @@
     "answers": [
       "Au"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "mcq",
@@ -6532,7 +6776,8 @@
       "d": "Java",
       "e": "CSS"
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Programming Languages"
   },
   {
     "type": "direct",
@@ -6541,7 +6786,8 @@
     "answers": [
       "swam"
     ],
-    "tag": "Grammar"
+    "category": "Language",
+    "subcategory": "English Grammar"
   },
   {
     "type": "direct",
@@ -6550,7 +6796,8 @@
     "answers": [
       "libro"
     ],
-    "tag": "Translation"
+    "category": "Language",
+    "subcategory": "Spanish"
   },
   {
     "type": "direct",
@@ -6559,7 +6806,8 @@
     "answers": [
       "west"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Spatial Reasoning"
   },
   {
     "type": "direct",
@@ -6568,7 +6816,8 @@
     "answers": [
       "Shakespeare"
     ],
-    "tag": "Culture"
+    "category": "Culture",
+    "subcategory": "Literature"
   },
   {
     "type": "direct",
@@ -6577,7 +6826,8 @@
     "answers": [
       "knave,knave"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Puzzles"
   },
   {
     "type": "direct",
@@ -6586,16 +6836,8 @@
     "answers": [
       "2"
     ],
-    "tag": "Logic"
-  },
-  {
-    "type": "direct",
-    "q": "Using only a 3-gallon jug and a 5-gallon jug, starting with both empty and having an unlimited water source, what is the minimum number of pouring/filling/emptying steps required to have exactly 4 gallons in the 5-gallon jug?",
-    "instruction": "Provide the minimum number of steps as a single digit.",
-    "answers": [
-      "6"
-    ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Propositional"
   },
   {
     "type": "direct",
@@ -6604,7 +6846,8 @@
     "answers": [
       "E"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Sequences"
   },
   {
     "type": "direct",
@@ -6613,7 +6856,8 @@
     "answers": [
       "31"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Puzzles"
   },
   {
     "type": "direct",
@@ -6622,7 +6866,8 @@
     "answers": [
       "P is true"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Propositional"
   },
   {
     "type": "direct",
@@ -6631,7 +6876,8 @@
     "answers": [
       "204"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Puzzles"
   },
   {
     "type": "direct",
@@ -6640,7 +6886,8 @@
     "answers": [
       "Y"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Puzzles"
   },
   {
     "type": "direct",
@@ -6649,7 +6896,8 @@
     "answers": [
       "¬A ∨ ¬B"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Propositional"
   },
   {
     "type": "direct",
@@ -6658,7 +6906,8 @@
     "answers": [
       "4"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Graph Theory"
   },
   {
     "type": "direct",
@@ -6668,7 +6917,8 @@
       "54325",
       "1"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Patterns"
   },
   {
     "type": "direct",
@@ -6677,7 +6927,8 @@
     "answers": [
       "3600"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Combinatorics"
   },
   {
     "type": "direct",
@@ -6686,7 +6937,8 @@
     "answers": [
       "Modus Ponens"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Paradoxes"
   },
   {
     "type": "direct",
@@ -6695,7 +6947,8 @@
     "answers": [
       "contradiction"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Propositional"
   },
   {
     "type": "direct",
@@ -6704,7 +6957,8 @@
     "answers": [
       "2"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Pigeonhole Principle"
   },
   {
     "type": "direct",
@@ -6713,7 +6967,8 @@
     "answers": [
       "312211"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Sequences"
   },
   {
     "type": "direct",
@@ -6722,7 +6977,8 @@
     "answers": [
       "3"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Puzzles"
   },
   {
     "type": "direct",
@@ -6731,7 +6987,8 @@
     "answers": [
       "A is false"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Propositional"
   },
   {
     "type": "direct",
@@ -6740,7 +6997,8 @@
     "answers": [
       "24"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Number Theory"
   },
   {
     "type": "direct",
@@ -6749,7 +7007,8 @@
     "answers": [
       "16"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Propositional"
   },
   {
     "type": "direct",
@@ -6758,7 +7017,8 @@
     "answers": [
       "5/18"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Probability"
   },
   {
     "type": "direct",
@@ -6767,7 +7027,8 @@
     "answers": [
       "120"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Combinatorics"
   },
   {
     "type": "direct",
@@ -6777,7 +7038,8 @@
       "If the ground is not wet, then it is not raining",
       "If not W, then not R"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Propositional"
   },
   {
     "type": "direct",
@@ -6786,7 +7048,8 @@
     "answers": [
       "5"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Combinatorics"
   },
   {
     "type": "direct",
@@ -6795,7 +7058,8 @@
     "answers": [
       "TAU"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Propositional"
   },
   {
     "type": "direct",
@@ -6804,7 +7068,8 @@
     "answers": [
       "9"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Puzzles"
   },
   {
     "type": "direct",
@@ -6813,7 +7078,8 @@
     "answers": [
       "45"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Combinatorics"
   },
   {
     "type": "direct",
@@ -6822,7 +7088,8 @@
     "answers": [
       "21210"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Advanced"
   },
   {
     "type": "direct",
@@ -6831,7 +7098,8 @@
     "answers": [
       "7"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Number Theory"
   },
   {
     "type": "direct",
@@ -6840,7 +7108,8 @@
     "answers": [
       "2"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Propositional"
   },
   {
     "type": "direct",
@@ -6849,7 +7118,8 @@
     "answers": [
       "0100"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Coding Theory"
   },
   {
     "type": "direct",
@@ -6858,7 +7128,8 @@
     "answers": [
       "92"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Puzzles"
   },
   {
     "type": "direct",
@@ -6867,7 +7138,8 @@
     "answers": [
       "1"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Propositional"
   },
   {
     "type": "direct",
@@ -6876,7 +7148,8 @@
     "answers": [
       "proof theory"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "History"
   },
   {
     "type": "direct",
@@ -6885,7 +7158,8 @@
     "answers": [
       "6"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Combinatorics"
   },
   {
     "type": "direct",
@@ -6894,7 +7168,8 @@
     "answers": [
       "affirming the consequent"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Fallacies"
   },
   {
     "type": "direct",
@@ -6903,7 +7178,8 @@
     "answers": [
       "12"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Graph Theory"
   },
   {
     "type": "direct",
@@ -6912,7 +7188,8 @@
     "answers": [
       "78557"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Number Theory"
   },
   {
     "type": "direct",
@@ -6921,7 +7198,8 @@
     "answers": [
       "Presburger Arithmetic"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Computability"
   },
   {
     "type": "direct",
@@ -6930,7 +7208,8 @@
     "answers": [
       "Lf.Lx.f(f x)"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Lambda Calculus"
   },
   {
     "type": "direct",
@@ -6939,7 +7218,8 @@
     "answers": [
       "A5"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Group Theory"
   },
   {
     "type": "direct",
@@ -6948,7 +7228,8 @@
     "answers": [
       "1"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "History"
   },
   {
     "type": "direct",
@@ -6957,7 +7238,8 @@
     "answers": [
       "12211212"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Sequences"
   },
   {
     "type": "direct",
@@ -6967,7 +7249,8 @@
       "Traveling Salesman Problem",
       "TSP"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Complexity Theory"
   },
   {
     "type": "direct",
@@ -6976,7 +7259,8 @@
     "answers": [
       "Type 3"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Formal Languages"
   },
   {
     "type": "direct",
@@ -6985,7 +7269,8 @@
     "answers": [
       "9"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Set Theory"
   },
   {
     "type": "direct",
@@ -6994,7 +7279,8 @@
     "answers": [
       "Law of Excluded Middle"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Formal"
   },
   {
     "type": "direct",
@@ -7003,7 +7289,8 @@
     "answers": [
       "6"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Computability"
   },
   {
     "type": "direct",
@@ -7012,7 +7299,8 @@
     "answers": [
       "Transposition"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Boolean Algebra"
   },
   {
     "type": "direct",
@@ -7021,7 +7309,8 @@
     "answers": [
       "Boolean algebra"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Boolean Algebra"
   },
   {
     "type": "direct",
@@ -7030,7 +7319,8 @@
     "answers": [
       "Weber"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "mcq",
@@ -7049,7 +7339,8 @@
       "e": "423",
       "f": "131"
     },
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Number Theory"
   },
   {
     "type": "direct",
@@ -7058,7 +7349,8 @@
     "answers": [
       "Thatcher"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -7067,7 +7359,8 @@
     "answers": [
       "5"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "direct",
@@ -7076,7 +7369,8 @@
     "answers": [
       "e-1"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Calculus"
   },
   {
     "type": "mcq",
@@ -7096,7 +7390,8 @@
       "e": "Session",
       "f": "Link"
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Networking"
   },
   {
     "type": "direct",
@@ -7106,7 +7401,8 @@
       "Война и миръ",
       "Война и мир"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Classic"
   },
   {
     "type": "direct",
@@ -7115,7 +7411,8 @@
     "answers": [
       "catalase"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "direct",
@@ -7124,7 +7421,8 @@
     "answers": [
       "2"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Algorithms"
   },
   {
     "type": "direct",
@@ -7133,7 +7431,8 @@
     "answers": [
       "-1.5"
     ],
-    "tag": "Astronomy"
+    "category": "Science",
+    "subcategory": "Astronomy"
   },
   {
     "type": "mcq",
@@ -7151,7 +7450,8 @@
       "d": "FETCH",
       "e": "PATCH"
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Web"
   },
   {
     "type": "direct",
@@ -7160,7 +7460,8 @@
     "answers": [
       "Canada"
     ],
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Political"
   },
   {
     "type": "direct",
@@ -7169,7 +7470,8 @@
     "answers": [
       "Stravinsky"
     ],
-    "tag": "Music"
+    "category": "Music",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -7179,7 +7481,8 @@
       "1,3",
       "3,1"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Linear Algebra"
   },
   {
     "type": "direct",
@@ -7188,7 +7491,8 @@
     "answers": [
       "E=mc^2"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "mcq",
@@ -7206,7 +7510,8 @@
       "d": "Islam",
       "e": "Judaism"
     },
-    "tag": "Religion"
+    "category": "Culture",
+    "subcategory": "Religion"
   },
   {
     "type": "direct",
@@ -7215,7 +7520,8 @@
     "answers": [
       "O(n log n)"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Algorithms"
   },
   {
     "type": "direct",
@@ -7224,7 +7530,8 @@
     "answers": [
       "27"
     ],
-    "tag": "Law"
+    "category": "History",
+    "subcategory": "Law"
   },
   {
     "type": "direct",
@@ -7233,7 +7540,8 @@
     "answers": [
       "sp3"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "direct",
@@ -7242,7 +7550,8 @@
     "answers": [
       "Spanish"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -7251,7 +7560,8 @@
     "answers": [
       "4"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Digital"
   },
   {
     "type": "direct",
@@ -7260,7 +7570,8 @@
     "answers": [
       "C+I+G+(X-M)"
     ],
-    "tag": "Economics"
+    "category": "Economics",
+    "subcategory": "Macroeconomics"
   },
   {
     "type": "mcq",
@@ -7276,7 +7587,8 @@
       "c": "Energy",
       "d": "Magnetic field"
     },
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -7286,7 +7598,8 @@
       "Deoxyribonucleic acid",
       "DNA"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "direct",
@@ -7296,7 +7609,8 @@
       "Dalí",
       "Dali"
     ],
-    "tag": "Art"
+    "category": "Art",
+    "subcategory": "Painting"
   },
   {
     "type": "direct",
@@ -7305,7 +7619,8 @@
     "answers": [
       "2"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Algebra"
   },
   {
     "type": "mcq",
@@ -7323,7 +7638,8 @@
       "d": "WHILE",
       "e": "VARCHAR"
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Databases"
   },
   {
     "type": "direct",
@@ -7332,7 +7648,8 @@
     "answers": [
       "6"
     ],
-    "tag": "Linguistics"
+    "category": "Language",
+    "subcategory": "Russian"
   },
   {
     "type": "direct",
@@ -7341,7 +7658,8 @@
     "answers": [
       "l"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -7350,7 +7668,8 @@
     "answers": [
       "Sputnik 1"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Space Race"
   },
   {
     "type": "direct",
@@ -7359,7 +7678,8 @@
     "answers": [
       "1993"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "History"
   },
   {
     "type": "direct",
@@ -7368,7 +7688,8 @@
     "answers": [
       "13"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Sequences"
   },
   {
     "type": "direct",
@@ -7377,7 +7698,8 @@
     "answers": [
       "Nietzsche"
     ],
-    "tag": "Philosophy"
+    "category": "Philosophy",
+    "subcategory": "Modern"
   },
   {
     "type": "direct",
@@ -7386,7 +7708,8 @@
     "answers": [
       "caustic soda"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "mcq",
@@ -7402,7 +7725,8 @@
       "c": "Binary Search",
       "d": "Graph Coloring Problem"
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Theory"
   },
   {
     "type": "direct",
@@ -7411,7 +7735,8 @@
     "answers": [
       "10"
     ],
-    "tag": "Geology"
+    "category": "Science",
+    "subcategory": "Geology"
   },
   {
     "type": "direct",
@@ -7420,7 +7745,8 @@
     "answers": [
       "10"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Number Theory"
   },
   {
     "type": "direct",
@@ -7430,7 +7756,8 @@
       "37.0",
       "37"
     ],
-    "tag": "Medicine"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "mcq",
@@ -7448,7 +7775,8 @@
       "d": "Iterative",
       "e": "Logic"
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Programming Languages"
   },
   {
     "type": "direct",
@@ -7457,7 +7785,8 @@
     "answers": [
       "1/r"
     ],
-    "tag": "Economics"
+    "category": "Economics",
+    "subcategory": "Macroeconomics"
   },
   {
     "type": "direct",
@@ -7466,7 +7795,8 @@
     "answers": [
       "23"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "direct",
@@ -7475,7 +7805,8 @@
     "answers": [
       "Creeper"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "History"
   },
   {
     "type": "direct",
@@ -7484,7 +7815,8 @@
     "answers": [
       "Reaper"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "History"
   },
   {
     "type": "direct",
@@ -7493,7 +7825,8 @@
     "answers": [
       "7"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Algorithms"
   },
   {
     "type": "direct",
@@ -7502,7 +7835,8 @@
     "answers": [
       "Milky Way"
     ],
-    "tag": "Astronomy"
+    "category": "Science",
+    "subcategory": "Astronomy"
   },
   {
     "type": "mcq",
@@ -7524,7 +7858,8 @@
       "f": "Kapa",
       "g": "Ou"
     },
-    "tag": "Language"
+    "category": "Language",
+    "subcategory": "Greek"
   },
   {
     "type": "direct",
@@ -7534,7 +7869,8 @@
       "4πx10^-7",
       "4pi*10^-7"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -7543,7 +7879,8 @@
     "answers": [
       "Russian"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Classic"
   },
   {
     "type": "direct",
@@ -7552,7 +7889,8 @@
     "answers": [
       "5"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Geometry"
   },
   {
     "type": "direct",
@@ -7561,7 +7899,8 @@
     "answers": [
       "0"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "mcq",
@@ -7579,7 +7918,8 @@
       "d": "middle",
       "e": "absolute"
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Web Development"
   },
   {
     "type": "direct",
@@ -7588,7 +7928,8 @@
     "answers": [
       "Charles Babbage"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Science & Technology"
   },
   {
     "type": "direct",
@@ -7597,7 +7938,8 @@
     "answers": [
       "Homo sapiens"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "direct",
@@ -7606,7 +7948,8 @@
     "answers": [
       "63"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Puzzles"
   },
   {
     "type": "direct",
@@ -7615,7 +7958,8 @@
     "answers": [
       "Fortran"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "History"
   },
   {
     "type": "direct",
@@ -7624,7 +7968,8 @@
     "answers": [
       "Challenger Deep"
     ],
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Physical"
   },
   {
     "type": "mcq",
@@ -7643,7 +7988,8 @@
       "e": "404",
       "f": "500"
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Web"
   },
   {
     "type": "direct",
@@ -7652,7 +7998,8 @@
     "answers": [
       "ΔxΔp ≥ ħ/2"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -7661,7 +8008,8 @@
     "answers": [
       "Wright"
     ],
-    "tag": "Art"
+    "category": "Art",
+    "subcategory": "Architecture"
   },
   {
     "type": "direct",
@@ -7670,7 +8018,8 @@
     "answers": [
       "540"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Geometry"
   },
   {
     "type": "direct",
@@ -7679,7 +8028,8 @@
     "answers": [
       "4"
     ],
-    "tag": "Linguistics"
+    "category": "Language",
+    "subcategory": "General"
   },
   {
     "type": "mcq",
@@ -7696,7 +8046,8 @@
       "c": "sin(2θ) = 2sinθcosθ",
       "d": "log(a*b) = log(a) + log(b)"
     },
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Trigonometry"
   },
   {
     "type": "direct",
@@ -7705,7 +8056,8 @@
     "answers": [
       "Smith"
     ],
-    "tag": "Economics"
+    "category": "Economics",
+    "subcategory": "History"
   },
   {
     "type": "direct",
@@ -7714,7 +8066,8 @@
     "answers": [
       "amino acids"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "direct",
@@ -7723,7 +8076,8 @@
     "answers": [
       "1991"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "History"
   },
   {
     "type": "direct",
@@ -7732,7 +8086,8 @@
     "answers": [
       "150"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Combinatorics"
   },
   {
     "type": "direct",
@@ -7741,7 +8096,8 @@
     "answers": [
       "1"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "mcq",
@@ -7759,7 +8115,8 @@
       "d": "Observer",
       "e": "Factory"
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Software Engineering"
   },
   {
     "type": "direct",
@@ -7768,7 +8125,8 @@
     "answers": [
       "Qin Shi Huang"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Ancient"
   },
   {
     "type": "direct",
@@ -7777,7 +8135,8 @@
     "answers": [
       "photon"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -7786,7 +8145,8 @@
     "answers": [
       "1.618"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Constants"
   },
   {
     "type": "direct",
@@ -7796,7 +8156,8 @@
       "Antarctic Desert",
       "Antarctica"
     ],
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Physical"
   },
   {
     "type": "mcq",
@@ -7815,7 +8176,8 @@
       "d": "Polymorphism",
       "e": "Abstraction"
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Programming Paradigms"
   },
   {
     "type": "direct",
@@ -7824,7 +8186,8 @@
     "answers": [
       "Italian"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Classic"
   },
   {
     "type": "direct",
@@ -7833,7 +8196,8 @@
     "answers": [
       "12"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "direct",
@@ -7842,7 +8206,8 @@
     "answers": [
       "WorldWideWeb"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "History"
   },
   {
     "type": "direct",
@@ -7851,7 +8216,8 @@
     "answers": [
       "F"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "mcq",
@@ -7869,7 +8235,8 @@
       "d": "A* Search",
       "e": "K-Means Clustering"
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Machine Learning"
   },
   {
     "type": "direct",
@@ -7878,7 +8245,8 @@
     "answers": [
       "6.626x10^-34"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -7887,7 +8255,8 @@
     "answers": [
       "Valentina Tereshkova"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Space Race"
   },
   {
     "type": "direct",
@@ -7896,7 +8265,8 @@
     "answers": [
       "20"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Geometry"
   },
   {
     "type": "direct",
@@ -7906,7 +8276,8 @@
       "Lake Baikal",
       "Baikal"
     ],
-    "tag": "Geography"
+    "category": "Geography",
+    "subcategory": "Physical"
   },
   {
     "type": "mcq",
@@ -7924,7 +8295,8 @@
       "d": "Go",
       "e": "Kotlin"
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Programming Languages"
   },
   {
     "type": "direct",
@@ -7933,7 +8305,8 @@
     "answers": [
       "18"
     ],
-    "tag": "Linguistics"
+    "category": "Language",
+    "subcategory": "Swahili"
   },
   {
     "type": "direct",
@@ -7942,7 +8315,8 @@
     "answers": [
       "mycology"
     ],
-    "tag": "Biology"
+    "category": "Science",
+    "subcategory": "Biology"
   },
   {
     "type": "direct",
@@ -7951,7 +8325,8 @@
     "answers": [
       "17"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Puzzles"
   },
   {
     "type": "direct",
@@ -7960,7 +8335,8 @@
     "answers": [
       "0.9"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "History"
   },
   {
     "type": "direct",
@@ -7969,7 +8345,8 @@
     "answers": [
       "Vitamin C"
     ],
-    "tag": "Chemistry"
+    "category": "Science",
+    "subcategory": "Chemistry"
   },
   {
     "type": "mcq",
@@ -7987,7 +8364,8 @@
       "d": "Counting Sort",
       "e": "HeapSort"
     },
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Algorithms"
   },
   {
     "type": "direct",
@@ -7996,7 +8374,8 @@
     "answers": [
       "9.8"
     ],
-    "tag": "Physics"
+    "category": "Science",
+    "subcategory": "Physics"
   },
   {
     "type": "direct",
@@ -8005,7 +8384,8 @@
     "answers": [
       "Dostoevsky"
     ],
-    "tag": "Literature"
+    "category": "Literature",
+    "subcategory": "Classic"
   },
   {
     "type": "direct",
@@ -8014,7 +8394,8 @@
     "answers": [
       "4"
     ],
-    "tag": "Math"
+    "category": "Math",
+    "subcategory": "Number Theory"
   },
   {
     "type": "direct",
@@ -8023,7 +8404,8 @@
     "answers": [
       "ENIAC"
     ],
-    "tag": "History"
+    "category": "History",
+    "subcategory": "Science & Technology"
   },
   {
     "type": "direct",
@@ -8032,7 +8414,8 @@
     "answers": [
       "7"
     ],
-    "tag": "Logic"
+    "category": "Logic",
+    "subcategory": "Graph Theory"
   },
   {
     "type": "direct",
@@ -8041,6 +8424,7 @@
     "answers": [
       "512"
     ],
-    "tag": "Computer Science"
+    "category": "Computer Science",
+    "subcategory": "Cryptography"
   }
 ]
