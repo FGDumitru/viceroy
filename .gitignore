@@ -14,3 +14,4 @@ examples/benchmark.db
 /default-mode/
 .clinerules-default
 /examples/benchmark_results/
+/examples/db_backup

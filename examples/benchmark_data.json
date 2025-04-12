@@ -727,7 +727,8 @@
     "instruction": "Select ALL valid scopes.",
     "answers": [
       "a",
-      "c"
+      "c",
+      "d"
     ],
     "options": {
       "a": "container (default)",
@@ -858,7 +859,6 @@
     "instruction": "Select ALL potential consequences.",
     "answers": [
       "a",
-      "b",
       "d",
       "e"
     ],
@@ -932,12 +932,14 @@
   },
   {
     "type": "mcq",
-    "q": "Which methods might be implemented in a class subscribing to `KernelEvents::REQUEST` to perform actions early in the request lifecycle?",
+    "q": "In a Drupal/Symfony EventSubscriber class listening to `KernelEvents::REQUEST`, which of the following method names are *technically valid* to be designated as the handler method within the `getSubscribedEvents()` definition? Consider the flexibility of the event dispatcher, not just common naming conventions.",
     "instruction": "Select ALL methods that could logically be called for different priorities or purposes.",
     "answers": [
       "a",
       "c",
-      "d"
+      "d",
+      "b",
+      "e"
     ],
     "options": {
       "a": "onKernelRequest()",
@@ -1306,15 +1308,16 @@
     "subcategory": "Testing"
   },
   {
-    "type": "direct",
-    "q": "What is the name of the service in Drupal core responsible for generating secure, one-time login links for users?",
-    "instruction": "Provide the service ID.",
-    "answers": [
-      "user.onetime_login_generator"
-    ],
-    "category": "Drupal",
-    "subcategory": "Services"
-  },
+  "type": "direct",
+  "q": "What single-word term describes the property of an operation, function, or service in computing where applying it multiple times produces the exact same result or state as applying it just once? This property is crucial for ensuring safety and correctness when dealing with unreliable network requests or operations that might be unintentionally repeated.",
+  "instruction": "Provide the single-word technical term.",
+  "answers": [
+    "Idempotence",
+    "Idempotent"
+  ],
+  "category": "Computer Science",
+  "subcategory": "System Design & APIs"
+},
   {
     "type": "mcq",
     "q": "Which HTTP middleware in Drupal's stack is responsible for handling page caching for anonymous users based on URLs and request formats?",
@@ -1428,7 +1431,7 @@
     "q": "In Drupal, when defining a custom block plugin, which interface should it typically implement to provide configuration options via a form?",
     "instruction": "Select the relevant interface.",
     "answers": [
-      "d"
+      "c"
     ],
     "options": {
       "a": "Drupal\\Core\\Block\\BlockPluginInterface",

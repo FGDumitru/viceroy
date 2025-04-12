@@ -609,9 +609,6 @@ foreach ($models as $modelIndex => $model) {
     $startTime = microtime(true);
     $modelStartTime = $startTime;
 
-    // DEBUG
-    $questionCountLimit = 100;
-
     // Process each question for the current model
     $questionsToProcess = $questionCountLimit ? array_slice($benchmarkData, 0, $questionCountLimit, true) : $benchmarkData;
     foreach ($questionsToProcess as $qIndex => $entry) {
@@ -619,6 +616,12 @@ foreach ($models as $modelIndex => $model) {
         prepareQuestion($entry);
 
         $questionString = $benchmarkData[$qIndex]['q'];
+
+        $category = $entry['category'];
+        $subcategory = $entry['subcategory'];
+
+        $questionString = "The following question main category is `$category` and its subcategory is `$subcategory`.\n\n$questionString";
+        
         $instructionString = $entry['instruction'];
         $options = json_encode($entry['shuffled_options'] ?? null);
         $expectedAnswer = implode(' || ',$benchmarkData[$qIndex]['answers']);
@@ -674,6 +677,7 @@ foreach ($models as $modelIndex => $model) {
                 echo "Progress: $progress\n";
                 echo "Time Passed: " . gmdate("H:i:s", (int) $timePassed) . "\n";
                 echo "ETA: " . gmdate("H:i:s", (int) $eta) . "\n";
+
 
                 $systemPrompt = <<<SYSTEM_PROMPT
 You are a helpful AI assistant programmed for concise, factual answers. Respond to questions with the minimum information required for a correct and direct answer. Do not:
