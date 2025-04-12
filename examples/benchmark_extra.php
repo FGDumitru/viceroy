@@ -34,6 +34,10 @@ OPTIONS:
 --exclude-subcategories, -e  Show category-level stats only (must be used with -d)
 --qcnt=N, -q=N           Limit benchmark to first N questions (default: all)
 --ignore-speed-limits, -isl Skip token generation speed validation
+--max-context=N, -mc=N      Maximum output tokens per response (default:8192)
+--min-prompt-speed=N, -ps=N Minimum tokens/sec for prompt processing (default:3)
+--min-token-speed=N, -ts=N  Minimum tokens/sec for generation (default:3)
+--min-eval-attempts=N, -ea=N Minimum attempts before speed evaluation (default:1)
 --verbose, -v            Show detailed question/response information
 --help, -h               Show this help message and exit
 
@@ -105,13 +109,13 @@ require_once '../vendor/autoload.php';
 
 use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
-// Maximum number of tokens per response.
-const MAX_OUTPUT_CONTEXT = 8192;
+// Configurable limits
+$maxOutputContext = 8192;  // Maximum number of tokens per response
 
-// Speed monitoring thresholds
-const MIN_PROMPT_SPEED = 3;    // Minimum tokens/sec for prompt processing
-const MIN_TOKEN_GENERATION = 3; // Minimum tokens/sec for generation
-const MIN_ANSWERS_FOR_EVALUATION = 1; // Minimum attempts before speed evaluation
+// Speed monitoring thresholds (configurable via command line)
+$minPromptSpeed = 3;    // Minimum tokens/sec for prompt processing
+$minTokenGeneration = 3; // Minimum tokens/sec for generation
+$minAnswersForEvaluation = 1; // Minimum attempts before speed evaluation
 
 
 $totalRequiredAnswersPerQuestion = 1;
@@ -187,6 +191,22 @@ foreach ($argv as $arg) {
     // Limit questions (--qcnt or -q)
     elseif (str_starts_with($arg, '--qcnt=') || str_starts_with($arg, '-q=')) {
         $questionCountLimit = (int) substr($arg, strpos($arg, '=') + 1);
+    }
+    // Set minimum prompt speed (--min-prompt-speed or -ps)
+    elseif (str_starts_with($arg, '--min-prompt-speed=') || str_starts_with($arg, '-ps=')) {
+        $minPromptSpeed = (float) substr($arg, strpos($arg, '=') + 1);
+    }
+    // Set minimum token generation speed (--min-token-speed or -ts)
+    elseif (str_starts_with($arg, '--min-token-speed=') || str_starts_with($arg, '-ts=')) {
+        $minTokenGeneration = (float) substr($arg, strpos($arg, '=') + 1);
+    }
+    // Set minimum evaluation attempts (--min-eval-attempts or -ea)
+    elseif (str_starts_with($arg, '--min-eval-attempts=') || str_starts_with($arg, '-ea=')) {
+        $minAnswersForEvaluation = (int) substr($arg, strpos($arg, '=') + 1);
+    }
+    // Set maximum output context (--max-context or -mc)
+    elseif (str_starts_with($arg, '--max-context=') || str_starts_with($arg, '-mc=')) {
+        $maxOutputContext = (int) substr($arg, strpos($arg, '=') + 1);
     }
 
     // DEBUG
@@ -686,7 +706,7 @@ if (!$ignoreSpeedLimits) {
             $modelPromptPerSecond = round($stats['avg_prompt_eval_per_second'], 2);
             $modelTokensPerSecond = round($stats['avg_tokens_per_second'], 2);
             
-            if ($modelPromptPerSecond < MIN_PROMPT_SPEED || $modelTokensPerSecond < MIN_TOKEN_GENERATION) {
+            if ($modelPromptPerSecond < $minPromptSpeed || $modelTokensPerSecond < $minTokenGeneration) {
                 echo "\033[34;40m\nSlow model skipped: " . $models[$i]['id'] . " (Speeds - prompt eval: $modelPromptPerSecond/s | tokens per second: $modelTokensPerSecond/s)\033[0m\n";
                 unset($models[$i]);
             }
@@ -895,7 +915,7 @@ SYSTEM_PROMPT;
                         ->addMessage('user', "$systemPrompt Please answer the following question and encapsulate your final answer between <response> and </response> tags followed by <done></done> tags. If you need to reason or explain you may do that BEFORE the response tags. Inside the response tags include only the actual, direct, response without any explanations. Be as concise as possible.\nE.G. <response>Your answer to the question here without any explanations.</response><done></done>\n\n{$entry['full_prompt']}");
 
                     $parameters = $llmConnection->getDefaultParameters();
-                    $llmConnection->setParameter('n_predict', MAX_OUTPUT_CONTEXT);
+                    $llmConnection->setParameter('n_predict', $maxOutputContext);
                     $stopWords = $llmConnection->getParameter("stop") ?? [];
                     $stopWords[] = '<done>';
                     $stopWords[] = '/<done>';
@@ -939,8 +959,8 @@ SYSTEM_PROMPT;
 
                         // Check speed limits after minimum attempts
                         $attemptCount = count($existingAttempts) + 1;
-                        if ($attemptCount >= MIN_ANSWERS_FOR_EVALUATION && !$ignoreSpeedLimits) {
-                            if ($promptSpeed < MIN_PROMPT_SPEED || $genSpeed < MIN_TOKEN_GENERATION) {
+                        if ($attemptCount >= $minAnswersForEvaluation && !$ignoreSpeedLimits) {
+                            if ($promptSpeed < $minPromptSpeed || $genSpeed < $minTokenGeneration) {
                                 echo "\n\033[1;31mSpeed limit violation - prompt: {$promptSpeed}t/s, generation: {$genSpeed}t/s\033[0m\n";
                                 echo "Skipping to next model...\n";
                                 break 2; // Break out of both question and model loops
