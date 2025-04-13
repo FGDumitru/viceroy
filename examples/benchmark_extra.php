@@ -297,13 +297,24 @@ $totalQuestions = count($benchmarkData);
  */
 function displayModelStats(SQLiteDatabase $db, bool $showDetails = false, bool $excludeSubcategories = false): void {
 
-    // Fetch and display questions with zero correct answers
+    // First display vetted questions
+    $vettedQuery = "SELECT qid FROM valid_questions";
+    $vettedQuestions = $db->getPDO()->query($vettedQuery)->fetchAll(PDO::FETCH_COLUMN);
+    
+    if (!empty($vettedQuestions)) {
+        echo "\n\033[1mThe following questions have been manually vetted: " . implode(', ', $vettedQuestions) . "\033[0m\n";
+        echo str_repeat('-', 40) . "\n";
+    }
+
+    // Fetch and display questions with zero correct answers (excluding vetted questions)
     $query = "
         SELECT
             question_id,
             actual_question
         FROM
             benchmark_runs
+        WHERE
+            question_id NOT IN (" . implode(',', array_fill(0, count($vettedQuestions), '?')) . ")
         GROUP BY
             question_id, actual_question
         HAVING
@@ -311,10 +322,13 @@ function displayModelStats(SQLiteDatabase $db, bool $showDetails = false, bool $
         ORDER BY
             question_id ASC;
     ";
-    $questionsWithZeroCorrect = $db->getPDO()->query($query)->fetchAll(PDO::FETCH_ASSOC);
+    
+    $stmt = $db->getPDO()->prepare($query);
+    $stmt->execute($vettedQuestions);
+    $questionsWithZeroCorrect = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     if (!empty($questionsWithZeroCorrect)) {
-        echo "\n\033[1mQuestions with Zero Correct Answers\033[0m\n";
+        echo "\n\033[1mQuestions with Zero Correct Answers (excluding vetted questions)\033[0m\n";
         echo str_repeat('-', 40) . "\n";
         foreach ($questionsWithZeroCorrect as $question) {
             echo "Question ID: {$question['question_id']}\n";
@@ -877,7 +891,7 @@ foreach ($models as $modelIndex => $model) {
         $subcategory = $entry['subcategory'];
 
         
-        $questionString = "The following question main category is `$category` and its subcategory is `$subcategory`.\n\n$questionString";
+        $questionString = "The following question's main category is `$category` and its subcategory is `$subcategory`. Please answer the following question in this category and subcategory context.\n\n###Question:\n$questionString";
         
         $instructionString = $entry['instruction'];
         $options = json_encode($entry['shuffled_options'] ?? null);
@@ -952,9 +966,9 @@ SYSTEM_PROMPT;
                 try {
                     $llmConnection->getRolesManager()
                         ->clearMessages()
-                        ->setSystemMessage('')
-                        ->addMessage('user', "$systemPrompt Please answer the following question and encapsulate your final answer between <response> and </response> tags followed by <done></done> tags. If you need to reason or explain you may do that BEFORE the response tags. Inside the response tags include only the actual, direct, response without any explanations. Be as concise as possible.\nE.G. <response>Your answer to the question here without any explanations.</response><done></done>\n\n{$entry['full_prompt']}");
-
+                        ->setSystemMessage('detailed thinkin on') // Fix for Nemotron models
+                        ->addMessage('user', "$systemPrompt Please answer the following question and encapsulate your final answer between <response> and </response> tags followed by <done></done> tags. If you need to reason or explain you may do that BEFORE the response tags. Inside the response tags include only the actual, direct, response without any explanations. Be as concise as possible.\nE.G. <response>Your answer to the question here without any explanations.</response><done></done>\n\nIt's very important that you respond in the mentioned format, between <response></response> xml tags.\n\n{$entry['full_prompt']}");
+                        
                     $parameters = $llmConnection->getDefaultParameters();
                     $llmConnection->setParameter('n_predict', $maxOutputContext);
                     $stopWords = $llmConnection->getParameter("stop") ?? [];

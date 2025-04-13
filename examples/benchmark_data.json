@@ -449,8 +449,7 @@
     "instruction": "Select ALL valid tags typically associated with a node.",
     "answers": [
       "a",
-      "c",
-      "d"
+      "b"
     ],
     "options": {
       "a": "node:N (where N is the node ID)",
