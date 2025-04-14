@@ -586,8 +586,6 @@ function displayModelStats(SQLiteDatabase $db, bool $showDetails = false, bool $
             echo "\n\033[1mDetailed Performance by Category\033[0m\n";
             foreach ($groupedStats as $category => $subcategories) {
                 echo "\n\033[1;34mCategory: $category\033[0m\n";
-                echo str_repeat('-', 60) . "\n";
-                
                 if ($excludeSubcategories) {
                     // Combine all subcategories for this category
                     $combinedModels = [];
@@ -601,7 +599,6 @@ function displayModelStats(SQLiteDatabase $db, bool $showDetails = false, bool $
                             }
                         }
                     }
-                    
                     // Format table header (add index column at the start and end)
                     $header = [
                         '#',
@@ -612,7 +609,6 @@ function displayModelStats(SQLiteDatabase $db, bool $showDetails = false, bool $
                         'Avg Time',
                         '#' // Index as last column
                     ];
-                    
                     // Compute best correct % for deviation calculation
                     $best_correct_pct = 0.0;
                     foreach ($combinedModels as $modelStats) {
@@ -647,7 +643,6 @@ function displayModelStats(SQLiteDatabase $db, bool $showDetails = false, bool $
                         ];
                         $idx++;
                     }
-                    
                     // Sort by Correct % descending
                     usort($rows, function($a, $b) {
                         // $a[2] and $b[2] are correct_col, which may contain deviation string, so extract the float
@@ -655,38 +650,11 @@ function displayModelStats(SQLiteDatabase $db, bool $showDetails = false, bool $
                         preg_match('/([\d.]+)/', $b[2], $mb);
                         return floatval($mb[1] ?? 0) <=> floatval($ma[1] ?? 0);
                     });
-                    
-                    // Calculate column widths
-                    $widths = array_map(function($col) use ($rows, $header) {
-                        $maxValueLength = max(array_map(function($row) use ($col) {
-                            return isset($row[$col]) ? strlen(strip_ansi_escape_codes((string)$row[$col])) : 0;
-                        }, $rows));
-                        return max($maxValueLength, strlen(strip_ansi_escape_codes($header[$col]))) + 1;
-                    }, array_keys($header));
-                    
-                    // Print table header
-                    foreach ($header as $i => $title) {
-                        $align = (in_array($title, ['Model', 'Correct %'])) ? STR_PAD_RIGHT : STR_PAD_LEFT;
-                        echo str_pad($title, $widths[$i], ' ', $align) . ' ';
-                    }
-                    echo "\n";
-                    echo str_repeat('-', array_sum($widths) + count($widths)) . "\n";
-                    
-                    // Print table rows
-                    foreach ($rows as $row) {
-                        foreach ($header as $i => $title) {
-                            $value = isset($row[$i]) ? $row[$i] : '';
-                            $visibleLen = strlen(strip_ansi_escape_codes($value));
-                            $padLen = $widths[$i] + strlen($value) - $visibleLen;
-                            $align = (in_array($header[$i], ['Model', 'Correct %'])) ? STR_PAD_RIGHT : STR_PAD_LEFT;
-                            echo str_pad($value, $padLen, ' ', $align) . ' ';
-                        }
-                        echo "\n";
-                    }
+                    // Use renderStatsTable for consistent table rendering
+                    renderStatsTable($header, $rows);
                 } else {
                     foreach ($subcategories as $subcategory => $models) {
                         echo "\n\033[1;33mCategory: $category > Subcategory: $subcategory\033[0m\n";
-                        
                         // Format table header (add index column at the start and end)
                         $header = [
                             '#',
@@ -697,7 +665,6 @@ function displayModelStats(SQLiteDatabase $db, bool $showDetails = false, bool $
                             'Avg Time',
                             '#' // Index as last column
                         ];
-                        
                         // Compute best correct % for deviation calculation
                         $best_correct_pct = 0.0;
                         foreach ($models as $modelStats) {
@@ -732,7 +699,6 @@ function displayModelStats(SQLiteDatabase $db, bool $showDetails = false, bool $
                             ];
                             $idx++;
                         }
-                        
                         // Sort by Correct % descending
                         usort($rows, function($a, $b) {
                             // $a[2] and $b[2] are correct_col, which may contain deviation string, so extract the float
@@ -740,34 +706,8 @@ function displayModelStats(SQLiteDatabase $db, bool $showDetails = false, bool $
                             preg_match('/([\d.]+)/', $b[2], $mb);
                             return floatval($mb[1] ?? 0) <=> floatval($ma[1] ?? 0);
                         });
-                        
-                        // Calculate column widths
-                        $widths = array_map(function($col) use ($rows, $header) {
-                            $maxValueLength = max(array_map(function($row) use ($col) {
-                                return isset($row[$col]) ? strlen(strip_ansi_escape_codes((string)$row[$col])) : 0;
-                            }, $rows));
-                            return max($maxValueLength, strlen(strip_ansi_escape_codes($header[$col]))) + 1;
-                        }, array_keys($header));
-                        
-                        // Print table header
-                        foreach ($header as $i => $title) {
-                            $align = (in_array($title, ['Model', 'Correct %'])) ? STR_PAD_RIGHT : STR_PAD_LEFT;
-                            echo str_pad($title, $widths[$i], ' ', $align) . ' ';
-                        }
-                        echo "\n";
-                        echo str_repeat('-', array_sum($widths) + count($widths)) . "\n";
-                        
-                        // Print table rows
-                        foreach ($rows as $row) {
-                            foreach ($header as $i => $title) {
-                                $value = isset($row[$i]) ? $row[$i] : '';
-                                $visibleLen = strlen(strip_ansi_escape_codes($value));
-                                $padLen = $widths[$i] + strlen($value) - $visibleLen;
-                                $align = (in_array($header[$i], ['Model', 'Correct %'])) ? STR_PAD_RIGHT : STR_PAD_LEFT;
-                                echo str_pad($value, $padLen, ' ', $align) . ' ';
-                            }
-                            echo "\n";
-                        }
+                        // Use renderStatsTable for consistent table rendering
+                        renderStatsTable($header, $rows);
                     }
                 }
             }
