@@ -24,31 +24,52 @@ USAGE:
 php benchmark_extra.php [options]
 
 OPTIONS:
---model=pattern, -m=pattern  Filter models using shell-style wildcards (e.g. "*-13b")
---ignore=pattern, -i=pattern Exclude models matching pattern (e.g. "llama*")
---reset                   Clear all previous benchmark data from database
---reset-model=name, -rm=name Clear data for specific model only
+--model=pattern, -m=pattern      Filter models using shell-style wildcards (e.g. "*-13b")
+--ignore=pattern, -i=pattern     Exclude models matching pattern (e.g. "llama*")
+--reset                          Clear all previous benchmark data from database
+--reset-model=name, -rm=name     Clear data for specific model only
 --total-required-answers=N, -a=N Number of attempts per question (default:1, range:1-10)
 --required-correct-answers=N, -c=N Minimum correct answers required (default:1)
---show-stats              Display aggregated model statistics table and exit
---details, -d            Show detailed performance breakdown by category/subcategory
---exclude-subcategories, -e  Show category-level stats only (must be used with -d)
---qcnt=N, -q=N           Limit benchmark to first N questions (default: all)
---ignore-speed-limits, -isl Skip token generation speed validation
---max-context=N, -mc=N      Maximum output tokens per response (default:8192)
---min-prompt-speed=N, -ps=N Minimum tokens/sec for prompt processing (default:3)
---min-token-speed=N, -ts=N  Minimum tokens/sec for generation (default:3)
---min-eval-attempts=N, -ea=N Minimum attempts before speed evaluation (default:1)
---verbose, -v            Show detailed question/response information
---help, -h               Show this help message and exit
+--stats                          Display aggregated model statistics table and exit
+--astats                         Show all stats parsed per category and subcategory, then exit
+--cstats                         Show stats per main category only, then exit
+                                  [NOTE: --stats, --astats, and --cstats are mutually exclusive and cannot be combined.]
+--details, -d                    Show detailed performance breakdown by category/subcategory
+--exclude-subcategories, -e      Show category-level stats only (must be used with -d)
+--qcnt=N, -q=N                   Limit benchmark to first N questions (default: all)
+--ignore-speed-limits, -isl      Skip speed limit validation (see below)
+--max-context=N, -mc=N           Maximum output tokens per response (default:8192)
+--min-prompt-speed=N, -ps=N      Minimum tokens/sec for prompt processing (default:3)
+--min-token-speed=N, -ts=N       Minimum tokens/sec for generation (default:3)
+--min-eval-attempts=N, -ea=N     Minimum attempts before speed evaluation (default:1)
+--verbose, -v                    Show detailed question/response information
+--endpoint=URL                   Specify the OpenAI-compatible endpoint URL to use for benchmarking.
+--bearer=TOKEN                   Specify the bearer token for authentication with the endpoint.
+--specific-models=LIST           Comma-delimited list of exact model names to benchmark (e.g., --specific-models=model1,model2). No wildcards allowed. Bypasses model discovery.
+--help, -h                       Show this help message and exit
+
+SPEED LIMITS:
+  "Speed limit" in this benchmark refers to the minimum required processing speeds for LLM models, measured in tokens per second (tokens/sec). Two types of speed are measured:
+    - Prompt processing speed: How quickly the model processes the input prompt (tokens/sec).
+    - Token generation speed: How quickly the model generates output tokens (tokens/sec).
+  By default, the minimum thresholds are:
+    --min-prompt-speed=3   (minimum 3 tokens/sec for prompt processing)
+    --min-token-speed=3    (minimum 3 tokens/sec for token generation)
+  If a model's average speed falls below either threshold (after the minimum number of attempts, see --min-eval-attempts), the model is automatically skipped from the benchmark and will not be evaluated further.
+  You can override this behavior using the --ignore-speed-limits (or -isl) option, which disables speed checks and allows all models to be benchmarked regardless of their speed.
 
 DETAILED USAGE:
 - For basic benchmarking: php benchmark_extra.php
-- To compare specific models: php benchmark_extra.php --model=model1 --model=model2
+- To compare specific models: php benchmark_extra.php --model="model1" --model="model2"
 - For category analysis: php benchmark_extra.php --details
 - For category-only summary: php benchmark_extra.php --details --exclude-subcategories
 - To limit questions: php benchmark_extra.php --qcnt=50
 - To ignore speed limits: php benchmark_extra.php --ignore-speed-limits
+- To specify a custom endpoint and bearer token: php benchmark_extra.php --endpoint="https://api.example.com/v1" --bearer="YOUR_TOKEN"
+- To benchmark specific models only (no wildcards, comma-delimited): php benchmark_extra.php --specific-models=model1,model2
+- To show overall stats: php benchmark_extra.php --stats
+- To show all stats per category/subcategory: php benchmark_extra.php --astats
+- To show stats per main category only: php benchmark_extra.php --cstats
 
 EXAMPLES:
 1. Basic benchmark run:
@@ -57,54 +78,25 @@ EXAMPLES:
 2. Benchmark specific models with 3 attempts per question:
    php benchmark_extra.php --model=*-13b --total-required-answers=3
 
-3. Show statistics from previous runs:
-   php benchmark_extra.php --show-stats
+3. Show overall statistics:
+   php benchmark_extra.php --stats
 
-4. Benchmark first 10 questions, ignoring speed limits:
+4. Show all stats per category/subcategory:
+   php benchmark_extra.php --astats
+
+5. Show stats per main category only:
+   php benchmark_extra.php --cstats
+
+6. Benchmark first 10 questions, ignoring speed limits:
    php benchmark_extra.php --qcnt=10 --ignore-speed-limits
+
+7. Benchmark multiple specific models using a custom endpoint and bearer token:
+   php benchmark_extra.php --endpoint=https://api.openai-compatible.com/v1 --bearer="sk-xxxx" --specific-models="model1,model2"
+
 
 HELP;
     exit(0);
 }
-
-/**
- * benchmark_extra.php - Extended Multi-Model Performance Benchmark
- *
- * Extended version with additional testing capabilities and documentation
- *
- * This script provides a comprehensive benchmarking framework for LLM models
- * to evaluate their accuracy and performance across multiple questions.
- *
- * Key Features:
- * 1. Model Filtering: Supports pattern-based inclusion/exclusion of models
- * 2. Multi-Attempt Validation: Tracks multiple response attempts per question
- * 3. Detailed Metrics: Captures timing data
- * 4. Output Formats: Produces both human-readable CSV and machine-readable JSON
- * 5. Error Handling: Gracefully manages API timeouts and exceptions
- *
- * Usage:
- * php benchmark_extra.php [options]
- *
- * Examples:
- * 1. Basic benchmark run:
- *    php benchmark_extra.php
- * 2. Benchmark specific models with 3 attempts per question:
- *    php benchmark_extra.php --model=*-13b --total-required-answers=3
- * 3. Show statistics from previous runs:
- *    php benchmark_extra.php --show-stats
- * 4. Benchmark first 10 questions, ignoring speed limits:
- *    php benchmark_extra.php --qcnt=10 --ignore-speed-limits
- *
- * Options:
- * --model=pattern       Filter models using shell-style wildcards (e.g. "*-13b")
- * --ignore=pattern      Exclude models matching pattern (e.g. "llama*")
- * --reset               Clear all previous benchmark data from database
- * --total-required-answers=N  Number of attempts per question (default:1, range:1-10)
- * --required-correct-answers=N Minimum correct answers required to pass (default:1)
- * --show-stats          Display aggregated model statistics table and exit
- * --qcnt=N             Limit benchmark to first N questions (default:all)
- * --ignore-speed-limits Skip token generation speed validation (-isl shortcut)
- */
 
 require_once '../vendor/autoload.php';
 
@@ -164,6 +156,22 @@ $showStats = in_array('--show-stats', $argv);
 $showDetails = in_array('--details', $argv) || in_array('-d', $argv);
 $excludeSubcategories = in_array('--exclude-subcategories', $argv) || in_array('-e', $argv);
 
+// New: Overhauled stats options
+$showStats = in_array('--stats', $argv);
+$showAStats = in_array('--astats', $argv);
+$showCStats = in_array('--cstats', $argv);
+
+// Enforce mutual exclusivity
+$statsOptions = array_filter([
+    $showStats ? 'stats' : null,
+    $showAStats ? 'astats' : null,
+    $showCStats ? 'cstats' : null,
+]);
+if (count($statsOptions) > 1) {
+    fwrite(STDERR, "\n\033[1;31mError: --stats, --astats, and --cstats are mutually exclusive and cannot be combined.\033[0m\n");
+    exit(1);
+}
+
 $verboseOutput = in_array('--verbose', $argv) || in_array('-v', $argv);
 
 //DEBUG
@@ -172,6 +180,12 @@ $verboseOutput = in_array('--verbose', $argv) || in_array('-v', $argv);
 $ignoreSpeedLimits = in_array('--ignore-speed-limits', $argv) || in_array('-isl', $argv);
 
 $questionCountLimit = null;
+
+/* --- BEGIN: CLI option enhancements for endpoint, bearer, single-model --- */
+$endpoint = null;
+$bearer = null;
+$specificModels = null;
+/* --- END: CLI option enhancements --- */
 
 // Parse command-line parameters
 foreach ($argv as $arg) {
@@ -219,6 +233,18 @@ foreach ($argv as $arg) {
     elseif (str_starts_with($arg, '--reset-model=') || str_starts_with($arg, '-rm=')) {
         $resetModel = substr($arg, strpos($arg, '=') + 1);
     }
+    // Handle endpoint option
+    elseif (str_starts_with($arg, '--endpoint=')) {
+        $endpoint = substr($arg, strlen('--endpoint='));
+    }
+    // Handle bearer token option
+    elseif (str_starts_with($arg, '--bearer=')) {
+        $bearer = substr($arg, strlen('--bearer='));
+    }
+    // Handle specific-models option
+    elseif (str_starts_with($arg, '--specific-models=')) {
+        $specificModels = array_map('trim', explode(',', substr($arg, strlen('--specific-models='))));
+    }
 
     // DEBUG
     //$questionCountLimit = 100;
@@ -255,13 +281,23 @@ if ($resetModel) {
 }
 
 // If only showing stats, display and exit
-if ($showStats) {
+// Overhauled: handle --stats, --astats, --cstats (mutually exclusive)
+if ($showStats || $showAStats || $showCStats) {
     try {
         $models = $db->getDistinctModels();
         foreach ($models as $modelId) {
             $db->updateModelStats($modelId);
         }
-        displayModelStats($db, $showDetails, $excludeSubcategories);
+        if ($showStats) {
+            // Overall stats, no details
+            displayModelStats($db, false, false);
+        } elseif ($showAStats) {
+            // All stats per category and subcategory
+            displayModelStats($db, true, false);
+        } elseif ($showCStats) {
+            // Stats per main category only
+            displayModelStats($db, true, true);
+        }
         exit(0);
     } catch (Exception $e) {
         echo "\n\033[1;31mError displaying statistics: " . $e->getMessage() . "\033[0m\n";
@@ -295,6 +331,64 @@ $totalQuestions = count($benchmarkData);
  * @param bool $excludeSubcategories Show only category-level stats when true (requires $showDetails)
  * @return void
  */
+/**
+ * Strips ANSI escape codes from a string.
+ */
+function strip_ansi_escape_codes(string $str): string {
+    return preg_replace('/\033\[[0-9;]*m/', '', $str);
+}
+
+/**
+ * Helper function to render a stats table with full borders and alignment.
+ */
+function renderStatsTable(array $header, array $rows, array $aligns = null): void {
+    // Calculate column widths
+    $widths = [];
+    foreach ($header as $i => $title) {
+        $maxValueLength = max(
+            strlen(strip_ansi_escape_codes($title)),
+            ...array_map(
+                fn($row) => isset($row[$i]) ? strlen(strip_ansi_escape_codes((string)$row[$i])) : 0,
+                $rows
+            )
+        );
+        // Add extra width for token count columns if present
+        $baseWidth = $maxValueLength + 1;
+        if (in_array($title, ['AvgPromptTk', 'AvgGenTk'])) {
+            $widths[$i] = max($baseWidth, 10);
+        } else {
+            $widths[$i] = $baseWidth;
+        }
+    }
+    // Calculate total table width
+    $totalWidth = array_sum($widths) + (count($widths) * 3) + 1;
+
+    // Print horizontal line
+    $hline = str_repeat('-', $totalWidth);
+
+    // Print table header
+    echo $hline . "\n";
+    foreach ($header as $i => $title) {
+        $align = $aligns[$i] ?? ((in_array($title, ['Model', 'Correct %'])) ? STR_PAD_RIGHT : STR_PAD_LEFT);
+        echo '| ' . str_pad($title, $widths[$i], ' ', $align) . ' ';
+    }
+    echo "|\n";
+    echo $hline . "\n";
+
+    // Print table rows
+    foreach ($rows as $row) {
+        foreach ($header as $i => $title) {
+            $value = isset($row[$i]) ? $row[$i] : '';
+            $visibleLen = strlen(strip_ansi_escape_codes($value));
+            $padLen = $widths[$i] + strlen($value) - $visibleLen;
+            $align = $aligns[$i] ?? ((in_array($header[$i], ['Model', 'Correct %'])) ? STR_PAD_RIGHT : STR_PAD_LEFT);
+            echo '| ' . str_pad($value, $padLen, ' ', $align) . ' ';
+        }
+        echo "|\n";
+    }
+    echo $hline . "\n";
+}
+
 function displayModelStats(SQLiteDatabase $db, bool $showDetails = false, bool $excludeSubcategories = false): void {
 
     // First display vetted questions
@@ -348,8 +442,9 @@ function displayModelStats(SQLiteDatabase $db, bool $showDetails = false, bool $
         return;
     }
     
-    // Format table header
+    // Format table header (add index column at the start and end)
     $header = [
+        '#',
         'Model',
         'Correct %',
         'A_OK',
@@ -360,17 +455,43 @@ function displayModelStats(SQLiteDatabase $db, bool $showDetails = false, bool $
         'Tokens/s',
         'AvgPromptTk',
         'AvgGenTk',
-        'Questions'
+        'Questions',
+        '#' // Index as last column
     ];
-    
 
-    // Format table rows
-    $rows = array_map(function($model) {
-        return [
-            substr($model['model_id'], 0, 50),
-            $model['total_questions'] > 0 && $model['correct_answers'] >= 0 ?
-                number_format(($model['correct_answers'] / max(1, $model['total_questions'])) * 100, 1) . '%' :
-                '0.0%',
+    // Compute best correct % for deviation calculation
+    $best_correct_pct = 0.0;
+    foreach ($stats as $model) {
+        if ($model['total_questions'] > 0 && $model['correct_answers'] >= 0) {
+            $pct = ($model['correct_answers'] / max(1, $model['total_questions'])) * 100;
+            if ($pct > $best_correct_pct) $best_correct_pct = $pct;
+        }
+    }
+
+    // Format table rows with index and deviation
+    $rows = [];
+    $i = 1;
+    foreach ($stats as $model) {
+        $model_name = $model['model_id'];
+        $pct = $model['total_questions'] > 0 && $model['correct_answers'] >= 0
+            ? ($model['correct_answers'] / max(1, $model['total_questions'])) * 100
+            : 0.0;
+        $pct_str = number_format($pct, 1) . '%';
+
+        // Deviation from best
+        $deviation = $best_correct_pct - $pct;
+        if ($deviation > 0.0001) {
+            $deviation_str = sprintf(" (\033[1;91m-%.1f%%\033[0m)", $deviation);
+        } else {
+            $deviation_str = "";
+        }
+        $correct_col = $pct_str . $deviation_str;
+
+        // Row matches header: index, model_name, correct_col, correct, incorrect, prompt_time, pred_time, prompt_eval/s, tokens/s, avg_prompt_tokens, avg_predicted_tokens, total_questions, index (again)
+        $rows[] = [
+            $i,
+            $model_name,
+            $correct_col,
             $model['correct_answers'],
             $model['incorrect_answers'],
             $model['avg_prompt_time'] >= 0 ? number_format($model['avg_prompt_time'], 3) . 's' : 'N/A',
@@ -379,14 +500,27 @@ function displayModelStats(SQLiteDatabase $db, bool $showDetails = false, bool $
             $model['avg_tokens_per_second'] >= 0 ? number_format($model['avg_tokens_per_second'], 1) : 'N/A',
             $model['avg_prompt_tokens'] >= 0 ? number_format($model['avg_prompt_tokens'], 0) : 'N/A',
             $model['avg_predicted_tokens'] >= 0 ? number_format($model['avg_predicted_tokens'], 0) : 'N/A',
-            $model['total_questions']
+            $model['total_questions'],
+            $i // Index as last column
         ];
-    }, $stats);
-    
+        $i++;
+    }
+
+    // Sort rows by Correct % descending
+    usort($rows, function($a, $b) {
+        // Remove % and compare as float
+        // $a[2] and $b[2] are correct_col, which may contain deviation string, so extract the float
+        preg_match('/([\d.]+)/', $a[2], $ma);
+        preg_match('/([\d.]+)/', $b[2], $mb);
+        return floatval($mb[1] ?? 0) <=> floatval($ma[1] ?? 0);
+    });
+
     // Calculate column widths with extra padding for formatted numbers
     $widths = array_map(function($col) use ($rows, $header) {
-        $maxValueLength = max(array_map('strlen', array_column($rows, $col)));
-        $headerLength = strlen($header[$col]);
+        $maxValueLength = max(array_map(function($row) use ($col) {
+            return isset($row[$col]) ? strlen(strip_ansi_escape_codes((string)$row[$col])) : 0;
+        }, $rows));
+        $headerLength = strlen(strip_ansi_escape_codes($header[$col]));
         // Add extra width for token count columns
         $baseWidth = max($maxValueLength, $headerLength) + 1;
         return in_array($header[$col], ['AvgPromptTk', 'AvgGenTk']) ?
@@ -401,15 +535,21 @@ function displayModelStats(SQLiteDatabase $db, bool $showDetails = false, bool $
     echo "\n\033[1mModel Performance Statistics\033[0m\n";
     echo str_repeat('-', $totalWidth) . "\n";
     foreach ($header as $i => $title) {
-        echo '| ' . str_pad($title, $widths[$i], ' ', STR_PAD_RIGHT) . ' ';
+        $align = (in_array($title, ['Model', 'Correct %'])) ? STR_PAD_RIGHT : STR_PAD_LEFT;
+        echo '| ' . str_pad($title, $widths[$i], ' ', $align) . ' ';
     }
     echo "|\n";
     echo str_repeat('-', $totalWidth) . "\n";
     
     // Print table rows
     foreach ($rows as $row) {
-        foreach ($row as $i => $value) {
-            echo '| ' . str_pad($value, $widths[$i], ' ', STR_PAD_RIGHT) . ' ';
+        foreach ($header as $i => $title) {
+            $value = isset($row[$i]) ? $row[$i] : '';
+            // Pad based on visible length (strip ANSI codes)
+            $visibleLen = strlen(strip_ansi_escape_codes($value));
+            $padLen = $widths[$i] + strlen($value) - $visibleLen;
+            $align = (in_array($header[$i], ['Model', 'Correct %'])) ? STR_PAD_RIGHT : STR_PAD_LEFT;
+            echo '| ' . str_pad($value, $padLen, ' ', $align) . ' ';
         }
         echo "|\n";
     }
@@ -462,50 +602,84 @@ function displayModelStats(SQLiteDatabase $db, bool $showDetails = false, bool $
                         }
                     }
                     
-                    // Format table header
+                    // Format table header (add index column at the start and end)
                     $header = [
+                        '#',
                         'Model',
                         'Correct %',
                         'Correct',
                         'Total',
-                        'Avg Time'
+                        'Avg Time',
+                        '#' // Index as last column
                     ];
                     
-                    // Format table rows sorted by accuracy
-                    $rows = array_map(function($modelStats) {
-                        return [
-                            substr($modelStats['model_id'], 0, 30),
-                            $modelStats['total_questions'] > 0 ?
-                                number_format(($modelStats['correct_answers'] / $modelStats['total_questions']) * 100, 1) . '%' :
-                                '0.0%',
+                    // Compute best correct % for deviation calculation
+                    $best_correct_pct = 0.0;
+                    foreach ($combinedModels as $modelStats) {
+                        if ($modelStats['total_questions'] > 0) {
+                            $pct = ($modelStats['correct_answers'] / $modelStats['total_questions']) * 100;
+                            if ($pct > $best_correct_pct) $best_correct_pct = $pct;
+                        }
+                    }
+                    // Format table rows sorted by accuracy, with index, deviation, and full model name
+                    $rows = [];
+                    $idx = 1;
+                    foreach ($combinedModels as $modelStats) {
+                        $pct = $modelStats['total_questions'] > 0
+                            ? ($modelStats['correct_answers'] / $modelStats['total_questions']) * 100
+                            : 0.0;
+                        $pct_str = number_format($pct, 1) . '%';
+                        $deviation = $best_correct_pct - $pct;
+                        if ($deviation > 0.0001) {
+                            $deviation_str = sprintf(" (\033[1;91m-%.1f%%\033[0m)", $deviation);
+                        } else {
+                            $deviation_str = "";
+                        }
+                        $correct_col = $pct_str . $deviation_str;
+                        $rows[] = [
+                            $idx,
+                            $modelStats['model_id'],
+                            $correct_col,
                             $modelStats['correct_answers'],
                             $modelStats['total_questions'],
-                            number_format($modelStats['avg_response_time'], 3) . 's'
+                            number_format($modelStats['avg_response_time'], 3) . 's',
+                            $idx // Index as last column
                         ];
-                    }, $combinedModels);
+                        $idx++;
+                    }
                     
-                    // Sort by accuracy (descending)
+                    // Sort by Correct % descending
                     usort($rows, function($a, $b) {
-                        return floatval($b[1]) <=> floatval($a[1]);
+                        // $a[2] and $b[2] are correct_col, which may contain deviation string, so extract the float
+                        preg_match('/([\d.]+)/', $a[2], $ma);
+                        preg_match('/([\d.]+)/', $b[2], $mb);
+                        return floatval($mb[1] ?? 0) <=> floatval($ma[1] ?? 0);
                     });
                     
                     // Calculate column widths
                     $widths = array_map(function($col) use ($rows, $header) {
-                        $maxValueLength = max(array_map('strlen', array_column($rows, $col)));
-                        return max($maxValueLength, strlen($header[$col])) + 1;
+                        $maxValueLength = max(array_map(function($row) use ($col) {
+                            return isset($row[$col]) ? strlen(strip_ansi_escape_codes((string)$row[$col])) : 0;
+                        }, $rows));
+                        return max($maxValueLength, strlen(strip_ansi_escape_codes($header[$col]))) + 1;
                     }, array_keys($header));
                     
                     // Print table header
                     foreach ($header as $i => $title) {
-                        echo str_pad($title, $widths[$i], ' ', STR_PAD_RIGHT) . ' ';
+                        $align = (in_array($title, ['Model', 'Correct %'])) ? STR_PAD_RIGHT : STR_PAD_LEFT;
+                        echo str_pad($title, $widths[$i], ' ', $align) . ' ';
                     }
                     echo "\n";
                     echo str_repeat('-', array_sum($widths) + count($widths)) . "\n";
                     
                     // Print table rows
                     foreach ($rows as $row) {
-                        foreach ($row as $i => $value) {
-                            echo str_pad($value, $widths[$i], ' ', STR_PAD_RIGHT) . ' ';
+                        foreach ($header as $i => $title) {
+                            $value = isset($row[$i]) ? $row[$i] : '';
+                            $visibleLen = strlen(strip_ansi_escape_codes($value));
+                            $padLen = $widths[$i] + strlen($value) - $visibleLen;
+                            $align = (in_array($header[$i], ['Model', 'Correct %'])) ? STR_PAD_RIGHT : STR_PAD_LEFT;
+                            echo str_pad($value, $padLen, ' ', $align) . ' ';
                         }
                         echo "\n";
                     }
@@ -513,50 +687,84 @@ function displayModelStats(SQLiteDatabase $db, bool $showDetails = false, bool $
                     foreach ($subcategories as $subcategory => $models) {
                         echo "\n\033[1;33mCategory: $category > Subcategory: $subcategory\033[0m\n";
                         
-                        // Format table header
+                        // Format table header (add index column at the start and end)
                         $header = [
+                            '#',
                             'Model',
                             'Correct %',
                             'Correct',
                             'Total',
-                            'Avg Time'
+                            'Avg Time',
+                            '#' // Index as last column
                         ];
                         
-                        // Format table rows
-                        $rows = array_map(function($modelStats) {
-                            return [
-                                substr($modelStats['model_id'], 0, 30),
-                                $modelStats['total_questions'] > 0 ?
-                                    number_format(($modelStats['correct_answers'] / $modelStats['total_questions']) * 100, 1) . '%' :
-                                    '0.0%',
+                        // Compute best correct % for deviation calculation
+                        $best_correct_pct = 0.0;
+                        foreach ($models as $modelStats) {
+                            if ($modelStats['total_questions'] > 0) {
+                                $pct = ($modelStats['correct_answers'] / $modelStats['total_questions']) * 100;
+                                if ($pct > $best_correct_pct) $best_correct_pct = $pct;
+                            }
+                        }
+                        // Format table rows with index, deviation, and full model name
+                        $rows = [];
+                        $idx = 1;
+                        foreach ($models as $modelStats) {
+                            $pct = $modelStats['total_questions'] > 0
+                                ? ($modelStats['correct_answers'] / $modelStats['total_questions']) * 100
+                                : 0.0;
+                            $pct_str = number_format($pct, 1) . '%';
+                            $deviation = $best_correct_pct - $pct;
+                            if ($deviation > 0.0001) {
+                                $deviation_str = sprintf(" (\033[1;91m-%.1f%%\033[0m)", $deviation);
+                            } else {
+                                $deviation_str = "";
+                            }
+                            $correct_col = $pct_str . $deviation_str;
+                            $rows[] = [
+                                $idx,
+                                $modelStats['model_id'],
+                                $correct_col,
                                 $modelStats['correct_answers'],
                                 $modelStats['total_questions'],
-                                number_format($modelStats['avg_response_time'], 3) . 's'
+                                number_format($modelStats['avg_response_time'], 3) . 's',
+                                $idx // Index as last column
                             ];
-                        }, $models);
+                            $idx++;
+                        }
                         
-                        // Sort by accuracy (descending)
+                        // Sort by Correct % descending
                         usort($rows, function($a, $b) {
-                            return floatval($b[1]) <=> floatval($a[1]);
+                            // $a[2] and $b[2] are correct_col, which may contain deviation string, so extract the float
+                            preg_match('/([\d.]+)/', $a[2], $ma);
+                            preg_match('/([\d.]+)/', $b[2], $mb);
+                            return floatval($mb[1] ?? 0) <=> floatval($ma[1] ?? 0);
                         });
                         
                         // Calculate column widths
                         $widths = array_map(function($col) use ($rows, $header) {
-                            $maxValueLength = max(array_map('strlen', array_column($rows, $col)));
-                            return max($maxValueLength, strlen($header[$col])) + 1;
+                            $maxValueLength = max(array_map(function($row) use ($col) {
+                                return isset($row[$col]) ? strlen(strip_ansi_escape_codes((string)$row[$col])) : 0;
+                            }, $rows));
+                            return max($maxValueLength, strlen(strip_ansi_escape_codes($header[$col]))) + 1;
                         }, array_keys($header));
                         
                         // Print table header
                         foreach ($header as $i => $title) {
-                            echo str_pad($title, $widths[$i], ' ', STR_PAD_RIGHT) . ' ';
+                            $align = (in_array($title, ['Model', 'Correct %'])) ? STR_PAD_RIGHT : STR_PAD_LEFT;
+                            echo str_pad($title, $widths[$i], ' ', $align) . ' ';
                         }
                         echo "\n";
                         echo str_repeat('-', array_sum($widths) + count($widths)) . "\n";
                         
                         // Print table rows
                         foreach ($rows as $row) {
-                            foreach ($row as $i => $value) {
-                                echo str_pad($value, $widths[$i], ' ', STR_PAD_RIGHT) . ' ';
+                            foreach ($header as $i => $title) {
+                                $value = isset($row[$i]) ? $row[$i] : '';
+                                $visibleLen = strlen(strip_ansi_escape_codes($value));
+                                $padLen = $widths[$i] + strlen($value) - $visibleLen;
+                                $align = (in_array($header[$i], ['Model', 'Correct %'])) ? STR_PAD_RIGHT : STR_PAD_LEFT;
+                                echo str_pad($value, $padLen, ' ', $align) . ' ';
                             }
                             echo "\n";
                         }
@@ -735,6 +943,22 @@ function loadBenchmarkJson() {
     
     return $results;
 }
+/* --- BEGIN: Apply endpoint, bearer, and specific-models CLI options --- */
+if ($endpoint !== null) {
+    $llmConnection->setEndpointUri($endpoint);
+}
+if ($bearer !== null) {
+    $llmConnection->setBearedToken($bearer);
+}
+$models = null;
+if (is_array($specificModels) && count($specificModels) > 0) {
+    $models = [];
+    foreach ($specificModels as $modelName) {
+        $llmConnection->setLLMmodelName($modelName); // Set for each, but will be set again in main loop
+        $models[] = ['id' => $modelName];
+    }
+}
+/* --- END: Apply endpoint, bearer, and specific-models CLI options --- */
 
 // ======================= Main Execution =======================
 /*
@@ -750,14 +974,18 @@ function loadBenchmarkJson() {
  *    - Records results
  * 6. Display final statistics
  */
+ $benchmarkJsonData = loadBenchmarkJson();
+ 
+ // Only perform model discovery if --specific-models was NOT used
+ if (!is_array($specificModels) || count($specificModels) === 0) {
 
-$benchmarkJsonData = loadBenchmarkJson();
-
-// Load a Bearer token if the file exists.
-$llmConnection->readBearerTokenFromFile('.bearer_token');
-
-$models = $llmConnection->getAvailableModels();
-sort($models);
+     $models = $llmConnection->getAvailableModels();
+     sort($models);
+ }
+ 
+ if ($bearer === null) {
+    $llmConnection->readBearerTokenFromFile('.bearer_token');
+}
 
 if (!$ignoreSpeedLimits) {
     for ($i=0; $i<count($models); $i++) {
@@ -800,15 +1028,6 @@ $modelPerformance = array_fill_keys(array_column($models, 'id'), [
 
 // Initialize benchmark state from database
 $benchmarkState = [];
-
-// usort($models, function ($a, $b) {
-//     return strcmp($a['id'], $b['id']);
-// });
-
-
-// DEBUG
-//$models = [['id' => 'qwen_QwQ-32B-Q8_0']];
-//$models = [['id' => 'za_DeepSeek-V3-0324-UD-Q2_K_XL-CTX_1024_benchmark']];
 
 /**
  * Main benchmark loop - processes each model through all questions
@@ -1029,11 +1248,9 @@ $category = '';
                     }
 
                 } catch (Exception $e) {
-                    $content = 'ERROR: ' . $e->getMessage();
-                    $reasoning = '';
-                    $isCorrect = false;
-                    $responseTime = 0;
-                    $timingData = [];
+                    // Print the error and exit immediately
+                    echo "\n\033[1;31mError during LLM query: " . $e->getMessage() . "\033[0m\n";
+                    exit(1);
                 }
 
                 $existingAttempts[] = [
@@ -1099,6 +1316,7 @@ $category = '';
                 } catch (Exception $e) {
                     $db->rollback();
                     echo "\nError saving benchmark data: " . $e->getMessage() . "\n";
+                    exit(2);
                 }
             }
         }
