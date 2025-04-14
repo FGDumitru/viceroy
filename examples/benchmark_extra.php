@@ -616,7 +616,13 @@ function prepareQuestion(&$entry) {
         $entry['shuffled_options'] = $options;
     }
 
-    $entry['full_prompt'] = "Question: {$entry['q']}\nInstruction: {$entry['instruction']}";
+    $category = $entry['category'];
+    $subcategory = $entry['subcategory'];
+
+
+    $questionString = "The following question's main category is `$category` and its subcategory is `$subcategory`. Please answer the following question in this category and subcategory context.\n\n###Question:\n{$entry['q']}\n###Instruction: {$entry['instruction']}";
+    
+    $entry['full_prompt'] = $questionString;
     
     if (isset($entry['shuffled_options'])) {
         $entry['full_prompt'] .= "\nOptions:\n" .
@@ -683,7 +689,7 @@ function validateResponse($entry, $response) {
 
 function extractCleanResponse($response) {
     preg_match_all('/<response>(.*?)<\/response>/s', $response, $matches);
-    $finalResponse = $matches[1][0] ?? '';
+    $finalResponse = end($matches[1]) ?? '';
     
     $clean = strtolower(trim($finalResponse));
     $clean = trim($clean, '.');
@@ -889,19 +895,10 @@ foreach ($models as $modelIndex => $model) {
 
         $category = $entry['category'];
         $subcategory = $entry['subcategory'];
-
-        
-        $questionString = "The following question's main category is `$category` and its subcategory is `$subcategory`. Please answer the following question in this category and subcategory context.\n\n###Question:\n$questionString";
-        
+       
         $instructionString = $entry['instruction'];
         $options = json_encode($entry['shuffled_options'] ?? null);
         $expectedAnswer = implode(' || ',$benchmarkData[$qIndex]['answers']);
-        if ($verboseOutput) {
-            echo "\nQuestion #$currentQuestion: " . $questionString . "\nInstruction: " . $instructionString . "\nExpected answer: [" . $expectedAnswer . "]\n";
-            if ('null' !== $options) {
-                echo "Options: $options\n";
-            }
-        }
 
         $existingAttempts = $benchmarkJsonData[$model['id']][$qIndex] ?? [];
         $numAttempts = count($existingAttempts);
@@ -962,11 +959,12 @@ You are a helpful AI assistant programmed for concise, factual answers. Respond 
 - Use conversational filler.
 - Stick strictly to the most direct and brief response possible.
 SYSTEM_PROMPT;
+$category = '';
                 
                 try {
                     $llmConnection->getRolesManager()
                         ->clearMessages()
-                        ->setSystemMessage('detailed thinkin on') // Fix for Nemotron models
+                        ->setSystemMessage('detailed thinking on') // Fix for Nemotron models
                         ->addMessage('user', "$systemPrompt Please answer the following question and encapsulate your final answer between <response> and </response> tags followed by <done></done> tags. If you need to reason or explain you may do that BEFORE the response tags. Inside the response tags include only the actual, direct, response without any explanations. Be as concise as possible.\nE.G. <response>Your answer to the question here without any explanations.</response><done></done>\n\nIt's very important that you respond in the mentioned format, between <response></response> xml tags.\n\n{$entry['full_prompt']}");
                         
                     $parameters = $llmConnection->getDefaultParameters();
@@ -975,6 +973,13 @@ SYSTEM_PROMPT;
                     $stopWords[] = '<done>';
                     $stopWords[] = '/<done>';
                     $llmConnection->setParameter('stop', $stopWords);
+
+                    echo PHP_EOL . str_repeat('-', 80) . PHP_EOL;
+                    print_r($entry['full_prompt']) . PHP_EOL;
+                    echo PHP_EOL . str_repeat('-', 80) . PHP_EOL;
+                    echo "\tExpected answer: " . json_encode($entry['answers']) . PHP_EOL;
+                    echo PHP_EOL . str_repeat('-', 80) . PHP_EOL;
+
 
                     $response = $llmConnection->queryPost([], function($chunk) {
                         echo $chunk;

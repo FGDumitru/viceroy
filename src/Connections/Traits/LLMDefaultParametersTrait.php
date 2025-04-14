@@ -42,7 +42,6 @@ trait LLMDefaultParametersTrait {
    */
   private $llamacpp = [
     "messages" => [],
-    "temperature" => 0.7,
     "stop" => ['<|im_end|>','<|endoftext|>','[/INST]','</s>']
   ];
 

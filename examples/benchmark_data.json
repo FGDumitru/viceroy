@@ -1224,10 +1224,9 @@
   },
   {
     "type": "direct",
-    "q": "What Drupal console command (part of Drupal Core) or common Drush command can be used to rebuild the site's cache?",
+    "q": "What Drupal 10 console command (part of Drupal Core) or common Drush command can be used to rebuild the site's cache?",
     "instruction": "Provide the command name, including 'drush' or the core script path.",
     "answers": [
-      "php core/scripts/drupal cache:rebuild",
       "drush cache:rebuild",
       "drush cr"
     ],
@@ -1283,8 +1282,7 @@
     "q": "Which Drupal core module provides the infrastructure for the Automatic Updates feature introduced and developed for Drupal?",
     "instruction": "Provide the machine name of the module.",
     "answers": [
-      "automatic_updates",
-      "package_manager"
+      "update"
     ],
     "category": "Drupal",
     "subcategory": "Automatic Updates"
@@ -1336,8 +1334,8 @@
   },
   {
     "type": "direct",
-    "q": "In a custom plugin definition using YAML discovery, how do you specify that a plugin should only be available if a specific module exists?",
-    "instruction": "Provide the YAML key used for module dependency.",
+    "q": "In a plugin's YAML definition, what is the primary key used to group various requirements, such as specific modules that must be enabled for the plugin to be available?",
+    "instruction": "Provide the top-level YAML key for declaring requirements.",
     "answers": [
       "dependencies"
     ],
@@ -1371,23 +1369,23 @@
     "category": "Drupal",
     "subcategory": "Theming"
   },
-  {
-    "type": "mcq",
-    "q": "Which Drupal core event allows you to modify the database connection options *before* the connection is established?",
-    "instruction": "Select the correct event constant or class name.",
-    "answers": [
-      "c"
-    ],
-    "options": {
-      "a": "Drupal\\Core\\Database\\Event\\ConnectionEvent",
-      "b": "Symfony\\Component\\HttpKernel\\KernelEvents::REQUEST",
-      "c": "The mechanism involves altering service definitions or using settings.php, not a direct event.",
-      "d": "Drupal\\Core\\Site\\SettingsChangeEvent",
-      "e": "Drupal\\Core\\Database\\DatabaseEvents::CONNECT"
-    },
-    "category": "Drupal",
-    "subcategory": "Events"
+{
+  "type": "mcq",
+  "q": "Regarding the modification of database connection options *before* connection in Drupal, which statement is most accurate?",
+  "instruction": "Select the most accurate statement.",
+  "answers": [
+    "c"
+  ],
+  "options": {
+    "a": "The Drupal\\Core\\Database\\Event\\ConnectionEvent is dispatched before connection to allow option changes.",
+    "b": "The KernelEvents::REQUEST event is the standard place to modify database connection options.",
+    "c": "Database connection options are typically defined via settings.php or service definition overrides, not a specific pre-connection event.",
+    "d": "The Drupal\\Core\\Site\\SettingsChangeEvent directly triggers database option modification before connection.",
+    "e": "Drupal core provides a DatabaseEvents::CONNECT constant for an event dispatched just before connection."
   },
+  "category": "Drupal",
+  "subcategory": "Architecture"
+},
   {
     "type": "direct",
     "q": "When defining a route in `*.routing.yml`, what property is used to specify the access control requirement based on a Drupal permission?",
@@ -1669,7 +1667,8 @@
     "q": "What is the name of the core JavaScript library that provides utilities for handling AJAX commands and managing Drupal behaviors?",
     "instruction": "Provide the library name (e.g., `core/library-name`).",
     "answers": [
-      "core/drupal"
+      "core/drupal",
+      "drupal"
     ],
     "category": "Drupal",
     "subcategory": "Frontend"
@@ -1939,6 +1938,7 @@
     "q": "Cum se numește figura de stil care constă în repetarea aceluiași cuvânt sau grup de cuvinte la începutul mai multor unități sintactice (propoziții, fraze) sau metrice (versuri)?",
     "instruction": "Scrieți termenul literar.",
     "answers": [
+      "Anaforă",
       "Anafora"
     ],
     "category": "Language",
@@ -1992,18 +1992,20 @@
     "category": "Language",
     "subcategory": "Romanian"
   },
-  {
-    "type": "direct",
-    "q": "Numiți cel puțin doi autori români considerați reprezentativi pentru curentul literar modernist interbelic.",
-    "instruction": "Scrieți două nume de familie, separate de virgulă.",
-    "answers": [
-      "Bacovia, Arghezi",
-      "Arghezi, Blaga",
-      "Blaga, Barbu",
-      "Barbu, Bacovia",
-      "Bacovia, Blaga",
-      "Arghezi, Barbu"
-    ],
+{
+    "type": "mcq",
+    "q": "Care dintre următoarele opțiuni conține DOAR numele a doi poeți considerați figuri centrale ale modernismului românesc din perioada interbelică?",
+    "instruction": "Selectați opțiunea corectă.",
+    "options": {
+      "a": "George Bacovia, Liviu Rebreanu",
+      "b": "Tudor Arghezi, Lucian Blaga",
+      "c": "Ion Barbu, Alexandru Macedonski",
+      "d": "Ion Minulescu, Ion Pillat",
+      "e": "Lucian Blaga, Eugen Lovinescu",
+      "f": "Mihai Eminescu, Nichita Stănescu",
+      "g": "Vasile Voiculescu, Ion Pillat"
+    },
+    "answers": ["b"],
     "category": "Language",
     "subcategory": "Romanian"
   },
@@ -2028,7 +2030,7 @@
     "q": "Identificați cazul substantivului \"eroilor\" în sintagma \"monumentul eroilor necunoscuți\".",
     "instruction": "Scrieți numele cazului.",
     "answers": [
-      "Genitiv"
+      "*Genitiv*"
     ],
     "category": "Language",
     "subcategory": "Romanian"
@@ -2112,7 +2114,7 @@
     "q": "Cărui autor și cărei opere îi aparține replica celebră: \"Curat murdar!\"?",
     "instruction": "Scrieți autorul și titlul operei (nume familie, titlu).",
     "answers": [
-      "Caragiale, O scrisoare pierdută"
+      "*Caragiale*, *O scrisoare pierdută*"
     ],
     "category": "Language",
     "subcategory": "Romanian"
@@ -2252,7 +2254,7 @@
   },
   {
     "type": "direct",
-    "q": "Care este forma de superlativ absolut a adjectivului \"mic\"?",
+    "q": "Adjectivul 'mic' poate forma superlativul absolut în mai multe moduri (ex: analitic cu 'foarte', prin diminutive ca 'micuț', lexical cu 'minuscul'). Dați un exemplu de formă de superlativ absolut pentru 'mic'.",
     "instruction": "Scrieți forma (una din variantele posibile).",
     "answers": [
       "foarte mic",
@@ -2339,7 +2341,7 @@
     "q": "Numiți opera și autorul asociate cu personajul Ștefan Gheorghidiu.",
     "instruction": "Scrieți autorul și titlul operei (nume familie, titlu).",
     "answers": [
-      "Camil Petrescu, Ultima noapte de dragoste, întâia noapte de război"
+      "*Petrescu*Ultima noapte de dragoste, întâia noapte de război*"
     ],
     "category": "Language",
     "subcategory": "Romanian"
