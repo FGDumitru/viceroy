@@ -81,7 +81,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      */
     private string|null $bearedToken = null;
     private int $currentTokensPerSecond;
-    private array $queryStats;
+    private ?array $queryStats;
     private string $completionPath = '/v1/chat/completions';
     private string $modelsPath = '/v1/models';
     private PluginManager $pluginManager;
@@ -325,7 +325,11 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                             if ('[DONE]' === $buffer) {
                                 break;
                             }
-                            break;
+                            if (!str_starts_with($buffer, ':')) {
+                                break;
+                            } else {
+                               $buffer = '';
+                            }
                         }
                     }
 

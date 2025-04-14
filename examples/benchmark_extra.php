@@ -46,6 +46,8 @@ OPTIONS:
 --endpoint=URL                   Specify the OpenAI-compatible endpoint URL to use for benchmarking.
 --bearer=TOKEN                   Specify the bearer token for authentication with the endpoint.
 --specific-models=LIST           Comma-delimited list of exact model names to benchmark (e.g., --specific-models=model1,model2). No wildcards allowed. Bypasses model discovery.
+--sleep-seconds=N                Sleep for N seconds after each LLM queryPost (default: 0, i.e., no sleep).
+--list-models                    List all available models from the selected endpoint and exit.
 --help, -h                       Show this help message and exit
 
 SPEED LIMITS:
@@ -187,7 +189,11 @@ $bearer = null;
 $specificModels = null;
 /* --- END: CLI option enhancements --- */
 
+// Check for --list-models parameter
+$listModels = in_array('--list-models', $argv);
+
 // Parse command-line parameters
+$sleepSeconds = 0; // Default: no sleep
 foreach ($argv as $arg) {
     // Handle model filtering (--model or -m)
     if (str_starts_with($arg, '--model=') || str_starts_with($arg, '-m=')) {
@@ -246,10 +252,13 @@ foreach ($argv as $arg) {
         $specificModels = array_map('trim', explode(',', substr($arg, strlen('--specific-models='))));
     }
 
-    // DEBUG
-    //$questionCountLimit = 100;
-}
-
+        // Handle sleep-seconds option
+        elseif (str_starts_with($arg, '--sleep-seconds=')) {
+            $sleepSeconds = (int) substr($arg, strlen('--sleep-seconds='));
+        }
+        // DEBUG
+        //$questionCountLimit = 100;
+    }
 if ($resetModel) {
     $db = new SQLiteDatabase('benchmark.db');
     $pdo = $db->getPDO();
@@ -900,6 +909,39 @@ if (is_array($specificModels) && count($specificModels) > 0) {
 }
 /* --- END: Apply endpoint, bearer, and specific-models CLI options --- */
 
+// Handle --list-models: list models and exit before any benchmark logic
+if ($listModels) {
+    try {
+        if ($bearer === null) {
+            $llmConnection->readBearerTokenFromFile('.bearer_token');
+        }
+        $models = $llmConnection->getAvailableModels();
+        
+        sort($models);
+
+        if (empty($models)) {
+            echo "\033[1;31mNo models found at the specified endpoint.\033[0m\n";
+            exit(1);
+        }
+        echo "\033[1mAvailable models at endpoint: " . ($endpoint ?? '[default]') . "\033[0m\n";
+        echo str_repeat('-', 60) . "\n";
+        foreach ($models as $model) {
+            // Support both ['id'=>...] and string model names
+            if (is_array($model) && isset($model['id'])) {
+                echo " - " . $model['id'] . "\n";
+            } else {
+                echo " - " . (string)$model . "\n";
+            }
+        }
+        echo str_repeat('-', 60) . "\n";
+        echo "Total models: " . count($models) . "\n";
+        exit(0);
+    } catch (Throwable $e) {
+        echo "\033[1;31mError retrieving models: " . $e->getMessage() . "\033[0m\n";
+        exit(2);
+    }
+}
+
 // ======================= Main Execution =======================
 /*
  * Benchmark Execution Flow:
@@ -934,7 +976,11 @@ if (!$ignoreSpeedLimits) {
         if (isset($stats['avg_prompt_eval_per_second'])) {
             $modelPromptPerSecond = round($stats['avg_prompt_eval_per_second'], 2);
             $modelTokensPerSecond = round($stats['avg_tokens_per_second'], 2);
-            
+
+            if ($modelPromptPerSecond == 0) {
+                $modelPromptPerSecond = PHP_INT_MAX;
+            }
+
             if ($modelPromptPerSecond < $minPromptSpeed || $modelTokensPerSecond < $minTokenGeneration) {
                 echo "\033[34;40m\nSlow model skipped: " . $models[$i]['id'] . " (Speeds - prompt eval: $modelPromptPerSecond/s | tokens per second: $modelTokensPerSecond/s)\033[0m\n";
                 unset($models[$i]);
@@ -1144,6 +1190,12 @@ $category = '';
                         echo $chunk;
                     });
 
+                    // Sleep for the specified number of seconds, if requested
+                    if ($sleepSeconds > 0) {
+                        echo "\nSleeping $sleepSeconds seconds before the next request...\n";
+                        sleep($sleepSeconds);
+                    }
+
                     if (FALSE === $response) {
                         $content = 'Guzzle timeout ERROR: ';
                         $reasoning = '';
@@ -1164,15 +1216,17 @@ $category = '';
                         $promptSpeed = 0;
                         $genSpeed = 0;
                         
-                        $promptSpeed = $timingData['prompt_per_second'];
-                      
-                        $genSpeed = $timingData['predicted_per_second'];
-                        
+
                         
                         $reasoning = $llmConnection->getThinkContent();
                         $isCorrect = validateResponse($entry, $content);
                         $responseTime = $llmConnection->getLastQueryMicrotime();
-                        
+
+                        $promptSpeed = $timingData['prompt_per_second'] ?? 999;
+
+                        $genSpeed = $timingData['predicted_per_second'] ?? round((strlen($reasoning) + strlen($content) / $responseTime), 2);
+
+
                         $status = $isCorrect ? 'Correct! 👍' : 'INCORRECT! 🚫';
                         echo "\n\t### $status \n";
 
@@ -1221,7 +1275,7 @@ $category = '';
                             $timingData['prompt_ms'] ? $timingData['prompt_ms'] / 1000 : null,
                             $timingData['predicted_n'] ?? null,
                             $timingData['predicted_ms'] ? $timingData['predicted_ms'] / 1000 : null,
-                            $timingData['predicted_per_second'] ?? null,
+                            $timingData['predicted_per_second'] ?? $genSpeed ?? null,
                             $questionString,
                             $options,
                             $expectedAnswer,
