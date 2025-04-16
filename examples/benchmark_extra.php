@@ -1,3 +1,4 @@
+#!/usr/bin/php
 <?php
 
 require "SQLiteDatabase.php";
@@ -21,7 +22,9 @@ KEY FEATURES:
 - Error Handling: Gracefully manages API timeouts and exceptions
 
 USAGE:
-php benchmark_extra.php [options]
+    php benchmark_extra.php [options]
+or
+    ./benchmark_extra.php [options] (make sure the file is marked as an executable via chmod +x benchmark_extra.php)
 
 OPTIONS:
 --model=pattern, -m=pattern      Filter models using shell-style wildcards (e.g. "*-13b")
@@ -38,7 +41,7 @@ OPTIONS:
 --exclude-subcategories, -e      Show category-level stats only (must be used with -d)
 --qcnt=N, -q=N                   Limit benchmark to first N questions (default: all)
 --ignore-speed-limits, -isl      Skip speed limit validation (see below)
---max-context=N, -mc=N           Maximum output tokens per response (default:8192)
+--max-context=N, -mc=N           Maximum output tokens per response (default:4096)
 --min-prompt-speed=N, -ps=N      Minimum tokens/sec for prompt processing (default:3)
 --min-token-speed=N, -ts=N       Minimum tokens/sec for generation (default:3)
 --min-eval-attempts=N, -ea=N     Minimum attempts before speed evaluation (default:1)
@@ -104,8 +107,10 @@ require_once '../vendor/autoload.php';
 
 use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
+use function PHPUnit\Framework\isNull;
+
 // Configurable limits
-$maxOutputContext = 8192;  // Maximum number of tokens per response
+$maxOutputContext = 4096;  // Maximum number of tokens per response
 
 // Speed monitoring thresholds (configurable via command line)
 $minPromptSpeed = 3;    // Minimum tokens/sec for prompt processing
@@ -419,7 +424,7 @@ function displayModelStats(SQLiteDatabase $db, bool $showDetails = false, bool $
         WHERE
             question_id NOT IN (" . implode(',', array_fill(0, count($vettedQuestions), '?')) . ")
         GROUP BY
-            question_id, actual_question
+            question_id
         HAVING
             SUM(correct) = 0
         ORDER BY
@@ -777,7 +782,7 @@ function prepareQuestion(&$entry) {
     $subcategory = $entry['subcategory'];
 
 
-    $questionString = "The following question's main category is `$category` and its subcategory is `$subcategory`. Please answer the following question in this category and subcategory context.\n\n###Question:\n{$entry['q']}\n###Instruction: {$entry['instruction']}";
+    $questionString = "The following question's main category is `$category` and its subcategory is `$subcategory`. Please answer the following question in this category and subcategory context.\n\n### Question:\n{$entry['q']}\n### Instruction:\n{$entry['instruction']}";
     
     $entry['full_prompt'] = $questionString;
     
@@ -1030,8 +1035,15 @@ $benchmarkState = [];
  *    - Updates progress display
  * 5. Handles timeouts and errors
  */
+
+$lastModelId = NULL;
+
 foreach ($models as $modelIndex => $model) {
+    $hasLastModelAnsweredQuestions = FALSE;
+
     $modelId = $model['id'];
+
+
     
     // Initialize fresh state for each model
     $modelResults = [];
@@ -1157,20 +1169,24 @@ foreach ($models as $modelIndex => $model) {
 
 
                 $systemPrompt = <<<SYSTEM_PROMPT
-You are a helpful AI assistant programmed for concise, factual answers. Respond to questions with the minimum information required for a correct and direct answer. Do not:
-- Provide context or background unless specifically requested.
-- Offer opinions, speculations, or deep analysis.
-- Elaborate beyond the core answer.
-- Use conversational filler.
-- Stick strictly to the most direct and brief response possible.
+You are a helpful AI assistant.
 SYSTEM_PROMPT;
-$category = '';
+
+
+                $category = '';
+
+                var_dump($lastModelId);
+                var_dump($hasLastModelAnsweredQuestions);
+                if (!isNull($lastModelId) && $hasLastModelAnsweredQuestions) {
+                    echo "\nChanged model from [$lastModelId] to [$modelId]. Sleeping for 30 seconds.\n";
+                    sleep(30);
+                }
                 
                 try {
                     $llmConnection->getRolesManager()
                         ->clearMessages()
-                        ->setSystemMessage('detailed thinking on') // Fix for Nemotron models
-                        ->addMessage('user', "$systemPrompt Please answer the following question and encapsulate your final answer between <response> and </response> tags followed by <done></done> tags. If you need to reason or explain you may do that BEFORE the response tags. Inside the response tags include only the actual, direct, response without any explanations. Be as concise as possible.\nE.G. <response>Your answer to the question here without any explanations.</response><done></done>\n\nIt's very important that you respond in the mentioned format, between <response></response> xml tags.\n\n{$entry['full_prompt']}");
+                        ->setSystemMessage($systemPrompt) // Fix for Nemotron models
+                        ->addMessage('user', "Please answer the following question and encapsulate your final answer between <response> and </response> tags followed by <done></done> tags. If you need to reason or explain you may do that BEFORE the response tags. Inside the response tags include only the actual, direct, response without any explanations. Be as concise as possible.\nE.G. <response>Your answer to the question here without any explanations.</response><done></done>\n\nIt's very important that you respond in the mentioned format, between <response></response> xml tags.\n\n{$entry['full_prompt']}");
                         
                     $parameters = $llmConnection->getDefaultParameters();
                     $llmConnection->setParameter('n_predict', $maxOutputContext);
@@ -1203,7 +1219,10 @@ $category = '';
                         $responseTime = 0;
                         $verboseResponse = '';
                         $timingData = [];
+                        echo "\n\033[1;31mError during LLM query: Guzzle TIMEOUT!\033[0m\n";
+                        exit(1);
                     } else {
+                        $hasLastModelAnsweredQuestions = TRUE;
                         $content = trim($response->getLlmResponse());
                         $rawContent = json_decode($llmConnection->getResponse()->getRawContent(), TRUE);
                         $verboseResponse = $rawContent['__verbose'] ?? [];
@@ -1224,7 +1243,7 @@ $category = '';
 
                         $promptSpeed = $timingData['prompt_per_second'] ?? 999;
 
-                        $genSpeed = $timingData['predicted_per_second'] ?? round((strlen($reasoning) + strlen($content) / $responseTime), 2);
+                        $genSpeed = $timingData['predicted_per_second'] ?? 999;
 
 
                         $status = $isCorrect ? 'Correct! 👍' : 'INCORRECT! 🚫';
@@ -1272,9 +1291,9 @@ $category = '';
                             $currentQuestion,
                             json_encode($attempt['verbose']),
                             $timingData['prompt_n'] ?? null,
-                            $timingData['prompt_ms'] ? $timingData['prompt_ms'] / 1000 : null,
+                            $timingData['prompt_ms']  ?? 1 ? $timingData['prompt_ms'] ?? 1000 / 1000 : null,
                             $timingData['predicted_n'] ?? null,
-                            $timingData['predicted_ms'] ? $timingData['predicted_ms'] / 1000 : null,
+                            $timingData['predicted_ms']  ?? 1 ? $timingData['predicted_ms'] ?? 1000 / 1000 : null,
                             $timingData['predicted_per_second'] ?? $genSpeed ?? null,
                             $questionString,
                             $options,
@@ -1315,6 +1334,9 @@ $category = '';
             }
         }
     }
+    $lastModelId = $modelId;
+    echo "\..end of model...sleep 10s\n";
+    sleep(10);
 }
 
 // Display final stats if any models were processed

@@ -2315,7 +2315,7 @@
     "q": "Care este numele alfabetului utilizat pentru scrierea limbii române înainte de adoptarea alfabetului latin în secolul al XIX-lea?",
     "instruction": "Scrieți numele.",
     "answers": [
-      "Chirilic"
+      "*Chirilic"
     ],
     "category": "Language",
     "subcategory": "Romanian"
