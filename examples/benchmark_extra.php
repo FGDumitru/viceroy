@@ -1036,14 +1036,10 @@ $benchmarkState = [];
  * 5. Handles timeouts and errors
  */
 
-$lastModelId = NULL;
 
 foreach ($models as $modelIndex => $model) {
-    $hasLastModelAnsweredQuestions = FALSE;
 
     $modelId = $model['id'];
-
-
     
     // Initialize fresh state for each model
     $modelResults = [];
@@ -1174,13 +1170,6 @@ SYSTEM_PROMPT;
 
 
                 $category = '';
-
-                var_dump($lastModelId);
-                var_dump($hasLastModelAnsweredQuestions);
-                if (!isNull($lastModelId) && $hasLastModelAnsweredQuestions) {
-                    echo "\nChanged model from [$lastModelId] to [$modelId]. Sleeping for 30 seconds.\n";
-                    sleep(30);
-                }
                 
                 try {
                     $llmConnection->getRolesManager()
@@ -1222,7 +1211,6 @@ SYSTEM_PROMPT;
                         echo "\n\033[1;31mError during LLM query: Guzzle TIMEOUT!\033[0m\n";
                         exit(1);
                     } else {
-                        $hasLastModelAnsweredQuestions = TRUE;
                         $content = trim($response->getLlmResponse());
                         $rawContent = json_decode($llmConnection->getResponse()->getRawContent(), TRUE);
                         $verboseResponse = $rawContent['__verbose'] ?? [];
@@ -1334,7 +1322,7 @@ SYSTEM_PROMPT;
             }
         }
     }
-    $lastModelId = $modelId;
+
     echo "\..end of model...sleep 10s\n";
     sleep(10);
 }
