@@ -1190,7 +1190,6 @@ SYSTEM_PROMPT;
                     echo "\tExpected answer: " . json_encode($entry['answers']) . PHP_EOL;
                     echo PHP_EOL . str_repeat('-', 80) . PHP_EOL;
 
-
                     $response = $llmConnection->queryPost([], function($chunk) {
                         echo $chunk;
                     });
@@ -1323,8 +1322,6 @@ SYSTEM_PROMPT;
         }
     }
 
-    echo "\..end of model...sleep 10s\n";
-    sleep(10);
 }
 
 // Display final stats if any models were processed
