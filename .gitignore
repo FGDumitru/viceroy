@@ -15,3 +15,4 @@ examples/benchmark.db
 .clinerules-default
 /examples/benchmark_results/
 /examples/db_backup
+examples/.bearer_token

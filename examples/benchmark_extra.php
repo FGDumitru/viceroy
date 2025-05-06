@@ -105,9 +105,9 @@ HELP;
 
 require_once '../vendor/autoload.php';
 
-use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
-
 use function PHPUnit\Framework\isNull;
+
+use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
 // Configurable limits
 $maxOutputContext = 4096;  // Maximum number of tokens per response
@@ -1171,11 +1171,18 @@ SYSTEM_PROMPT;
 
                 $category = '';
                 
+                $prefix = '';
+
+                // Adaptation for Qwen3 thinking models.
+                if (str_contains($modelId, 'NOTHINK')) {
+                    $prefix = '/no_think ';
+                }
+
                 try {
                     $llmConnection->getRolesManager()
                         ->clearMessages()
                         ->setSystemMessage($systemPrompt) // Fix for Nemotron models
-                        ->addMessage('user', "Please answer the following question and encapsulate your final answer between <response> and </response> tags followed by <done></done> tags. If you need to reason or explain you may do that BEFORE the response tags. Inside the response tags include only the actual, direct, response without any explanations. Be as concise as possible.\nE.G. <response>Your answer to the question here without any explanations.</response><done></done>\n\nIt's very important that you respond in the mentioned format, between <response></response> xml tags.\n\n{$entry['full_prompt']}");
+                        ->addMessage('user', $prefix . "Please answer the following question and encapsulate your final answer between <response> and </response> tags followed by <done></done> tags. If you need to reason or explain you may do that BEFORE the response tags. Inside the response tags include only the actual, direct, response without any explanations. Be as concise as possible.\nE.G. <response>Your answer to the question here without any explanations.</response><done></done>\n\nIt's very important that you respond in the mentioned format, between <response></response> xml tags.\n\n{$entry['full_prompt']}");
                         
                     $parameters = $llmConnection->getDefaultParameters();
                     $llmConnection->setParameter('n_predict', $maxOutputContext);
