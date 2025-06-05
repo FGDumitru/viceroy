@@ -42,14 +42,14 @@ use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
 $llmConnection = new OpenAICompatibleEndpointConnection();
 
-// Timeout usage example, wait 5 minutes before timing out.
-$llmConnection->setGuzzleConnectionTimeout(PHP_INT_MAX);
+// Timeout usage example, wait 10 minutes (600 seconds) before timing out.
+$llmConnection->setConnectionTimeout(600);
 
-
-
-
-$models = $llmConnection->getAvailableModels();
-var_dump($models);
+try {
+    $models = $llmConnection->getAvailableModels();
+} catch (Exception $e) {
+    throw new Exception('Unable to get models list: ' . $e->getMessage());
+}
 
 $benchmarkData = [
     // === Knowledge Base (20 questions) ===
@@ -184,27 +184,20 @@ $benchmarkData = [
     ['q' => 'Russian present tense of "to write" (first person). Transliterated.', 'a' => 'pišu'],
 ];
 
-
-sort($models);
-
-// For debugging/testing specific models
-$models = ['qwen_QwQ-32B-Q8_0']; // Override model list if needed
-
-
 // Process each available model
 foreach ($models as $model) {
-    $m = strtolower($model);
+    $modelId = $model['id'];
 
     // Skip DeepSeek models to optimize testing time
-    if (str_contains($m,'deepseek')) {
-        echo "\n\t ** SKIPPING $model **\n";
+    if (str_contains(strtolower($modelId),'deepseek')) {
+        echo "\n\t ** SKIPPING $modelId **\n";
         continue;
     }
 
-    echo "\n\t =================== $model =================== \n";
+    echo "\n\t =================== $modelId =================== \n";
 
     // Configure connection for current model
-    $llmConnection->setLLMmodelName($model);
+    $llmConnection->setLLMmodelName($modelId);
     
     // Initialize counters for correct/incorrect responses
     $goodResponses = $badResponses = 0;
@@ -249,7 +242,7 @@ foreach ($models as $model) {
     }
 
     $totalResponses = count($benchmarkData);
-    echo "\n *** $model Summary: 👍 $goodResponses/$totalResponses \t 🚫 $badResponses/$totalResponses \n";
+    echo "\n *** $modelId Summary: 👍 $goodResponses/$totalResponses \t 🚫 $badResponses/$totalResponses \n";
 
     echo "\n";
 

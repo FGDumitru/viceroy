@@ -23,7 +23,7 @@ use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
 // Initialize connection with 5 minute timeout
 $llmConnection = new OpenAICompatibleEndpointConnection();
-$llmConnection->setGuzzleConnectionTimeout(300); // 5 minute timeout for API calls
+$llmConnection->setConnectionTimeout(300); // 5 minute timeout for API calls
 
 
 // Configure conversation context with system message

@@ -30,13 +30,22 @@ try {
     echo PHP_EOL . str_repeat('-', 16) . " Displaying the response in real-time. ";
     echo PHP_EOL . str_repeat('-', 84) . PHP_EOL;
 
+    $count = 0;
     // Execute streaming query with callback for chunk processing
     $response = $connection->queryPost(
         'What is the result of 9 ^ 3? Reason about it. Adter you finish, output the following character: #',
-        function ($chunk) use (&$buffered) {
+        function ($chunk) use (&$buffered, &$count) {
             // Output each chunk as it arrives
             echo $chunk; // Output tokens as they arrive
             $buffered .= $chunk; // Accumulate in buffer
+            $count++;
+
+            // Test streaming stop functionality.
+            if ($count > 10000) {
+                return FALSE; // We want at most 1000 chunks
+            }
+
+            return true;
         }
     );
 

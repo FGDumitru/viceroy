@@ -6,9 +6,13 @@
 .vscode/
 examples/benchmark_*.json
 examples/benchmark_stats.csv
+examples/benchmark.db
 .roomodes
 .rooignore
 /.roo/
 /memory-bank/
 /default-mode/
 .clinerules-default
+/examples/benchmark_results/
+/examples/db_backup
+examples/.bearer_token

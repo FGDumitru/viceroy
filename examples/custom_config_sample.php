@@ -17,6 +17,8 @@ $llm = new OpenAICompatibleEndpointConnection(
     )
 );
 
+// Set timeout to 5 minutes, allow the model to cold load.
+$llm->setConnectionTimeout(300);
 
 try {
     echo $llm->query('Enumerate rainbow colors.') . PHP_EOL;

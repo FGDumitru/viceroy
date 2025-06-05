@@ -171,7 +171,7 @@ class Response
             }
 
             // Extract think tags
-            preg_match_all('/<tool_call>(.*?)<\/think>/s', $content, $matches);
+            preg_match_all('/<think>(.*?)<\/think>/s', $content, $matches);
             $this->thinkContent = implode("\n", $matches[1] ?? []);
 
             // Remove think tags from final output
