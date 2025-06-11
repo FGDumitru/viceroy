@@ -312,14 +312,23 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                             } else {
                                 $this->setCurrentTokensPerSecond($numberOfTokensReceived);
                             }
-                            $streamResult = call_user_func($streamCallback, $decoded['choices'][0]['delta']['content'], $this->getCurrentTokensPerSecond());
+
+                            if (!isset($decoded['choices'][0]['delta']['content'])) {
+                                $streamResult = NULL;
+                            } else {
+                                 $streamResult = call_user_func($streamCallback, $decoded['choices'][0]['delta']['content'], $this->getCurrentTokensPerSecond());
+                            }
+                            
 
                             if (FALSE === $streamResult) {
                                 // If we receive a FALSE return value from the callback assume we want to break the streaming.
                                 break;
                             }
 
-                            $streamedData .= $decoded['choices'][0]['delta']['content'];
+                            if (isset($decoded['choices'][0]['delta']['content'])) {
+                                $streamedData .= $decoded['choices'][0]['delta']['content'];
+                            }
+
                             $buffer = '';
                         } else {
                             if ('[DONE]' === $buffer) {

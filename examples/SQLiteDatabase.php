@@ -73,6 +73,10 @@ class SQLiteDatabase {
                 avg_predicted_tokens REAL DEFAULT 0,
                 last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+
+            CREATE TABLE IF NOT EXISTS valid_questions (
+	            qid	TEXT
+            )
         ');
     }
 

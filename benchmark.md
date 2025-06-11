@@ -42,31 +42,36 @@
 
 ## 3. Key Features and Capabilities
 
-- **Model Filtering:** 
+- **Model Filtering:**
   - Include/exclude models using shell-style wildcards (`--model`, `--ignore`).
   - Explicit model lists via `--specific-models`.
-- **Multi-Attempt Validation:** 
+  - Allows benchmarking of specific models or groups of models based on patterns.
+- **Multi-Attempt Validation:**
   - Multiple response attempts per question (`--total-required-answers`, `--required-correct-answers`).
-  - Tracks correctness across attempts.
-- **Speed Limit Enforcement:** 
+  - Tracks correctness across attempts, providing a more robust evaluation.
+- **Speed Limit Enforcement:**
   - Enforces minimum prompt and generation speeds (`--min-prompt-speed`, `--min-token-speed`).
-  - Option to override with `--ignore-speed-limits`.
-- **Detailed Metrics:** 
+  - Option to override with `--ignore-speed-limits`, allowing flexibility in benchmarking.
+- **Detailed Metrics:**
   - Captures timing data (prompt time, generation time), token counts, and correctness for each attempt.
-- **Flexible Output:** 
+  - Provides comprehensive insights into model performance.
+- **Flexible Output:**
   - Displays overall stats, category/subcategory breakdowns.
-  - Exports results in CSV/JSON.
-- **Persistent Data:** 
+  - Exports results in CSV/JSON formats for further analysis.
+- **Persistent Data:**
   - Uses a local SQLite database for storing benchmark runs and statistics.
-  - Supports resetting data globally or per model.
-- **Progress Tracking:** 
-  - Visual progress bars and ETA estimates during execution.
-- **Question Preparation:** 
+  - Supports resetting data globally or per model, ensuring data management flexibility.
+- **Progress Tracking:**
+  - Visual progress bars and ETA estimates during execution, enhancing user experience.
+- **Question Preparation:**
   - Handles MCQ shuffling, prompt formatting, and response validation (including XML tag extraction).
-- **Stats Display:** 
+  - Ensures consistent and fair evaluation of models.
+- **Stats Display:**
   - Multiple mutually exclusive stats modes (`--stats`, `--astats`, `--cstats`), with detailed tables and category breakdowns.
-- **Error Handling:** 
-  - Gracefully manages API errors, timeouts, and database issues.
+  - Allows users to choose the level of detail in statistical reporting.
+- **Error Handling:**
+  - Gracefully manages API errors, timeouts, and database issues, ensuring reliability.
+  - Includes robust error handling mechanisms for API interactions and data storage.
 
 ---
 
@@ -89,23 +94,28 @@ php benchmark_extra.php [options]
 | `--reset-model=name` | `-rm=name` | Clear data for specific model only |
 | `--total-required-answers=N` | `-a=N` | Number of attempts per question (default: 1, range: 1-10) |
 | `--required-correct-answers=N` | `-c=N` | Minimum correct answers required (default: 1) |
-| `--show-stats` | | Display aggregated model statistics table and exit |
+| `--stats` | | Display aggregated model statistics table and exit |
+| `--astats` | | Show all stats parsed per category and subcategory, then exit |
+| `--cstats` | | Show stats per main category only, then exit |
 | `--details` | `-d` | Show detailed performance breakdown by category/subcategory |
 | `--exclude-subcategories` | `-e` | Show category-level stats only (must be used with `-d`) |
 | `--qcnt=N` | `-q=N` | Limit benchmark to first N questions (default: all) |
 | `--ignore-speed-limits` | `-isl` | Skip token generation speed validation |
-| `--max-context=N` | `-mc=N` | Maximum output tokens per response (default: 8192) |
+| `--max-context=N` | `-mc=N` | Maximum output tokens per response (default: 4096) |
 | `--min-prompt-speed=N` | `-ps=N` | Minimum tokens/sec for prompt processing (default: 3) |
 | `--min-token-speed=N` | `-ts=N` | Minimum tokens/sec for generation (default: 3) |
 | `--min-eval-attempts=N` | `-ea=N` | Minimum attempts before speed evaluation (default: 1) |
 | `--verbose` | `-v` | Show detailed question/response information |
-| `--list-models` | | List all available models from the selected endpoint (or default if none specified) and exit. Can be combined with `--endpoint` and `--bearer` to target a specific endpoint and authenticate. The script exits immediately after listing models and does not run benchmarks or other logic. If authentication fails or the endpoint is unreachable, an error is displayed. |
+| `--endpoint=URL` | | Specify the OpenAI-compatible endpoint URL to use for benchmarking |
+| `--bearer=TOKEN` | | Specify the bearer token for authentication with the endpoint |
+| `--sleep-seconds=N` | | Sleep for N seconds after each LLM query (default: 0, i.e., no sleep) |
+| `--list-models` | | List all available models from the selected endpoint and exit |
+| `--help` | `-h` | Show help message and exit |
+
 
 **About `--list-models`:**
 
 The `--list-models` option allows you to quickly list all available models from the selected endpoint (or the default endpoint if none is specified) and then exit. This is useful for discovering which models are accessible for benchmarking. You can combine `--list-models` with `--endpoint` and `--bearer` to target a specific endpoint and provide authentication. If authentication fails or the endpoint is unreachable, an error message will be displayed. No benchmarks or other script logic will be run when this option is used; the script exits immediately after listing models.
-
-| `--help` | `-h` | Show help message and exit |
 
 ---
 
@@ -150,14 +160,16 @@ flowchart TD
 ## 7. Statistics, Output, and Reporting
 
 - **Stats Modes:**
-  - `--show-stats`: Aggregated model statistics.
-  - `--details`: Category/subcategory breakdowns.
-  - `--exclude-subcategories`: Category-level only.
+  - `--stats`: Aggregated model statistics.
+  - `--astats`: All stats parsed per category and subcategory.
+  - `--cstats`: Stats per main category only.
+  - `--details`: Category/subcategory breakdowns (can be used with `--exclude-subcategories`).
 - **Output Formats:**
   - Human-readable tables (console).
-  - CSV and JSON export for further analysis.
+  - CSV and JSON export for further analysis (e.g., redirecting output to a file).
 - **Metrics Captured:**
   - Accuracy, timing (prompt/gen), token counts, per-category/subcategory performance.
+  - Detailed breakdowns of model performance across different categories and subcategories.
 
 ---
 
@@ -175,18 +187,31 @@ flowchart TD
   ```sh
   php benchmark_extra.php --specific-models=modelA,modelB
   ```
-- **Show statistics from previous runs:**
+- **Show aggregated statistics from previous runs:**
   ```sh
-  php benchmark_extra.php --show-stats
+  php benchmark_extra.php --stats
+  ```
+- **Show detailed statistics (all categories and subcategories):**
+  ```sh
+  php benchmark_extra.php --astats
+  ```
+- **Show statistics per main category only:**
+  ```sh
+  php benchmark_extra.php --cstats
   ```
 - **Benchmark first 10 questions, ignoring speed limits:**
   ```sh
   php benchmark_extra.php --qcnt=10 --ignore-speed-limits
   ```
 - **Export results to CSV:**
-```sh
-php benchmark_extra.php --show-stats > results.csv
-```
+  ```sh
+  php benchmark_extra.php --stats > results.csv
+  ```
+- **List all available models (optionally with endpoint and bearer):**
+  ```sh
+  php benchmark_extra.php --list-models
+  php benchmark_extra.php --list-models --endpoint=https://api.example.com/v1 --bearer=YOUR_TOKEN
+  ```
 
 - **List all available models (optionally with endpoint and bearer):**
 ```sh
