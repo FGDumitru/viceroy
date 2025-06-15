@@ -16,3 +16,6 @@ examples/benchmark.db
 /examples/benchmark_results/
 /examples/db_backup
 examples/.bearer_token
+examples/build
+examples/dist
+examples/.bearer_token

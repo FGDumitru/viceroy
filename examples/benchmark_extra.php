@@ -110,11 +110,11 @@ use function PHPUnit\Framework\isNull;
 use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
 // Configurable limits
-$maxOutputContext = 4096;  // Maximum number of tokens per response
+$maxOutputContext = 16384;  // Maximum number of tokens per response
 
 // Speed monitoring thresholds (configurable via command line)
-$minPromptSpeed = 3;    // Minimum tokens/sec for prompt processing
-$minTokenGeneration = 3; // Minimum tokens/sec for generation
+$minPromptSpeed = 0;    // Minimum tokens/sec for prompt processing
+$minTokenGeneration = 0; // Minimum tokens/sec for generation
 $minAnswersForEvaluation = 1; // Minimum attempts before speed evaluation
 
 
@@ -127,6 +127,17 @@ $llmConnection = new OpenAICompatibleEndpointConnection();
 $llmConnection->setConnectionTimeout(3600 * 4); // 4h timeout for a single response.
 
 $results = [];
+
+
+$useHardCodedDebugParameters = FALSE;
+
+if ($useHardCodedDebugParameters) {
+    $additionalParams = '--endpoint=https://openrouter.ai/api --specific-models=qwen/qwen3-235b-a22b-04-28:free --bearer=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';
+    $ex = explode(' ', $additionalParams);
+    foreach ($ex as $item) {
+        $argv[] = $item;
+    }
+}
 
 $resetBenchmark = in_array('--reset', $argv);
 $resetModel = null;
@@ -185,6 +196,10 @@ $verboseOutput = in_array('--verbose', $argv) || in_array('-v', $argv);
 //$showStats = TRUE;
 
 $ignoreSpeedLimits = in_array('--ignore-speed-limits', $argv) || in_array('-isl', $argv);
+
+if ($ignoreSpeedLimits) {
+    echo "\n\t### Ignoring SPEED LIMITS!! ###\n";
+}
 
 $questionCountLimit = null;
 
@@ -797,33 +812,70 @@ function prepareQuestion(&$entry) {
 }
 
 /**
- * Validates LLM response against expected answers
+ * Validates LLM response against expected answers.
+ * This version robustly finds the content of the LAST <response> tag.
  */
 function validateResponse($entry, $response) {
     echo "\n\t## Expected response: " . json_encode($entry['answers']) . "\n";
-    preg_match_all('/<response>(.*?)<\/response>/s', $response, $matches);
-    $finalResponse = $matches[1][0] ?? '';
+
+    $finalResponse = '';
+
+    // 1. Find the character position of the last opening <response> tag.
+    $last_open_tag_pos = strrpos($response, '<response>');
+
+    // 2. Proceed only if an opening tag was found.
+    if ($last_open_tag_pos !== false) {
+        // 3. Get the substring that starts *after* the opening tag.
+        // strlen('<response>') is 10.
+        $content_and_onward = substr($response, $last_open_tag_pos + 10);
+
+        // 4. Find the position of the first closing tag *in that remaining part*.
+        $first_close_tag_pos = strpos($content_and_onward, '</response>');
+
+        if ($first_close_tag_pos !== false) {
+            // 5. If a closing tag exists, our content is everything before it.
+            $finalResponse = substr($content_and_onward, 0, $first_close_tag_pos);
+        } else {
+            // 6. If no closing tag is found, the rest of the string is our content.
+            $finalResponse = $content_and_onward;
+        }
+    }
+
+    if (empty($finalResponse)) {
+        $finalResponse = $response;
+    }
     
+    echo "\nFinal Response: " . trim($finalResponse) . "\n";
+
+    // The rest of your validation logic remains the same.
     $clean = strtolower(trim($finalResponse));
     $clean = trim($clean, '.');
     $clean = str_replace(' ', '', $clean);
 
     if ($entry['type'] === 'mcq') {
-        $selected = preg_split('/\s*,\s*/', $clean);
+        $selected = ($clean === '') ? [] : preg_split('/\s*,\s*/', $clean);
+
+        echo "Selected Response: ";
+        print_r($selected);
+
         $correct = array_map('strtolower', $entry['answers']);
 
         if (count($selected) !== count($correct)) {
             return false;
         }
         
-        foreach ($selected as $s) {
-            if (!in_array($s, $correct)) {
-                return false;
-            }
+        // Use array_diff to check for differences in one go.
+        // This checks if the arrays contain the same values, regardless of order.
+        if (count(array_diff($selected, $correct)) === 0 && count(array_diff($correct, $selected)) === 0) {
+             echo "\nI WILL RETURN *** TRUE *** \n";
+             return true;
         }
-        return true;
+
+        echo "\n\tRESPONSE MISMATCH \n";
+        return false;
     }
 
+    // This part remains for non-MCQ questions
     $processedAnswers = array_map(function($answer) {
         $cleaned = strtolower(trim($answer));
         $cleaned = trim($cleaned, '.');
@@ -831,8 +883,7 @@ function validateResponse($entry, $response) {
     }, $entry['answers']);
 
     foreach ($processedAnswers as $pa) {
-        $responseNumber = intval($clean);
-        if ($responseNumber == $clean) {
+        if (is_numeric($clean)) {
             if ($clean == $pa) {
                 return true;
             }
@@ -841,7 +892,7 @@ function validateResponse($entry, $response) {
                 return true;
             }
 
-            if (str_match_wildcard($clean, $pa)) {
+            if (function_exists('str_match_wildcard') && str_match_wildcard($clean, $pa)) {
                 return true;
             }
         }
@@ -1168,6 +1219,8 @@ foreach ($models as $modelIndex => $model) {
 You are a helpful AI assistant.
 SYSTEM_PROMPT;
 
+                // Empty system prompt
+                $systemPrompt = '';
 
                 $category = '';
                 
@@ -1182,13 +1235,13 @@ SYSTEM_PROMPT;
                     $llmConnection->getRolesManager()
                         ->clearMessages()
                         ->setSystemMessage($systemPrompt) // Fix for Nemotron models
-                        ->addMessage('user', $prefix . "Please answer the following question and encapsulate your final answer between <response> and </response> tags followed by <done></done> tags. If you need to reason or explain you may do that BEFORE the response tags. Inside the response tags include only the actual, direct, response without any explanations. Be as concise as possible.\nE.G. <response>Your answer to the question here without any explanations.</response><done></done>\n\nIt's very important that you respond in the mentioned format, between <response></response> xml tags.\n\n{$entry['full_prompt']}");
+                        ->addMessage('user', $prefix . "Please answer the following question and encapsulate your final answer between <response> tags. If you need to reason or explain you may do that BEFORE the response tags. Inside the response tags include only the actual, direct, response without any explanations. Be as concise as possible.\nE.G.\n<response>Your answer to the question here without any explanations.</response>\n\nIt's very important that you respond in the mentioned format, between <response></response> xml tags.\n\n{$entry['full_prompt']}\nNOTE:  For multiple options questions you don't have to worry about the options or response order, the response options or your response can be in any order - do not think about it.");
                         
                     $parameters = $llmConnection->getDefaultParameters();
                     $llmConnection->setParameter('n_predict', $maxOutputContext);
                     $stopWords = $llmConnection->getParameter("stop") ?? [];
-                    $stopWords[] = '<done>';
-                    $stopWords[] = '/<done>';
+                    // $stopWords[] = '<done>'; // THIS does not work well for models that reason and contain this into their reasoning
+                    // $stopWords[] = '/<done>'; // IDEM
                     $llmConnection->setParameter('stop', $stopWords);
 
                     echo PHP_EOL . str_repeat('-', 80) . PHP_EOL;
@@ -1197,6 +1250,8 @@ SYSTEM_PROMPT;
                     echo "\tExpected answer: " . json_encode($entry['answers']) . PHP_EOL;
                     echo PHP_EOL . str_repeat('-', 80) . PHP_EOL;
 
+                    $llmConnection->setParameter('user', 'Viceroy Library (0.1)- Benchmark example');
+                    
                     $response = $llmConnection->queryPost([], function($chunk) {
                         echo $chunk;
                     });

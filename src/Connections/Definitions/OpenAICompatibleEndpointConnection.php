@@ -257,6 +257,16 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
             $promptJson = array_merge($defaultParams, ['messages' => $this->getRolesManager()->addMessage('user', $promptJson)->getMessages()]);
         }
 
+         $promptJson['reasoning'] = [
+            'effort' => 'high',
+            'max_tokens' => 16384,
+            'exclude' => false,
+            'enabled' => true,
+         ];
+
+         $promptJson['include_reasoning'] = true;
+
+        
         $uri = $this->getEndpointUri() . $this->getCompletionPath();
 
         $guzzleRequest = [
@@ -266,6 +276,8 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
             'stream' => TRUE
         ];
 
+        // print_r($guzzleRequest);
+        
         $guzzleRequest = array_merge($guzzleRequest, $this->getGuzzleCustomOptions());
 
         if (!empty($this->bearedToken)) {
@@ -287,10 +299,15 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                 $body = $response->getBody();
                 $buffer = '';
                 $streamedData = '';
+
+                $thinkingMode = NULL;
+                $thinkingData = '';
+
                 while (!$body->eof()) {
                     $chunk = $body->read(1);
 
                     //echo $chunk;
+                    
                     $buffer .= $chunk;
 
                     if (str_ends_with($buffer, "\n\n")) {
@@ -316,7 +333,27 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                             if (!isset($decoded['choices'][0]['delta']['content'])) {
                                 $streamResult = NULL;
                             } else {
-                                 $streamResult = call_user_func($streamCallback, $decoded['choices'][0]['delta']['content'], $this->getCurrentTokensPerSecond());
+                                $toStream = $decoded['choices'][0]['delta']['content'];
+
+                                if (empty($toStream) && !empty($decoded['choices'][0]['delta']['reasoning'])) {
+                                    $toStream = $decoded['choices'][0]['delta']['reasoning'];
+
+                                    if ($thinkingMode === NULL) {
+                                        $toStream = "<think>\n$toStream";
+                                        $thinkingData = $toStream;
+                                        $thinkingMode = TRUE;
+                                    } else {
+                                        $thinkingData .= $toStream;
+                                    }
+                                }
+
+                                if ($thinkingMode === TRUE && !empty($decoded['choices'][0]['delta']['content'])) {
+                                    $toStream = "\n</think>\n$toStream";
+                                    $thinkingData .= $toStream;
+                                    $thinkingMode = FALSE;
+                                }
+
+                                 $streamResult = call_user_func($streamCallback, $toStream, $this->getCurrentTokensPerSecond());
                             }
                             
 
@@ -351,7 +388,8 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
 
                 $this->setQueryStats($decoded);
 
-                $this->response->setStreamedContent($streamedData);
+                $this->response->setStreamedContent($thinkingData . $streamedData);
+                $this->response->setContent($thinkingData . $streamedData);
             } else {
                 $response = $this->guzzleObject->post($uri, $guzzleRequest);
                 $this->queryTime = microtime(TRUE) - $timer;

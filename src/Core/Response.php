@@ -175,7 +175,7 @@ class Response
             $this->thinkContent = implode("\n", $matches[1] ?? []);
 
             // Remove think tags from final output
-            $this->processedContent = preg_replace('/<tool_call>.*?<\/think>/s', '', $content);
+            $this->processedContent = preg_replace('/<think>.*?<\/think>/s', '', $content);
         }
     }
 
@@ -202,7 +202,10 @@ class Response
      */
     public function getRawContent(): string
     {
-        return $this->wasStreamed() ? $this->getStreamedContent() : $this->getContent();
+        $result =  $this->wasStreamed() ? $this->getStreamedContent() : $this->getContent();
+
+
+        return $result;
     }
 
     /**
@@ -223,6 +226,11 @@ class Response
     public function setStreamedContent(mixed $streamedContent): void
     {
         $this->streamedContent = $streamedContent;
+    }
+
+    public function setContent(mixed $content): void
+    {
+        $this->contents = $content;
     }
 
     /**
