@@ -1,147 +1,62 @@
-# Viceroy LLM Library
+# Graph Stats
 
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Installation](#installation)
-3. [Core Components](#core-components)
-   - [Configuration Management](#configuration-management)
-   - [Connection Handling](#connection-handling)
-   - [Request/Response Handling](#requestresponse-handling)
-   - [Conversation Management](#conversation-management)
-4. [Usage Example](#usage-example)
-5. [Key Features](#key-features)
-6. [Class Relationships](#class-relationships)
-7. [Configuration Details](#configuration-details)
-8. [Advanced Features](#advanced-features)
-9. [Troubleshooting](#troubleshooting)
-10. [Example Files](#example-files)
+Graph Stats is a Go project that generates visualizations of model performance data. It connects to a SQLite database to fetch model statistics and benchmark runs, then creates various plots to analyze the data.
 
-## Introduction
-Viceroy provides a PHP framework for interacting with OpenAI-compatible LLM APIs. The library handles configuration management, API communication, conversation state, and response processing.
+## Overview
 
+The project consists of several components:
+- Configuration loading and management
+- Database connection and data fetching
+- Plot generation (bar plots, scatter plots, heatmaps)
 
-## Installation
+## Building and Running
 
-To integrate the Viceroy LLM Library into your project, you can use Composer. Run the following command in your project directory:
+1. Clone the repository:
+   ```
+   git clone https://github.com/yourusername/graph_stats.git
+   cd graph_stats
+   ```
 
-```bash
-composer require fgdumitru/viceroy
-```
+2. Build the project:
+   ```
+   go build -o graph_stats cmd/graph_stats/main.go
+   ```
 
-## Core Components
+3. Run the project:
+   ```
+   ./graph_stats
+   ```
 
-### Classes:
-1. **Configuration Classes**:
-   - **ConfigManager.php**: Manages configuration settings and provides methods for accessing configuration data.
-   - **ConfigObjects.php**: Container for configuration objects, used by other classes for configuration management.
+## Configuration
 
-2. **Connections Classes**:
-   - **OpenAICompatibleEndpointConnection.php**: Represents a connection to an OpenAI-compatible API endpoint, providing methods for interacting with the API, managing configuration, and handling API requests and responses.
-   - **SelfDynamicParametersConnection.php**: Handles dynamic function execution against OpenAI-compatible endpoints, supporting chaining and complex JSON response parsing.
-   - **TraitableConnectionAbstractClass.php**: Abstract class providing common functionality for connection classes through traits.
-   - **LLMDefaultParametersTrait.php**: Trait for setting default parameters for LLM requests.
-   - **setSystemMessageTrait.php**: Trait for setting system messages in connections.
+The project uses a JSON configuration file (default: `config.json`). The available configuration options are:
 
-3. **Core Classes**:
-   - **Request.php**: Core HTTP request handler, responsible for formatting and executing HTTP requests, managing headers and authentication, and constructing payloads for API calls.
-   - **Response.php**: Core HTTP response processor, responsible for processing raw HTTP responses, extracting think-tags, handling streamed responses, and providing cleaned, processed content.
-   - **RolesManager.php**: Manages conversation roles and messages, enforcing strict role-based message organization and conversation history tracking.
+- `dbPath`: Path to the SQLite database file
+- `outputDir`: Directory where output plots will be saved
+- `topNModelsOverall`: Number of top models to display in overall plots
+- `topNModelsPerCategory`: Number of top models to display per category
+- `numCorrectnessQuantilesForHue`: Number of quantiles for correctness hue in plots
+- `minQuestionsForCategoryPlot`: Minimum number of questions for a category to be included in plots
+- `logScaleThresholdRatio`: Threshold ratio for using log scale in plots
+- `figBaseWidth`: Base width for figures
+- `figHeightPerItemBar`: Height per item in bar plots
+- `figMinHeight`: Minimum height for figures
+- `figMaxWidthBar`: Maximum width for bar plots
+- `scatterFigWidth`: Width for scatter plots
+- `scatterFigHeight`: Height for scatter plots
+- `annotationFontSize`: Font size for annotations
+- `scatterLabelFontSize`: Font size for scatter plot labels
 
-4. **Testing Classes**:
-   - **SelfDynamicParametersConnectionTest.php**: Test class for the `SelfDynamicParametersConnection` class, ensuring its functionality is correct through unit tests.
+## Usage
 
-### Key Functionalities and Interconnections:
-- **Configuration Management**: The `ConfigManager` and `ConfigObjects` classes manage configuration settings, providing a centralized way to access and modify configuration data across the system.
-- **API Interaction**: The `OpenAICompatibleEndpointConnection` and `SelfDynamicParametersConnection` classes handle interactions with OpenAI-compatible APIs, managing API requests, responses, and dynamic function execution.
-- **Request and Response Handling**: The `Request` and `Response` classes manage HTTP requests and responses, providing a standardized interface for interacting with external APIs.
-- **Conversation Management**: The `RolesManager` class manages conversation roles and messages, ensuring strict role-based message organization and conversation history tracking.
-- **Testing**: The `SelfDynamicParametersConnectionTest` class provides unit tests for the `SelfDynamicParametersConnection` class, ensuring its functionality is correct.
+1. Ensure your SQLite database is set up with the required tables (`model_stats` and `benchmark_runs`).
+2. Configure the `config.json` file with the appropriate settings.
+3. Run the project using the command `./graph_stats`.
+4. The generated plots will be saved in the specified output directory.
 
-## Usage Example
-```php
-// Create connection. It defaults to OpenAI servers.
-$connection = new OpenAICompatibleEndpointConnection();
-$connection->setBearedToken('YOUR OPENAI API TOKEN HERE');
+## Project Structure
 
-$connection->setSystemMessage("You are a helpful assistant.")
-    ->setParameter('temperature', 0.7)
-    ->setParameter('top_p', 0.9);
-
-// Send query
-$response = $connection->query("Explain quantum physics");
-
-echo $response->getLlmResponse();
-echo "\nThink content: " . $response->getThinkContent(); // If this was a reasoning model.
-}
-```
-
-
-## Usage Example - Custom endpoint.
-```php
-// Create connection. It defaults to OpenAI servers.
-$connection = new OpenAICompatibleEndpointConnection();
-$connection->setEndpointUri('http://127.0.0.1:5000');
-
-$connection->setBearedToken('YOUR API TOKEN HERE'); // OPTIONAL
-
-$connection->setSystemMessage("You are a helpful assistant.")
-    ->setParameter('temperature', 0.7)
-    ->setParameter('top_p', 0.9);
-
-// Send query
-$response = $connection->query("Explain quantum physics");
-
-echo $response->getLlmResponse();
-echo "\nThink content: " . $response->getThinkContent(); // If this was a reasoning model.
-}
-```
-
-
-## Key Features
-- **Streaming Support**: Real-time processing of LLM responses
-- **Think-Tag Processing**: Extracts and processes `<think>` tags from responses
-- **Conversation State**: Maintains context across multiple messages
-- **Configuration**: Flexible JSON-based configuration
-
-## Class Relationships
-1. ConfigManager uses ConfigObjects for configuration storage
-2. OpenAICompatibleEndpointConnection coordinates:
-   - ConfigManager for parameters
-   - Request for request handling
-   - Response for processing outputs
-   - RolesManager for conversation state
-3. Response processes data from OpenAICompatibleEndpointConnection
-
-## Configuration Details
-Configuration is managed via JSON files. The `config.json` file is the primary configuration file. Here is an example of what the `config.json` might look like:
-
-```json
-  "apiEndpoint": "https://api.openai.com",
-  "preferredModel": "gpt-4o",
-  "bearer": "Your API key here"
-}
-```
-
-## Advanced Features
-- **Custom Parameters**: You can set custom parameters for the LLM using the `setParameter()` method.
-- **Fluent Interface**: Methods like `setParameter()` return the object itself, allowing for method chaining.
-- **Error Handling**: The library includes robust error handling for API requests and response processing.
-
-## Troubleshooting
-- **API Errors**: Ensure that your bearer token is correct and that the API URL is accessible.
-- **Configuration Issues**: Verify that your `config.json` file is correctly formatted and contains all necessary fields.
-- **Debug Mode**: Enable debug mode in the configuration to get more detailed logs and error messages.
-
-## Example Files
-The `examples` directory contains several PHP scripts demonstrating different usage scenarios:
-- `benchmark_multi.php`: Demonstrates sending multiple queries in a loop.
-- `benchmark_simple.php`: Demonstrates a simple query.
-- `chat_sample.php`: Demonstrates a basic chat interaction.
-- `config.localhost.json`: Example configuration for local development.
-- `config.openai.json`: Example configuration for OpenAI API.
-- `query_llamacpp.php`: Example using a different LLM provider.
-- `roles_llamacpp.php`: Example managing roles with a different LLM provider.
-- `self_defined_functions_poc.php`: Example of using self-defined functions.
-- `simple_query_llamacpp.php`: Simple query example with a different LLM provider.
-- `stream_realtime_example.php`: Example of streaming responses in real-time.
-
+- `cmd/graph_stats/main.go`: Entry point of the application
+- `pkg/config/`: Configuration management
+- `pkg/db/`: Database operations
+- `pkg/plots/`: Plot generation (bar, scatter, heatmap)
