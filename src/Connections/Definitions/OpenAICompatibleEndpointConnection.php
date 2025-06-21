@@ -76,6 +76,17 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      */
     private $response;
 
+
+    private $reasoningParameters = ['reasoning' => [
+            'effort' => 'high',
+            'max_tokens' => 16384,
+            'exclude' => false,
+            'enabled' => true,
+        ]
+    ];
+
+    private $includeReasoning = FALSE;
+
     /**
      * @var string $bearedToken Bearer token for authentication
      */
@@ -118,6 +129,19 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     {
         $this->bearedToken = $bearedToken;
         return $this;
+    }
+
+
+    public function setReasoningEffort(bool|int $maxTokens = 16384, string $effort = 'high') {
+        if ($maxTokens === FALSE) {
+            $this->includeReasoning = FALSE;
+            return;
+        }
+
+        $this->includeReasoning = TRUE;
+        $this->reasoningParameters['reasoning']['max_tokens'] = $maxTokens;
+        $this->reasoningParameters['reasoning']['effort'] = $$effort;
+
     }
 
     /**
@@ -256,16 +280,13 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
             $defaultParams = $this->getDefaultParameters();
             $promptJson = array_merge($defaultParams, ['messages' => $this->getRolesManager()->addMessage('user', $promptJson)->getMessages()]);
         }
+        
 
-         $promptJson['reasoning'] = [
-            'effort' => 'high',
-            'max_tokens' => 16384,
-            'exclude' => false,
-            'enabled' => true,
-         ];
+         if ($this->includeReasoning) {
+            $promptJson['include_reasoning'] = true;
 
-         $promptJson['include_reasoning'] = true;
-
+            $promptJson += $this->reasoningParameters;
+         }
         
         $uri = $this->getEndpointUri() . $this->getCompletionPath();
 
@@ -281,7 +302,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         $guzzleRequest = array_merge($guzzleRequest, $this->getGuzzleCustomOptions());
 
         if (!empty($this->bearedToken)) {
-            $guzzleRequest['headers']['Authorization'] = 'Bearer ' . $this->bearedToken;
+            $guzzleRequest['headers']['Authorization'] = 'Bearer ' . trim($this->bearedToken);
         }
 
         if (is_callable($this->guzzleParametersFormationCallback)) {

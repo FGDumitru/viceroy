@@ -52,6 +52,7 @@ OPTIONS:
 --sleep-seconds=N                Sleep for N seconds after each LLM queryPost (default: 0, i.e., no sleep).
 --list-models                    List all available models from the selected endpoint and exit.
 --help, -h                       Show this help message and exit
+--include-reasoning              Used to specify reasoning effort for cloud based models.
 
 SPEED LIMITS:
   "Speed limit" in this benchmark refers to the minimum required processing speeds for LLM models, measured in tokens per second (tokens/sec). Two types of speed are measured:
@@ -132,7 +133,7 @@ $results = [];
 $useHardCodedDebugParameters = FALSE;
 
 if ($useHardCodedDebugParameters) {
-    $additionalParams = '--endpoint=https://openrouter.ai/api --specific-models=qwen/qwen3-235b-a22b-04-28:free --bearer=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';
+    $additionalParams = '--endpoint=https://openrouter.ai/api --specific-models=moonshotai/kimi-dev-72b:free';
     $ex = explode(' ', $additionalParams);
     foreach ($ex as $item) {
         $argv[] = $item;
@@ -207,6 +208,7 @@ $questionCountLimit = null;
 $endpoint = null;
 $bearer = null;
 $specificModels = null;
+$useReasoning = null;
 /* --- END: CLI option enhancements --- */
 
 // Check for --list-models parameter
@@ -218,6 +220,10 @@ foreach ($argv as $arg) {
     // Handle model filtering (--model or -m)
     if (str_starts_with($arg, '--model=') || str_starts_with($arg, '-m=')) {
         $filterModels[] = substr($arg, strpos($arg, '=') + 1);
+    }
+
+    elseif(str_starts_with($arg,'--include-reasoning')) {
+        $useReasoning = TRUE;
     }
     // Set number of attempts per question (--total-required-answers or -a)
     elseif (str_starts_with($arg, '--total-required-answers=') || str_starts_with($arg, '-a=')) {
@@ -1243,6 +1249,10 @@ SYSTEM_PROMPT;
                     // $stopWords[] = '<done>'; // THIS does not work well for models that reason and contain this into their reasoning
                     // $stopWords[] = '/<done>'; // IDEM
                     $llmConnection->setParameter('stop', $stopWords);
+
+                    if ($useReasoning) {
+                        $llmConnection->setReasoningEffort();
+                    }
 
                     echo PHP_EOL . str_repeat('-', 80) . PHP_EOL;
                     print_r($entry['full_prompt']) . PHP_EOL;
