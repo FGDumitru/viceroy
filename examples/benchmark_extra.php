@@ -133,7 +133,7 @@ $results = [];
 $useHardCodedDebugParameters = FALSE;
 
 if ($useHardCodedDebugParameters) {
-    $additionalParams = '--endpoint=https://openrouter.ai/api --specific-models=moonshotai/kimi-dev-72b:free';
+    $additionalParams = '--endpoint=https://openrouter.ai/api --specific-models=moonshotai/kimi-vl-a3b-thinking:free';
     $ex = explode(' ', $additionalParams);
     foreach ($ex as $item) {
         $argv[] = $item;

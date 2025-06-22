@@ -327,7 +327,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                 while (!$body->eof()) {
                     $chunk = $body->read(1);
 
-                    //echo $chunk;
+                    // echo $chunk;
                     
                     $buffer .= $chunk;
 
@@ -393,6 +393,13 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                                 break;
                             }
                             if (!str_starts_with($buffer, ':')) {
+
+                                if (isset($decoded['choices'][0]['delta']['content'])) { // some openrouter models include a last content data line here
+                                    $toStream = $decoded['choices'][0]['delta']['content'];
+                                    call_user_func($streamCallback, $toStream, $this->getCurrentTokensPerSecond());
+                                    $streamedData .= $toStream;
+                                }
+
                                 break;
                             } else {
                                $buffer = '';
@@ -401,6 +408,12 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                     }
 
                 }
+
+                if (isset($decoded['error'])) {
+                    var_dump($decoded);
+                    die;
+                }
+
                 $this->queryTime = microtime(TRUE) - $timer;
                 $this->response = new Response($response);
                 $this->response->setWasStreamed();
