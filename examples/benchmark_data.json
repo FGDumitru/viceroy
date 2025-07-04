@@ -7572,7 +7572,8 @@
     "q": "What is the standard formula for calculating Gross Domestic Product (GDP) using the expenditure approach?",
     "instruction": "Use standard single-letter abbreviations for components (Consumption, Investment, Government Spending, Net Exports). Example: A+B+C+D",
     "answers": [
-      "C+I+G+(X-M)"
+      "C+I+G+(X-M)",
+      "c+i+g+nx"
     ],
     "category": "Economics",
     "subcategory": "Macroeconomics"
