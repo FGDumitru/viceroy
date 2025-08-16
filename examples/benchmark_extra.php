@@ -111,7 +111,7 @@ use function PHPUnit\Framework\isNull;
 use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
 // Configurable limits
-$maxOutputContext = 16384;  // Maximum number of tokens per response
+$maxOutputContext = 8192;  // Maximum number of tokens per response
 
 // Speed monitoring thresholds (configurable via command line)
 $minPromptSpeed = 0;    // Minimum tokens/sec for prompt processing
@@ -1234,14 +1234,14 @@ SYSTEM_PROMPT;
 
                 // Adaptation for Qwen3 thinking models.
                 if (str_contains($modelId, 'NOTHINK')) {
-                    $prefix = '/no_think ';
+                    $prefix = '/nothink ';
                 }
 
                 try {
                     $llmConnection->getRolesManager()
                         ->clearMessages()
                         ->setSystemMessage($systemPrompt) // Fix for Nemotron models
-                        ->addMessage('user', $prefix . "Please answer the following question and encapsulate your final answer between <response> tags. If you need to reason or explain you may do that BEFORE the response tags. Inside the response tags include only the actual, direct, response without any explanations. Be as concise as possible.\nE.G.\n<response>Your answer to the question here without any explanations.</response>\n\nIt's very important that you respond in the mentioned format, between <response></response> xml tags.\n\n{$entry['full_prompt']}\nNOTE:  For multiple options questions you don't have to worry about the options or response order, the response options or your response can be in any order - do not think about it.");
+                        ->addMessage('user', "Please answer the following question and encapsulate your final answer between <response> tags. If you need to reason or explain you may do that BEFORE the response tags. Inside the response tags include only the actual, direct, response without any explanations. Be as concise as possible.\nE.G.\n<response>Your answer to the question here without any explanations.</response>\n\nIt's very important that you respond in the mentioned format, between <response></response> xml tags.\n\n{$entry['full_prompt']}\nNOTE:  For multiple options questions you don't have to worry about the options or response order, the response options or your response can be in any order - do not think about it.$prefix");
                         
                     $parameters = $llmConnection->getDefaultParameters();
                     $llmConnection->setParameter('n_predict', $maxOutputContext);

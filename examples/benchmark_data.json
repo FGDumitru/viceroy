@@ -2914,7 +2914,9 @@
     "q": "Which British computer scientist is credited with inventing the World Wide Web while working at CERN in 1989?",
     "instruction": "Provide the full name.",
     "answers": [
-      "Tim Berners-Lee"
+      "Tim Berners-Lee",
+      "Timothy John Berners-Lee",
+      "Timothy Berners-Lee"
     ],
     "category": "Computer Science",
     "subcategory": "History"
@@ -5698,7 +5700,8 @@
     "instruction": "Provide the two-word name of the force.",
     "answers": [
       "Strong Force",
-      "Strong Nuclear Force"
+      "Strong Nuclear Force",
+      "Strong Nuclear"
     ],
     "category": "Science",
     "subcategory": "Physics"
