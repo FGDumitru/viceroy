@@ -25,7 +25,6 @@
 namespace Viceroy\Core;
 
 use Exception;
-use stdClass;
 
 class RolesManager {
 
@@ -107,21 +106,53 @@ class RolesManager {
    *   - System message is not first
    *   - Role sequence is invalid
    */
-  public function addMessage(string $role, string $message): static {
-    if ('system' == $role && !empty($this->roles)) {
-      throw new Exception("The system message MUST be the first message!");
+  public function addMessage(string $role, string $message, array|string $images = null): static {
+
+    if (is_string($images)) {
+        $images = [$images];
+    }
+
+    $haveImages = isset($images) && !empty($images);
+
+    if ('user' == $role && empty($this->roles)) {
+        $this->addMessage('system', 'You are a helpful, knowledgeable, and safe generative AI assistant.');
+    } elseif ('system' == $role && !empty($this->roles)) {
+        throw new Exception("System message must be the first message");
+    }
+
+    if (empty($this->roles) && 'system' !== $role) {
+        throw new Exception("The first message MUST be a system message");
+    }
+
+    if (isset($images) && 'user' !== $role) {
+        throw new Exception("Only user messages can contain images");
     }
 
     // Check for invalid role sequence
     $lastRole = end($this->roles)['role'] ?? null;
     if ($lastRole === $role && $role !== 'system') {
-      throw new Exception("Cannot add consecutive $role messages");
+        throw new Exception("Cannot add consecutive $role messages");
     }
 
-    $this->roles[] = ['role' => $role, 'content' => $message];
+    if (!$haveImages) {
+        $this->roles[] = ['role' => $role, 'content' => $message];
+    } else {
+        $content = [['type' => 'text', 'text' => $message]];
+        
+        foreach ($images as $image) {
+            $content[] = [
+                'type' => 'image_url',
+                'image_url' => [
+                    'url' => $this->convertImageToBase64($image)
+                ]
+            ];
+        }
+
+        $this->roles[] = ['role' => $role, 'content' => $content];
+    }
 
     return $this;
-  }
+}
 
   /**
    * Gets all messages
@@ -177,5 +208,24 @@ class RolesManager {
     $this->roles = [];
     return $this;
   }
+
+  // Make sure your convertImageToBase64 function returns the proper format:
+private function convertImageToBase64(string $imagePath): string {
+    // Read image file and convert to base64
+    $imageData = base64_encode(file_get_contents($imagePath));
+    
+    // Determine MIME type (simplified)
+    $extension = strtolower(pathinfo($imagePath, PATHINFO_EXTENSION));
+    $mimeTypes = [
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        'gif' => 'image/gif',
+    ];
+    
+    $mimeType = $mimeTypes[$extension] ?? 'image/jpeg';
+    
+    return "data:$mimeType;base64,$imageData";
+}
 
 }

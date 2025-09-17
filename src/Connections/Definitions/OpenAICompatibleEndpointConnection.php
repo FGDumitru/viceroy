@@ -272,8 +272,15 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      * @return Response The response object
      * @throws Exception
      */
-    public function queryPost(string|array $promptJson = [], ?callable $streamCallback = null): Response
+    public function queryPost(string|array|callable $promptJson = [], ?callable $streamCallback = null): Response
     {
+
+        if (is_callable($promptJson)) {
+            $streamCallback = $promptJson;
+            $promptJson = [];
+        }
+        
+
         if (empty($promptJson)) {
             $promptJson = $this->getDefaultParameters();
         } elseif (is_string($promptJson)) {
