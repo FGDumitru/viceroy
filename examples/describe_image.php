@@ -32,7 +32,7 @@ echo PHP_EOL . 'Query time: ' . $llmConnection->getLastQueryMicrotime() . ' ms.'
 $rolesManager->clearMessages(); // Clear messages for next query
 $rolesManager->addMessage(
   'user',
-  'Please extract the available text from the attached image using OCR. Then, summarize the extracted text.',
+  'Please extract all the available text from the attached image using OCR. Then, summarize the extracted text.',
   __DIR__ . '/images/ocr.png'
 );
 // Execute the query and get response.
