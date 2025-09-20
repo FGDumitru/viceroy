@@ -6,19 +6,27 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 
 /**
- * A simple MCP server example that demonstrates basic functionality
+ * A simple MCP server example that implements the MCP 2025-06-18 specification
  * with built-in web server capabilities
  */
 
 // CLI arguments parsing
 $options = getopt('h:p:', ['host:', 'port:']);
-$host = $options['h'] ?? $options['host'] ?? 'localhost';
+$host = $options['h'] ?? $options['host'] ?? '0.0.0.0';
 $port = $options['p'] ?? $options['port'] ?? '8111';
 
 // Check if running from CLI
 if (php_sapi_name() === 'cli') {
     echo "Starting MCP server on {$host}:{$port}\n";
     echo "Use Ctrl+C to stop the server\n";
+
+    // Add signal handling for graceful shutdown
+    pcntl_signal(SIGTERM, function() {
+        // Cleanup temporary files if needed
+        exit(0);
+    });
+
+    // Remove the following lines:
     $command = sprintf('php -S %s:%d %s', $host, $port, __FILE__);
     system($command);
     exit;
@@ -32,10 +40,21 @@ $response = [
 
 // Read the raw input
 $input = file_get_contents('php://input');
+error_log("Received raw input: " . $input);
 $request = json_decode($input, true);
+error_log("Decoded request: " . var_export($request, true));
 
 // Validate request
-if (!$request || !isset($request['method'])) {
+if (!is_array($request)) {
+    $response['error'] = [
+        'code' => -32600,
+        'message' => 'Invalid Request'
+    ];
+    echo json_encode($response);
+    exit;
+}
+
+if (!isset($request['method']) || !is_string($request['method'])) {
     $response['error'] = [
         'code' => -32600,
         'message' => 'Invalid Request'
@@ -47,101 +66,184 @@ if (!$request || !isset($request['method'])) {
 // Set the response ID from the request
 $response['id'] = $request['id'] ?? null;
 
+// Simple rate limiting using temporary file with file locking
+$rateLimitKey = sys_get_temp_dir() . '/mcp_ratelimit_' . md5($_SERVER['REMOTE_ADDR']);
+$now = time();
+$requests = [];
+
+// Use file locking to prevent race conditions
+$fp = fopen($rateLimitKey, 'c');
+if (flock($fp, LOCK_EX)) {
+    if (file_exists($rateLimitKey)) {
+        $content = file_get_contents($rateLimitKey);
+        if ($content !== false) {
+            $requests = unserialize($content) ?: [];
+        } else {
+            // Handle file read error
+            $requests = [];
+        }
+    }
+
+    // Clean old requests
+    $requests = array_filter($requests, fn($time) => $time > ($now - 60));
+
+    // Add current request
+    $requests[] = $now;
+
+    // Check limit
+    if (count($requests) > 100) { // 100 requests per minute
+        $response['error'] = [
+            'code' => -32000,
+            'message' => 'Rate limit exceeded'
+        ];
+        echo json_encode($response);
+        flock($fp, LOCK_UN);
+        fclose($fp);
+        exit;
+    }
+
+    // Save updated requests with error handling
+    $serialized = serialize($requests);
+    if (file_put_contents($rateLimitKey, $serialized) === false) {
+        // Log error but continue processing
+        error_log("Failed to write to rate limit file: " . $rateLimitKey);
+    }
+
+    flock($fp, LOCK_UN);
+} else {
+    // If we can't acquire lock, proceed without rate limiting to avoid blocking
+    error_log("Failed to acquire lock for rate limiting");
+}
+fclose($fp);
+
 // Handle different methods
 switch ($request['method']) {
     case 'workspace/configuration':
         $response['result'] = [
             'capabilities' => [
-                'searchProvider' => [
-                    'methods' => [
-                        'search/query' => [
-                            'description' => 'Performs a search query using SearXNG',
-                            'parameters' => [
-                                'query' => [
-                                    'type' => 'string',
-                                    'description' => 'The search query string'
-                                ],
-                                'limit' => [
-                                    'type' => 'integer',
-                                    'description' => 'Maximum number of results to return',
-                                    'default' => 5,
-                                    'optional' => true
+                'tools' => [
+                    'listChanged' => false
+                ]
+            ]
+        ];
+        break;
+
+    case 'tools/list':
+        $response['result'] = [
+            'tools' => [
+                [
+                    'name' => 'search',
+                    'title' => 'Web Search Provider',
+                    'description' => 'Performs a search query using SearXNG',
+                    'inputSchema' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'query' => [
+                                'type' => 'string',
+                                'description' => 'The search query string'
+                            ],
+                            'limit' => [
+                                'type' => 'integer',
+                                'description' => 'Maximum number of results to return',
+                                'default' => 5
+                            ]
+                        ],
+                        'required' => ['query']
+                    ],
+                    'outputSchema' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'content' => [
+                                'type' => 'array',
+                                'items' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'type' => [
+                                            'type' => 'string',
+                                            'enum' => ['text']
+                                        ],
+                                        'text' => [
+                                            'type' => 'string'
+                                        ]
+                                    ],
+                                    'required' => ['type', 'text']
                                 ]
                             ],
-                            'returns' => [
+                            'structuredContent' => [
                                 'type' => 'object',
                                 'properties' => [
                                     'query' => [
-                                        'type' => 'string',
-                                        'description' => 'The original search query'
+                                        'type' => 'string'
                                     ],
                                     'total' => [
-                                        'type' => 'integer',
-                                        'description' => 'Total number of results found'
+                                        'type' => 'integer'
                                     ],
                                     'results' => [
                                         'type' => 'array',
                                         'items' => [
                                             'type' => 'object',
                                             'properties' => [
-                                                'title' => [
-                                                    'type' => 'string',
-                                                    'description' => 'Title of the result'
-                                                ],
-                                                'content' => [
-                                                    'type' => 'string',
-                                                    'description' => 'Result content or description'
-                                                ],
-                                                'url' => [
-                                                    'type' => 'string',
-                                                    'description' => 'URL of the result'
-                                                ],
-                                                'score' => [
-                                                    'type' => 'number',
-                                                    'description' => 'Relevance score'
-                                                ],
-                                                'engine' => [
-                                                    'type' => 'string',
-                                                    'description' => 'Search engine that provided the result'
-                                                ],
-                                                'category' => [
-                                                    'type' => 'string',
-                                                    'description' => 'Category of the result'
-                                                ]
+                                                'title' => ['type' => 'string'],
+                                                'content' => ['type' => 'string'],
+                                                'url' => ['type' => 'string'],
+                                                'score' => ['type' => 'number'],
+                                                'engine' => ['type' => 'string'],
+                                                'category' => ['type' => 'string']
                                             ]
                                         ]
                                     ]
                                 ]
+                            ],
+                            'isError' => [
+                                'type' => 'boolean'
                             ]
-                        ]
+                        ],
+                        'required' => ['content', 'isError']
                     ]
                 ]
-            ]
+            ],
+            'nextCursor' => null
         ];
         break;
 
-    case 'search/query':
-        // Query SearchNX instance
-        if (!isset($request['params']['query'])) {
+    case 'tools/call':
+        if (!isset($request['params']['name']) || !isset($request['params']['arguments'])) {
             $response['error'] = [
                 'code' => -32602,
-                'message' => 'Missing required parameter: query'
+                'message' => 'Invalid parameters: requires name and arguments'
             ];
             break;
         }
 
-        $query = $request['params']['query'];
-        $limit = $request['params']['limit'] ?? 5;
-        
+        if ($request['params']['name'] !== 'search') {
+            $response['error'] = [
+                'code' => -32601,
+                'message' => 'Unknown tool: ' . $request['params']['name']
+            ];
+            break;
+        }
+
+        $args = $request['params']['arguments'];
+        if (!isset($args['query'])) {
+            $response['error'] = [
+                'code' => -32602,
+                'message' => 'Missing required argument: query'
+            ];
+            break;
+        }
+
+        $query = $args['query'];
+        $limit = $args['limit'] ?? 5;
+
         try {
             error_log("Attempting to connect to SearchNX with query: " . $query);
-            
+
             $searchClient = new Client([
                 'base_uri' => 'http://192.168.0.121:8080',
                 'timeout' => 10.0,
-                'http_errors' => false // Don't throw exceptions on 4xx/5xx responses
+                'http_errors' => false
             ]);
-            
+
             error_log("Making search request to SearchNX...");
             $searchResponse = $searchClient->get('/search', [
                 'query' => [
@@ -159,14 +261,19 @@ switch ($request['method']) {
 
             $statusCode = $searchResponse->getStatusCode();
             $body = $searchResponse->getBody()->getContents();
-            
+
             error_log("SearchNX response status: " . $statusCode);
             error_log("SearchNX raw response body: " . var_export($body, true));
-            
+
             if ($statusCode !== 200) {
-                $response['error'] = [
-                    'code' => -32603,
-                    'message' => 'SearchNX returned status ' . $statusCode . ': ' . $body
+                $response['result'] = [
+                    'content' => [
+                        [
+                            'type' => 'text',
+                            'text' => 'SearchNX returned status ' . $statusCode . ': ' . $body
+                        ]
+                    ],
+                    'isError' => true
                 ];
                 break;
             }
@@ -178,28 +285,35 @@ switch ($request['method']) {
                 if (json_last_error() !== JSON_ERROR_NONE) {
                     error_log("JSON decode error: " . json_last_error_msg());
                     error_log("Problematic JSON string: " . $body);
-                    $response['error'] = [
-                        'code' => -32603,
-                        'message' => 'Invalid JSON from SearchNX: ' . json_last_error_msg() . '. Raw response: ' . substr($body, 0, 100) . '...'
+                    $response['result'] = [
+                        'content' => [
+                            [
+                                'type' => 'text',
+                                'text' => 'Invalid JSON from SearchNX: ' . json_last_error_msg()
+                            ]
+                        ],
+                        'isError' => true
                     ];
                     break;
                 }
             } else {
                 // If not JSON, try to create a simple result structure
                 $results = [
-                    'hits' => [
+                    'results' => [
                         [
                             'title' => 'Search Result',
                             'content' => $body,
                             'url' => 'http://192.168.0.121:8080/search?q=' . urlencode($query),
-                            'score' => 1.0
+                            'score' => 1.0,
+                            'engine' => 'searxng',
+                            'category' => 'general'
                         ]
                     ]
                 ];
             }
-            
-            // Transform SearXNG results to our format
-            $response['result'] = [
+
+            // Transform results to MCP 2025-06-18 format
+            $structuredContent = [
                 'query' => $query,
                 'total' => count($results['results'] ?? []),
                 'results' => array_map(function($result) {
@@ -213,17 +327,38 @@ switch ($request['method']) {
                     ];
                 }, $results['results'] ?? [])
             ];
+
+            $response['result'] = [
+                'content' => [
+                    [
+                        'type' => 'text',
+                        'text' => json_encode($structuredContent, JSON_PRETTY_PRINT)
+                    ]
+                ],
+                'structuredContent' => $structuredContent,
+                'isError' => false
+            ];
         } catch (GuzzleException $e) {
             error_log("SearchNX connection error: " . $e->getMessage());
-            $response['error'] = [
-                'code' => -32603,
-                'message' => 'SearchNX connection error: ' . $e->getMessage()
+            $response['result'] = [
+                'content' => [
+                    [
+                        'type' => 'text',
+                        'text' => 'SearchNX connection error: ' . $e->getMessage()
+                    ]
+                ],
+                'isError' => true
             ];
         } catch (Exception $e) {
             error_log("Unexpected error: " . $e->getMessage());
-            $response['error'] = [
-                'code' => -32603,
-                'message' => 'Internal server error: ' . $e->getMessage()
+            $response['result'] = [
+                'content' => [
+                    [
+                        'type' => 'text',
+                        'text' => 'Internal server error: ' . $e->getMessage()
+                    ]
+                ],
+                'isError' => true
             ];
         }
         break;

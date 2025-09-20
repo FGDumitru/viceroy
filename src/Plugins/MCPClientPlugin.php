@@ -26,9 +26,10 @@ class MCPClientPlugin implements PluginInterface
             'timeout' => 5.0,
         ]);
 
-        // Register search-related MCP methods
-        $this->registerMethod('workspace/configuration');
-        $this->registerMethod('search/query');
+        // Register MCP methods
+        //$this->registerMethod('workspace/configuration');
+        $this->registerMethod('tools/list');
+        $this->registerMethod('tools/call');
     }
 
     public function getName(): string
@@ -84,12 +85,25 @@ class MCPClientPlugin implements PluginInterface
         ];
 
         try {
+            error_log("Sending request to server: " . json_encode($request));
             $response = $this->httpClient->post('', [
                 'json' => $request,
                 'headers' => ['Content-Type' => 'application/json']
             ]);
 
-            return json_decode($response->getBody()->getContents(), true);
+            $body = $response->getBody()->getContents();
+            error_log("Received response from server: " . $body);
+
+            $result = json_decode($body, true);
+            if ($result === null || !is_array($result)) {
+                return [
+                    'error' => [
+                        'code' => -32603,
+                        'message' => 'Invalid response from server: ' . $body
+                    ]
+                ];
+            }
+            return $result;
         } catch (GuzzleException $e) {
             return [
                 'error' => [
@@ -116,23 +130,46 @@ class MCPClientPlugin implements PluginInterface
     /**
      * Get server capabilities
      */
+    /**
+     * Get server capabilities including available tools
+     */
     public function getServerCapabilities(): array
     {
         return $this->sendRequest('workspace/configuration');
     }
 
+    /**
+     * Get list of available tools
+     */
+    public function listTools(string $cursor = null): array
+    {
+        $params = [];
+        if ($cursor !== null) {
+            $params['cursor'] = $cursor;
+        }
+        return $this->sendRequest('tools/list', $params);
+    }
 
+    /**
+     * Call a tool
+     */
+    private function callTool(string $name, array $arguments): array
+    {
+        $params = [
+            'name' => $name,
+            'arguments' => $arguments
+        ];
+        return $this->sendRequest('tools/call', $params);
+    }
 
     /**
      * Search using SearchNX
      */
     public function search(string $query, int $limit = 5): array
     {
-        $params = [
+        return $this->callTool('search', [
             'query' => $query,
             'limit' => $limit
-        ];
-
-        return $this->sendRequest('search/query', $params);
+        ]);
     }
 }

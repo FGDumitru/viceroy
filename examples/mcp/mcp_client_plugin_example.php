@@ -24,10 +24,23 @@ try {
     $capabilities = $mcpClient->getServerCapabilities();
     echo "Server capabilities: " . json_encode($capabilities, JSON_PRETTY_PRINT) . "\n\n";
 
-    // Search using SearchNX
+    // List available tools
+    echo "Getting available tools...\n";
+    $tools = $mcpClient->listTools();
+    echo "Available tools: " . json_encode($tools, JSON_PRETTY_PRINT) . "\n\n";
+
+    // Perform a search using the search tool
     echo "Searching for 'How old is the universe?'...\n";
     $searchResults = $mcpClient->search("How old is the universe?", 5);
-    echo "Search results: " . json_encode($searchResults, JSON_PRETTY_PRINT) . "\n";
+    if (isset($searchResults['error'])) {
+        throw new Exception($searchResults['error']['message']);
+    }
+    echo "Search results:\n";
+    foreach ($searchResults['result']['content'] as $content) {
+        if ($content['type'] === 'text') {
+            echo $content['text'] . "\n";
+        }
+    }
 
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage() . "\n";
