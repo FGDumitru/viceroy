@@ -1,5 +1,4 @@
 <?php
-
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 use GuzzleHttp\Client;
@@ -9,6 +8,8 @@ use GuzzleHttp\Exception\GuzzleException;
  * A simple MCP server example that implements the MCP 2025-06-18 specification
  * with built-in web server capabilities
  */
+
+header('Content-Type: application/json');
 
 // CLI arguments parsing
 $options = getopt('h:p:', ['host:', 'port:']);
@@ -66,58 +67,61 @@ if (!isset($request['method']) || !is_string($request['method'])) {
 // Set the response ID from the request
 $response['id'] = $request['id'] ?? null;
 
-// Simple rate limiting using temporary file with file locking
-$rateLimitKey = sys_get_temp_dir() . '/mcp_ratelimit_' . md5($_SERVER['REMOTE_ADDR']);
-$now = time();
-$requests = [];
-
-// Use file locking to prevent race conditions
-$fp = fopen($rateLimitKey, 'c');
-if (flock($fp, LOCK_EX)) {
-    if (file_exists($rateLimitKey)) {
-        $content = file_get_contents($rateLimitKey);
-        if ($content !== false) {
-            $requests = unserialize($content) ?: [];
-        } else {
-            // Handle file read error
-            $requests = [];
-        }
-    }
-
-    // Clean old requests
-    $requests = array_filter($requests, fn($time) => $time > ($now - 60));
-
-    // Add current request
-    $requests[] = $now;
-
-    // Check limit
-    if (count($requests) > 100) { // 100 requests per minute
-        $response['error'] = [
-            'code' => -32000,
-            'message' => 'Rate limit exceeded'
-        ];
-        echo json_encode($response);
-        flock($fp, LOCK_UN);
-        fclose($fp);
-        exit;
-    }
-
-    // Save updated requests with error handling
-    $serialized = serialize($requests);
-    if (file_put_contents($rateLimitKey, $serialized) === false) {
-        // Log error but continue processing
-        error_log("Failed to write to rate limit file: " . $rateLimitKey);
-    }
-
-    flock($fp, LOCK_UN);
-} else {
-    // If we can't acquire lock, proceed without rate limiting to avoid blocking
-    error_log("Failed to acquire lock for rate limiting");
-}
-fclose($fp);
 
 // Handle different methods
 switch ($request['method']) {
+    case 'initialize':
+        // Validate protocolVersion parameter
+        $protocolVersion = $request['params']['protocolVersion'] ?? null;
+        if (!is_string($protocolVersion)) {
+            $response['error'] = [
+                'code' => -32602,
+                'message' => "'protocolVersion' parameter is required and must be a string"
+            ];
+            echo json_encode($response);
+            exit;
+        }
+
+        // Validate capabilities parameter (must be an object, not an array)
+        $capabilities = $request['params']['capabilities'] ?? null;
+        $capabilities['tools'][] = 'search';
+        if (!isset($capabilities) || !is_array($capabilities) || empty(array_filter(array_keys($capabilities), 'is_string'))) {
+            $response['error'] = [
+                'code' => -32602,
+                'message' => "'capabilities' parameter is required and must be an object (associative array with string keys)"
+            ];
+            echo json_encode($response);
+            exit;
+        }
+
+        // Extract client information (must be an object)
+        // Check for both 'clientInfo' and 'client' for backward compatibility
+        $clientInfo = $request['params']['clientInfo'] ?? ($request['params']['client'] ?? null);
+        if (!isset($clientInfo) || !is_array($clientInfo) || empty(array_filter(array_keys($clientInfo), 'is_string'))) {
+            $response['error'] = [
+                'code' => -32602,
+                'message' => "'clientInfo' or 'client' parameter is required and must be an object (associative array with string keys)"
+            ];
+            echo json_encode($response);
+            exit;
+        }
+
+        $response['result'] = [
+            'server' => [
+                'name' => 'MCP Server Example',
+                'version' => '1.0.0',
+                'protocolVersion' => $protocolVersion
+            ],
+            'features' => [
+                'workspace/configuration',
+                'tools/list',
+                'supports_streaming' => true
+            ],
+            'capabilities' => $capabilities,
+            'clientInfo' => $clientInfo
+        ];
+        break;
+
     case 'workspace/configuration':
         $response['result'] = [
             'capabilities' => [
