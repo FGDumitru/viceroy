@@ -27,7 +27,7 @@ class MCPClientPlugin implements PluginInterface
         ]);
 
         // Register MCP methods
-        //$this->registerMethod('workspace/configuration');
+        $this->registerMethod('initialize');
         $this->registerMethod('tools/list');
         $this->registerMethod('tools/call');
     }
@@ -135,7 +135,21 @@ class MCPClientPlugin implements PluginInterface
      */
     public function getServerCapabilities(): array
     {
-        return $this->sendRequest('workspace/configuration');
+        // Initialize the server first to get proper capabilities
+        $initResult = $this->sendRequest('initialize', [
+            'protocolVersion' => '2025-06-18',
+            'capabilities' => [
+                'tools' => [
+                    'listChanged' => false
+                ]
+            ],
+            'clientInfo' => [
+                'name' => 'Viceroy MCP Client',
+                'version' => '1.0.0'
+            ]
+        ]);
+        
+        return $initResult['result'] ?? [];
     }
 
     /**
@@ -163,13 +177,11 @@ class MCPClientPlugin implements PluginInterface
     }
 
     /**
-     * Search using SearchNX
+     * Call a tool by name with arguments
      */
-    public function search(string $query, int $limit = 5): array
+    public function executeTool(string $name, array $arguments): array
     {
-        return $this->callTool('search', [
-            'query' => $query,
-            'limit' => $limit
-        ]);
+        return $this->callTool($name, $arguments);
     }
+
 }
