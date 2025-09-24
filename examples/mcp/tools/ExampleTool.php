@@ -10,7 +10,7 @@ class ExampleTool
     public function getDefinition(): array
     {
         return [
-            'name' => 'example',
+            'name' => 'Example',
             'title' => 'Example Tool',
             'description' => 'A simple example tool that demonstrates the modular tool system',
             'inputSchema' => [

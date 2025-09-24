@@ -26,8 +26,13 @@ try {
     // List available tools
     echo "Getting available tools...\n";
     $toolsResponse = $mcpClient->listTools();
-    $tools = $toolsResponse['tools'] ?? [];
-    echo "Available tools: " . json_encode($tools, JSON_PRETTY_PRINT) . "\n\n";
+    $tools = $toolsResponse['result']['tools'] ?? [];
+
+    if (!is_array($tools) || count($tools) === 0) {
+        throw new Exception("No tools available from MCP server.");
+    } else {
+      echo "Available tools: " . json_encode($tools, JSON_PRETTY_PRINT) . "\n\n";
+    }
 
     // Test with example tool first
     echo "Testing example tool...\n";
