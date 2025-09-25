@@ -12,6 +12,7 @@ use Viceroy\Core\PluginInterface;
 use Viceroy\Core\PluginManager;
 use Viceroy\Core\Response;
 use Viceroy\Core\RolesManager;
+use Viceroy\Plugins\MCPClientPlugin;
 
 /**
  * Represents a connection to an OpenAI-compatible API endpoint.
@@ -672,5 +673,59 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         $this->setBearedToken(file_get_contents($bearerTokenFile));
 
         return $this;
+    }
+
+    /**
+     * Register an MCP client plugin with the given host
+     *
+     * @param string $host The streamable HTTP URL of the MCP server
+     * @return self
+     */
+    public function registerMCP(string $host): self {
+        $mcpClient = new \Viceroy\Plugins\MCPClientPlugin($host);
+        $this->registerPlugin($mcpClient);
+        return $this;
+    }
+
+    /**
+     * Check if MCP tool support is available
+     *
+     * @return bool True if MCP has been successfully registered and tools are available, false otherwise
+     */
+    public function hasToolSupport(): bool {
+        // Check if MCP client plugin is registered
+        $mcpPlugin = $this->pluginManager->get('mcp_client');
+
+        // If MCP plugin is not registered, return false
+        if (!$mcpPlugin) {
+            return false;
+        }
+
+        // Check if tools have been identified and registered
+        // We assume tools are registered if the plugin can handle 'tools/list' method
+        return $mcpPlugin->canHandle('tools/list');
+    }
+
+    /**
+     * List all available tools and their definitions
+     *
+     * @return array Array of tools with their definitions
+     */
+    public function listTools(): array {
+        // Check if MCP client plugin is registered
+        $mcpPlugin = $this->pluginManager->get('mcp_client');
+
+        // If MCP plugin is not registered, return empty array
+        if (!$mcpPlugin) {
+            return [];
+        }
+
+        // Use the plugin's handleMethodCall to call the 'tools/list' method
+        try {
+            return $mcpPlugin->handleMethodCall('tools/list', []);
+        } catch (\Exception $e) {
+            // If there's an error, return empty array
+            return [];
+        }
     }
 }
