@@ -7,7 +7,8 @@ use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
 echo "=== Tool Management Test ===\n\n";
 
-// Create MCPServerPlugin instance
+// Test 1: Create MCPServerPlugin instance with single directory (backward compatibility)
+echo "1. Testing with single tools directory (backward compatibility)...\n";
 $plugin = new MCPServerPlugin(__DIR__ . '/../../src/Tools');
 
 // Create connection and register plugin
@@ -17,14 +18,49 @@ $connection->registerPlugin($plugin);
 // Get the ToolManager instance
 $toolManager = $plugin->getToolManager();
 
-echo "1. Listing all tools:\n";
+echo "   Listing all tools:\n";
 $tools = $toolManager->listTools();
 foreach ($tools as $tool) {
-    echo "   - {$tool['name']}: {$tool['description']} (enabled: " . ($tool['enabled'] ? 'yes' : 'no') . ", type: {$tool['type']})\n";
+    echo "     - {$tool['name']}: {$tool['description']} (enabled: " . ($tool['enabled'] ? 'yes' : 'no') . ", type: {$tool['type']})\n";
 }
-echo "\n";
+echo "   ✅ Single directory test completed\n\n";
 
-echo "2. Testing tool execution (should work):\n";
+// Test 2: Create MCPServerPlugin instance with multiple directories
+echo "2. Testing with multiple tools directories...\n";
+$multipleDirectories = [
+    __DIR__ . '/../../src/Tools',
+    __DIR__ . '/tools'
+];
+
+echo "   Tools directories:\n";
+foreach ($multipleDirectories as $dir) {
+    echo "     - {$dir}\n";
+    if (!is_dir($dir)) {
+        echo "       ⚠️ Directory does not exist, but will be handled gracefully\n";
+    }
+}
+
+$multiPlugin = new MCPServerPlugin($multipleDirectories);
+$multiConnection = new OpenAICompatibleEndpointConnection();
+$multiConnection->registerPlugin($multiPlugin);
+
+// Initialize to discover tools
+$multiPlugin->initialize($multiConnection);
+
+// Get the ToolManager instance
+$multiToolManager = $multiPlugin->getToolManager();
+
+echo "   Listing all tools from multiple directories:\n";
+$multiTools = $multiToolManager->listTools();
+foreach ($multiTools as $tool) {
+    echo "     - {$tool['name']}: {$tool['description']} (enabled: " . ($tool['enabled'] ? 'yes' : 'no') . ", type: {$tool['type']})\n";
+}
+echo "   ✅ Multiple directories test completed\n\n";
+
+// Continue with original tests using the single directory plugin
+echo "3. Continuing with tool management tests using single directory plugin...\n";
+
+echo "4. Testing tool execution (should work):\n";
 try {
     $result = $toolManager->executeTool('get_current_datetime', []);
     echo "   ✅ get_current_datetime executed successfully: " . json_encode($result) . "\n";
@@ -33,7 +69,7 @@ try {
 }
 echo "\n";
 
-echo "3. Disabling get_current_datetime tool:\n";
+echo "5. Disabling get_current_datetime tool:\n";
 try {
     $toolManager->disableTool('get_current_datetime');
     echo "   ✅ get_current_datetime disabled successfully\n";
@@ -51,7 +87,7 @@ try {
 }
 echo "\n";
 
-echo "4. Testing tool execution after disabling (should fail):\n";
+echo "6. Testing tool execution after disabling (should fail):\n";
 try {
     $result = $toolManager->executeTool('get_current_datetime', []);
     echo "   ❌ get_current_datetime executed unexpectedly: " . json_encode($result) . "\n";
@@ -60,7 +96,7 @@ try {
 }
 echo "\n";
 
-echo "5. Re-enabling get_current_datetime tool:\n";
+echo "7. Re-enabling get_current_datetime tool:\n";
 try {
     $toolManager->enableTool('get_current_datetime');
     echo "   ✅ get_current_datetime re-enabled successfully\n";
@@ -78,7 +114,7 @@ try {
 }
 echo "\n";
 
-echo "6. Testing tool execution after re-enabling (should work):\n";
+echo "8. Testing tool execution after re-enabling (should work):\n";
 try {
     $result = $toolManager->executeTool('get_current_datetime', []);
     echo "   ✅ get_current_datetime executed successfully after re-enabling: " . json_encode($result) . "\n";
@@ -87,7 +123,7 @@ try {
 }
 echo "\n";
 
-echo "7. Testing MCP tools/list method respects enabled status:\n";
+echo "9. Testing MCP tools/list method respects enabled status:\n";
 try {
     $toolsList = $connection->{'tools/list'}([]);
     $enabledTools = array_filter($toolsList['tools'], fn($tool) => $tool['name'] !== 'get_current_datetime' || $tool['name'] === 'get_current_datetime');
@@ -107,7 +143,7 @@ try {
 }
 echo "\n";
 
-echo "8. Testing error handling for non-existent tool:\n";
+echo "10. Testing error handling for non-existent tool:\n";
 try {
     $toolManager->disableTool('non_existent_tool');
     echo "   ❌ Should have failed to disable non-existent tool\n";
@@ -117,6 +153,8 @@ try {
 echo "\n";
 
 echo "=== Test Summary ===\n";
+echo "✅ Single directory backward compatibility verified\n";
+echo "✅ Multiple directories support implemented\n";
 echo "✅ Tool listing functionality verified\n";
 echo "✅ Tool enable/disable functionality verified\n";
 echo "✅ Tool execution respects enabled status\n";

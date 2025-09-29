@@ -16,15 +16,23 @@ class MCPServerPlugin implements PluginInterface
 {
     private ?OpenAICompatibleEndpointConnection $connection = null;
     private ToolManager $toolManager;
-    private string $toolsDirectory;
+    private array $toolsDirectories;
     private array $methods = [];
 
     /**
      * Constructor accepts a tools directory path for tool discovery
      */
-    public function __construct(string $toolsDirectory)
+    public function __construct($toolsDirectories)
     {
-        $this->toolsDirectory = $toolsDirectory;
+        // Handle backward compatibility: allow single string or array of strings
+        if (is_string($toolsDirectories)) {
+            $this->toolsDirectories = [$toolsDirectories];
+        } elseif (is_array($toolsDirectories)) {
+            $this->toolsDirectories = $toolsDirectories;
+        } else {
+            throw new \InvalidArgumentException('Tools directories must be a string or an array of strings');
+        }
+        
         $this->toolManager = new ToolManager();
 
         // Register MCP methods
@@ -87,23 +95,27 @@ class MCPServerPlugin implements PluginInterface
      */
     private function discoverTools(): void
     {
-        if (!is_dir($this->toolsDirectory)) {
-            throw new \InvalidArgumentException("Tools directory does not exist: {$this->toolsDirectory}");
-        }
-
-        $files = scandir($this->toolsDirectory);
-        foreach ($files as $file) {
-            if ($file === '.' || $file === '..' || $file === 'Interfaces') {
+        foreach ($this->toolsDirectories as $directory) {
+            if (!is_dir($directory)) {
+                // Log warning but continue with other directories
+                error_log("Warning: Tools directory does not exist: {$directory}");
                 continue;
             }
 
-            if (pathinfo($file, PATHINFO_EXTENSION) === 'php') {
-                $className = pathinfo($file, PATHINFO_FILENAME);
-                $fullClassName = $this->getFullClassName($className);
-                
-                if (class_exists($fullClassName) && is_subclass_of($fullClassName, ToolInterface::class)) {
-                    $tool = new $fullClassName();
-                    $this->toolManager->registerTool($tool);
+            $files = scandir($directory);
+            foreach ($files as $file) {
+                if ($file === '.' || $file === '..' || $file === 'Interfaces') {
+                    continue;
+                }
+
+                if (pathinfo($file, PATHINFO_EXTENSION) === 'php') {
+                    $className = pathinfo($file, PATHINFO_FILENAME);
+                    $fullClassName = $this->getFullClassName($className, $directory);
+                    
+                    if (class_exists($fullClassName) && is_subclass_of($fullClassName, ToolInterface::class)) {
+                        $tool = new $fullClassName();
+                        $this->toolManager->registerTool($tool);
+                    }
                 }
             }
         }
@@ -112,13 +124,13 @@ class MCPServerPlugin implements PluginInterface
     /**
      * Determine the full class name based on file structure
      */
-    private function getFullClassName(string $className): string
+    private function getFullClassName(string $className, string $directory): string
     {
         // Check if the tools directory is under the Viceroy namespace structure
-        $realPath = realpath($this->toolsDirectory);
+        $realPath = realpath($directory);
         $srcPath = realpath(__DIR__ . '/../');
         
-        if (strpos($realPath, $srcPath) === 0) {
+        if ($realPath && strpos($realPath, $srcPath) === 0) {
             // Tools are in the Viceroy\Tools namespace
             return "Viceroy\\Tools\\{$className}";
         }

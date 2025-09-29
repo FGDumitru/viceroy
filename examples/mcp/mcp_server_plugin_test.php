@@ -14,8 +14,8 @@ use Viceroy\Plugins\MCPServerPlugin;
 
 echo "=== MCPServerPlugin Integration Test ===\n\n";
 
-// Test 1: Instantiate OpenAICompatibleEndpointConnection and add MCPServerPlugin
-echo "1. Testing MCPServerPlugin instantiation with tools directory...\n";
+// Test 1: Instantiate OpenAICompatibleEndpointConnection and add MCPServerPlugin with single directory (backward compatibility)
+echo "1. Testing MCPServerPlugin instantiation with single tools directory (backward compatibility)...\n";
 
 try {
     $connection = new OpenAICompatibleEndpointConnection();
@@ -30,7 +30,7 @@ try {
     $mcpPlugin = new MCPServerPlugin($toolsDirectory);
     $connection->registerPlugin($mcpPlugin);
     
-    echo "   ✅ MCPServerPlugin successfully instantiated and registered\n\n";
+    echo "   ✅ MCPServerPlugin successfully instantiated with single directory\n\n";
 } catch (Exception $e) {
     echo "   ❌ Failed to instantiate MCPServerPlugin: " . $e->getMessage() . "\n\n";
     exit(1);
@@ -115,27 +115,67 @@ try {
     exit(1);
 }
 
-// Test 5: Test error handling for invalid directories
-echo "5. Testing error handling for invalid directories...\n";
+// Test 5: Test MCPServerPlugin with multiple tool directories
+echo "5. Testing MCPServerPlugin with multiple tool directories...\n";
+
+try {
+    $multipleDirectories = [
+        __DIR__ . '/../../src/Tools',
+        __DIR__ . '/tools'
+    ];
+    
+    echo "   Tools directories:\n";
+    foreach ($multipleDirectories as $dir) {
+        echo "     - {$dir}\n";
+        if (!is_dir($dir)) {
+            echo "       ⚠️ Directory does not exist, but will be handled gracefully\n";
+        }
+    }
+    
+    $multiPlugin = new MCPServerPlugin($multipleDirectories);
+    $multiConnection = new OpenAICompatibleEndpointConnection();
+    $multiConnection->registerPlugin($multiPlugin);
+    
+    // Initialize to discover tools
+    $multiPlugin->initialize($multiConnection);
+    
+    $toolsList = $multiConnection->{'tools/list'}([]);
+    echo "   Total tools discovered: " . count($toolsList['tools'] ?? []) . "\n";
+    
+    if (!empty($toolsList['tools'])) {
+        foreach ($toolsList['tools'] as $tool) {
+            echo "     - {$tool['name']}: {$tool['description']}\n";
+        }
+    }
+    
+    echo "   ✅ MCPServerPlugin successfully handled multiple directories\n\n";
+} catch (Exception $e) {
+    echo "   ❌ Failed with multiple directories: " . $e->getMessage() . "\n\n";
+    exit(1);
+}
+
+// Test 6: Test error handling for invalid directories (should not break plugin)
+echo "6. Testing error handling for invalid directories...\n";
 
 try {
     $invalidDirectory = __DIR__ . '/nonexistent_tools_directory';
     $invalidPlugin = new MCPServerPlugin($invalidDirectory);
     
-    // This should throw an exception during initialization
+    // This should not throw an exception during construction, only during initialization
     $testConnection = new OpenAICompatibleEndpointConnection();
     $testConnection->registerPlugin($invalidPlugin);
     
-    echo "   ❌ Expected exception for invalid directory was not thrown\n\n";
-    exit(1);
-} catch (InvalidArgumentException $e) {
-    echo "   ✅ Correctly handled invalid directory: " . $e->getMessage() . "\n\n";
+    // Initialize to trigger tool discovery
+    $invalidPlugin->initialize($testConnection);
+    
+    echo "   ✅ Plugin handled invalid directory gracefully (logged warning)\n\n";
 } catch (Exception $e) {
-    echo "   ✅ Exception thrown for invalid directory: " . $e->getMessage() . "\n\n";
+    echo "   ❌ Unexpected exception for invalid directory: " . $e->getMessage() . "\n\n";
+    exit(1);
 }
 
-// Test 6: Test error handling for non-existent tools
-echo "6. Testing error handling for non-existent tools...\n";
+// Test 7: Test error handling for non-existent tools
+echo "7. Testing error handling for non-existent tools...\n";
 
 try {
     $result = $connection->{'tools/call'}([
@@ -153,8 +193,8 @@ try {
     echo "   ✅ Exception thrown for non-existent tool: " . $e->getMessage() . "\n\n";
 }
 
-// Test 7: Test error handling for invalid tool call parameters
-echo "7. Testing error handling for invalid tool call parameters...\n";
+// Test 8: Test error handling for invalid tool call parameters
+echo "8. Testing error handling for invalid tool call parameters...\n";
 
 try {
     $result = $connection->{'tools/call'}([
@@ -172,8 +212,8 @@ try {
     echo "   ✅ Exception thrown for invalid arguments: " . $e->getMessage() . "\n\n";
 }
 
-// Test 8: Verify GetCurrentDateTimeTool is discovered
-echo "8. Testing GetCurrentDateTimeTool discovery...\n";
+// Test 9: Verify GetCurrentDateTimeTool is discovered
+echo "9. Testing GetCurrentDateTimeTool discovery...\n";
 
 try {
     $toolsList = $connection->{'tools/list'}([]);
@@ -194,8 +234,8 @@ try {
     exit(1);
 }
 
-// Test 9: Test tools/call with GetCurrentDateTimeTool using default UTC
-echo "9. Testing GetCurrentDateTimeTool with default UTC...\n";
+// Test 10: Test tools/call with GetCurrentDateTimeTool using default UTC
+echo "10. Testing GetCurrentDateTimeTool with default UTC...\n";
 
 try {
     $result = $connection->{'tools/call'}([
@@ -219,8 +259,8 @@ try {
     exit(1);
 }
 
-// Test 10: Test tools/call with GetCurrentDateTimeTool using Europe/Bucharest timezone
-echo "10. Testing GetCurrentDateTimeTool with Europe/Bucharest timezone...\n";
+// Test 11: Test tools/call with GetCurrentDateTimeTool using Europe/Bucharest timezone
+echo "11. Testing GetCurrentDateTimeTool with Europe/Bucharest timezone...\n";
 
 try {
     $result = $connection->{'tools/call'}([
@@ -244,8 +284,8 @@ try {
     exit(1);
 }
 
-// Test 11: Test error handling with invalid timezone
-echo "11. Testing GetCurrentDateTimeTool error handling with invalid timezone...\n";
+// Test 12: Test error handling with invalid timezone
+echo "12. Testing GetCurrentDateTimeTool error handling with invalid timezone...\n";
 
 try {
     $result = $connection->{'tools/call'}([
@@ -265,7 +305,9 @@ try {
 
 echo "=== Test Summary ===\n";
 echo "✅ All MCPServerPlugin integration tests completed successfully!\n";
-echo "✅ Tool discovery works correctly\n";
+echo "✅ Backward compatibility with single directory maintained\n";
+echo "✅ Multiple tool directories support implemented\n";
+echo "✅ Tool discovery works correctly across multiple directories\n";
 echo "✅ MCP methods (tools/list and tools/call) are handled internally\n";
 echo "✅ Proper error handling for invalid scenarios\n";
 echo "✅ Integration with OpenAICompatibleEndpointConnection verified\n";
@@ -274,4 +316,5 @@ echo "✅ Timezone handling (UTC and Europe/Bucharest) tested\n";
 echo "✅ Error handling for invalid timezones verified\n\n";
 
 echo "The MCPServerPlugin successfully integrates with the OpenAICompatibleEndpointConnection\n";
-echo "and provides MCP server functionality for tool discovery and execution.\n";
+echo "and provides MCP server functionality for tool discovery and execution with support\n";
+echo "for multiple tool directories.\n";
