@@ -179,4 +179,12 @@ class MCPServerPlugin implements PluginInterface
             ];
         }
     }
+
+    /**
+     * Get the ToolManager instance for testing and management purposes
+     */
+    public function getToolManager(): ToolManager
+    {
+        return $this->toolManager;
+    }
 }

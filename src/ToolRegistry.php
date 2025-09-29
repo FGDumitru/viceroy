@@ -10,13 +10,20 @@ class ToolRegistry
      * @var array<string, ToolInterface>
      */
     private array $tools = [];
+    
+    /**
+     * @var array<string, bool>
+     */
+    private array $enabledStatus = [];
 
     /**
      * Register a tool with the registry
      */
     public function registerTool(ToolInterface $tool): void
     {
-        $this->tools[$tool->getName()] = $tool;
+        $toolName = $tool->getName();
+        $this->tools[$toolName] = $tool;
+        $this->enabledStatus[$toolName] = true; // Default to enabled
     }
 
     /**
@@ -43,8 +50,10 @@ class ToolRegistry
     public function getToolDefinitions(): array
     {
         $definitions = [];
-        foreach ($this->tools as $tool) {
-            $definitions[] = $tool->getDefinition();
+        foreach ($this->tools as $name => $tool) {
+            if ($this->isToolEnabled($name)) {
+                $definitions[] = $tool->getDefinition();
+            }
         }
         return $definitions;
     }
@@ -63,6 +72,7 @@ class ToolRegistry
     public function removeTool(string $name): void
     {
         unset($this->tools[$name]);
+        unset($this->enabledStatus[$name]);
     }
 
     /**
@@ -71,5 +81,50 @@ class ToolRegistry
     public function clear(): void
     {
         $this->tools = [];
+        $this->enabledStatus = [];
+    }
+
+    /**
+     * Enable a tool by name
+     */
+    public function enableTool(string $name): void
+    {
+        if ($this->hasTool($name)) {
+            $this->enabledStatus[$name] = true;
+        }
+    }
+
+    /**
+     * Disable a tool by name
+     */
+    public function disableTool(string $name): void
+    {
+        if ($this->hasTool($name)) {
+            $this->enabledStatus[$name] = false;
+        }
+    }
+
+    /**
+     * Check if a tool is enabled
+     */
+    public function isToolEnabled(string $name): bool
+    {
+        return $this->enabledStatus[$name] ?? false;
+    }
+
+    /**
+     * Get all enabled tools
+     *
+     * @return array<string, ToolInterface>
+     */
+    public function getEnabledTools(): array
+    {
+        $enabledTools = [];
+        foreach ($this->tools as $name => $tool) {
+            if ($this->isToolEnabled($name)) {
+                $enabledTools[$name] = $tool;
+            }
+        }
+        return $enabledTools;
     }
 }
