@@ -172,12 +172,106 @@ try {
     echo "   ✅ Exception thrown for invalid arguments: " . $e->getMessage() . "\n\n";
 }
 
+// Test 8: Verify GetCurrentDateTimeTool is discovered
+echo "8. Testing GetCurrentDateTimeTool discovery...\n";
+
+try {
+    $toolsList = $connection->{'tools/list'}([]);
+    $datetimeToolFound = false;
+    foreach ($toolsList['tools'] as $tool) {
+        if ($tool['name'] === 'get_current_datetime') {
+            $datetimeToolFound = true;
+            echo "   ✅ GetCurrentDateTimeTool found in tools list\n";
+            break;
+        }
+    }
+    if (!$datetimeToolFound) {
+        throw new Exception("GetCurrentDateTimeTool not found in tools list");
+    }
+    echo "   ✅ GetCurrentDateTimeTool discovery verified\n\n";
+} catch (Exception $e) {
+    echo "   ❌ GetCurrentDateTimeTool discovery test failed: " . $e->getMessage() . "\n\n";
+    exit(1);
+}
+
+// Test 9: Test tools/call with GetCurrentDateTimeTool using default UTC
+echo "9. Testing GetCurrentDateTimeTool with default UTC...\n";
+
+try {
+    $result = $connection->{'tools/call'}([
+        'name' => 'get_current_datetime',
+        'arguments' => [] // No timezone, should default to UTC
+    ]);
+    
+    if (isset($result['error'])) {
+        echo "   ❌ Error with default UTC: " . $result['error']['message'] . "\n";
+        throw new Exception("Tool execution failed with default UTC");
+    } else {
+        echo "   ✅ Success with default UTC: " . $result['content'][0]['text'] . "\n";
+        // Check if the output contains UTC
+        if (strpos($result['content'][0]['text'], 'UTC') !== false) {
+            echo "   ✅ UTC timezone confirmed in output\n";
+        }
+    }
+    echo "   ✅ GetCurrentDateTimeTool with default UTC verified\n\n";
+} catch (Exception $e) {
+    echo "   ❌ GetCurrentDateTimeTool with default UTC test failed: " . $e->getMessage() . "\n\n";
+    exit(1);
+}
+
+// Test 10: Test tools/call with GetCurrentDateTimeTool using Europe/Bucharest timezone
+echo "10. Testing GetCurrentDateTimeTool with Europe/Bucharest timezone...\n";
+
+try {
+    $result = $connection->{'tools/call'}([
+        'name' => 'get_current_datetime',
+        'arguments' => ['timezone' => 'Europe/Bucharest']
+    ]);
+    
+    if (isset($result['error'])) {
+        echo "   ❌ Error with Europe/Bucharest: " . $result['error']['message'] . "\n";
+        throw new Exception("Tool execution failed with Europe/Bucharest");
+    } else {
+        echo "   ✅ Success with Europe/Bucharest: " . $result['content'][0]['text'] . "\n";
+        // Check if the output contains Europe/Bucharest
+        if (strpos($result['content'][0]['text'], 'Europe/Bucharest') !== false) {
+            echo "   ✅ Europe/Bucharest timezone confirmed in output\n";
+        }
+    }
+    echo "   ✅ GetCurrentDateTimeTool with Europe/Bucharest verified\n\n";
+} catch (Exception $e) {
+    echo "   ❌ GetCurrentDateTimeTool with Europe/Bucharest test failed: " . $e->getMessage() . "\n\n";
+    exit(1);
+}
+
+// Test 11: Test error handling with invalid timezone
+echo "11. Testing GetCurrentDateTimeTool error handling with invalid timezone...\n";
+
+try {
+    $result = $connection->{'tools/call'}([
+        'name' => 'get_current_datetime',
+        'arguments' => ['timezone' => 'Invalid/Timezone']
+    ]);
+    
+    if (isset($result['error'])) {
+        echo "   ✅ Correctly handled invalid timezone: " . $result['error']['message'] . "\n\n";
+    } else {
+        echo "   ❌ Expected error for invalid timezone but got success\n\n";
+        exit(1);
+    }
+} catch (Exception $e) {
+    echo "   ✅ Exception thrown for invalid timezone: " . $e->getMessage() . "\n\n";
+}
+
 echo "=== Test Summary ===\n";
 echo "✅ All MCPServerPlugin integration tests completed successfully!\n";
 echo "✅ Tool discovery works correctly\n";
 echo "✅ MCP methods (tools/list and tools/call) are handled internally\n";
 echo "✅ Proper error handling for invalid scenarios\n";
-echo "✅ Integration with OpenAICompatibleEndpointConnection verified\n\n";
+echo "✅ Integration with OpenAICompatibleEndpointConnection verified\n";
+echo "✅ GetCurrentDateTimeTool discovery and execution verified\n";
+echo "✅ Timezone handling (UTC and Europe/Bucharest) tested\n";
+echo "✅ Error handling for invalid timezones verified\n\n";
 
 echo "The MCPServerPlugin successfully integrates with the OpenAICompatibleEndpointConnection\n";
 echo "and provides MCP server functionality for tool discovery and execution.\n";
