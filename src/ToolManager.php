@@ -17,7 +17,7 @@ class ToolManager
     /**
      * Discover and register tools from the Tools directory
      */
-    public function discoverTools(string $toolsDirectory = null): void
+    public function discoverTools(?string $toolsDirectory = null): void
     {
         $directory = $toolsDirectory ?? __DIR__ . '/Tools';
         

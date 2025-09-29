@@ -106,7 +106,7 @@ class RolesManager {
    *   - System message is not first
    *   - Role sequence is invalid
    */
-  public function addMessage(string $role, string $message, array|string $images = null): static {
+  public function addMessage(string $role, string $message, array|string|null $images = null): static {
 
     if (is_string($images)) {
         $images = [$images];
