@@ -16,64 +16,40 @@ class GetCurrentDateTimeTool implements ToolInterface
     public function getDefinition(): array
     {
         return [
-            'name' => 'get_current_datetime',
-            'title' => 'Get Current Date and Time',
-            'description' => 'Returns the current date and time in the specified timezone.',
-            'inputSchema' => [
-                'type' => 'object',
-                'properties' => [
-                    'timezone' => [
-                        'type' => 'string',
-                        'description' => 'The timezone identifier (e.g., UTC, Europe/London, America/New_York)',
-                        'default' => 'UTC'
-                    ]
-                ],
-                'required' => []
-            ],
-            'outputSchema' => [
-                'type' => 'object',
-                'properties' => [
-                    'content' => [
-                        'type' => 'array',
-                        'items' => [
-                            'type' => 'object',
-                            'properties' => [
-                                'type' => [
-                                    'type' => 'string',
-                                    'enum' => ['text']
-                                ],
-                                'text' => [
-                                    'type' => 'string'
-                                ]
-                            ],
-                            'required' => ['type', 'text']
+            'type' => 'function',
+            'function' => [
+                'name' => 'get_current_datetime',
+                'description' => 'Returns the current date and time in the specified timezone.',
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'timezone' => [
+                            'type' => 'string',
+                            'description' => 'Timezone identifier (e.g., UTC, Europe/London, America/New_York)',
+                            'default' => 'UTC'
                         ]
-                    ],
-                    'isError' => [
-                        'type' => 'boolean'
                     ]
-                ],
-                'required' => ['content', 'isError']
+                ]
             ]
         ];
     }
 
-    public function validateArguments(array $arguments): bool
+    public function validateArguments($arguments): bool
     {
         $timezone = $arguments['timezone'] ?? 'UTC';
-        
+
         // Validate timezone using PHP's timezone functions
         if (!in_array($timezone, timezone_identifiers_list())) {
             return false;
         }
-        
+
         return true;
     }
 
-    public function execute(array $arguments): array
+    public function execute( $arguments): array
     {
         $timezone = $arguments['timezone'] ?? 'UTC';
-        
+
         if (!$this->validateArguments($arguments)) {
             return [
                 'content' => [

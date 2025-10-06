@@ -29,78 +29,31 @@ class SearchTool implements ToolInterface
     public function getDefinition(): array
     {
         return [
-            'name' => 'search',
-            'title' => 'Web Search Provider',
-            'description' => 'Performs a search query using SearXNG',
-            'inputSchema' => [
-                'type' => 'object',
-                'properties' => [
-                    'query' => [
-                        'type' => 'string',
-                        'description' => 'The search query string'
-                    ],
-                    'limit' => [
-                        'type' => 'integer',
-                        'description' => 'Maximum number of results to return',
-                        'default' => 5
-                    ]
-                ],
-                'required' => ['query']
-            ],
-            'outputSchema' => [
-                'type' => 'object',
-                'properties' => [
-                    'content' => [
-                        'type' => 'array',
-                        'items' => [
-                            'type' => 'object',
-                            'properties' => [
-                                'type' => [
-                                    'type' => 'string',
-                                    'enum' => ['text']
-                                ],
-                                'text' => [
-                                    'type' => 'string'
-                                ]
-                            ],
-                            'required' => ['type', 'text']
+            'type' => 'function',
+            'function' => [
+                'name' => 'search',
+                'description' => 'Performs a search query using SearXNG and returns relevant web results.',
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'query' => [
+                            'type' => 'string',
+                            'description' => 'The search query string to look up on the web.'
+                        ],
+                        'limit' => [
+                            'type' => 'integer',
+                            'description' => 'Maximum number of results to return.',
+                            'default' => 10
                         ]
                     ],
-                    'structuredContent' => [
-                        'type' => 'object',
-                        'properties' => [
-                            'query' => [
-                                'type' => 'string'
-                            ],
-                            'total' => [
-                                'type' => 'integer'
-                            ],
-                            'results' => [
-                                'type' => 'array',
-                                'items' => [
-                                    'type' => 'object',
-                                    'properties' => [
-                                        'title' => ['type' => 'string'],
-                                        'content' => ['type' => 'string'],
-                                        'url' => ['type' => 'string'],
-                                        'score' => ['type' => 'number'],
-                                        'engine' => ['type' => 'string'],
-                                        'category' => ['type' => 'string']
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ],
-                    'isError' => [
-                        'type' => 'boolean'
-                    ]
-                ],
-                'required' => ['content', 'isError']
+                    'required' => ['query']
+                ]
             ]
         ];
     }
 
-    public function validateArguments(array $arguments): bool
+
+    public function validateArguments( $arguments): bool
     {
         return isset($arguments['query']) && is_string($arguments['query']);
     }
@@ -111,7 +64,7 @@ class SearchTool implements ToolInterface
         $limit = $arguments['limit'] ?? 5;
 
         try {
-            error_log("Attempting to connect to SearchNX with query: " . $query);
+            //error_log("Attempting to connect to SearchNX with query: " . $query);
 
             $searchResponse = $this->httpClient->get('/search', [
                 'query' => [
@@ -130,8 +83,8 @@ class SearchTool implements ToolInterface
             $statusCode = $searchResponse->getStatusCode();
             $body = $searchResponse->getBody()->getContents();
 
-            error_log("SearchNX response status: " . $statusCode);
-            error_log("SearchNX raw response body: " . var_export($body, true));
+            //error_log("SearchNX response status: " . $statusCode);
+            //error_log("SearchNX raw response body: " . var_export($body, true));
 
             if ($statusCode !== 200) {
                 return [
@@ -201,7 +154,6 @@ class SearchTool implements ToolInterface
                         'text' => json_encode($structuredContent, JSON_PRETTY_PRINT)
                     ]
                 ],
-                'structuredContent' => $structuredContent,
                 'isError' => false
             ];
         } catch (GuzzleException $e) {

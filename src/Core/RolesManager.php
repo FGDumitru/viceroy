@@ -154,6 +154,30 @@ class RolesManager {
     return $this;
 }
 
+/**
+ * Adds tool results to the conversation roles
+ *
+ * This method processes an array of tool results and adds them to the conversation
+ * roles with the 'tool' role.
+ *
+ * @param array $toolResults Array of tool results, each with:
+ *   - content: The content of the tool result
+ *   - tool_call_id: The ID of the tool call
+ *   - name: The name of the tool
+ * @return static Returns self for method chaining
+ * @throws Exception If any tool result is missing required keys
+ */
+public function addToolResults(array $toolResults) {
+        $this->roles[] = [
+            'role' => 'tool',
+            'content' => $toolResults['content'],
+            'tool_call_id' => $toolResults['tool_call_id'],
+            'name' => $toolResults['name'],
+        ];
+
+    return $this;
+}
+
   /**
    * Gets all messages
    *

@@ -98,6 +98,145 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     private string $modelsPath = '/v1/models';
     private PluginManager $pluginManager;
     private array $chainStack = [];
+    
+    /**
+     * @var bool $toolSupportEnabled Whether tool support is enabled
+     */
+    private bool $toolSupportEnabled = false;
+    
+    /**
+     * @var string $toolPromptPlacement Where to place tool definitions in prompt ('system' or 'user')
+     */
+    private string $toolPromptPlacement = 'system';
+    
+    /**
+     * @var array $toolDefinitions Tool definitions to be included in prompts
+     */
+    private array $toolDefinitions = [];
+    
+    /**
+     * Enable tool support for this connection
+     *
+     * @return self
+     */
+    public function enableToolSupport(): self
+    {
+        $this->toolSupportEnabled = true;
+        return $this;
+    }
+    
+    /**
+     * Disable tool support for this connection
+     *
+     * @return self
+     */
+    public function disableToolSupport(): self
+    {
+        $this->toolSupportEnabled = false;
+        return $this;
+    }
+    
+    /**
+     * Set where to place tool definitions in the prompt
+     *
+     * @param string $placement Where to place tool definitions ('system' or 'user')
+     * @return self
+     */
+    public function setToolPromptPlacement(string $placement): self
+    {
+        $this->toolPromptPlacement = $placement;
+        return $this;
+    }
+    
+    /**
+     * Add a tool definition to the list of tools
+     *
+     * @param array $toolDefinition The tool definition
+     * @return self
+     */
+    public function addToolDefinition(array $toolDefinition): self
+    {
+        $this->toolDefinitions[] = $toolDefinition;
+        return $this;
+    }
+    
+    /**
+     * Get all tool definitions
+     *
+     * @return array
+     */
+    public function getToolDefinitions(): array
+    {
+        return $this->toolDefinitions;
+    }
+    
+    /**
+     * Clear all tool definitions
+     *
+     * @return self
+     */
+    public function clearToolDefinitions(): self
+    {
+        $this->toolDefinitions = [];
+        return $this;
+    }
+    
+    /**
+     * Process tool calls from the LLM response
+     *
+     * @param array $toolCalls The tool calls from the LLM
+     * @return array The results from executing the tools
+     */
+    private function processToolCalls(array $toolCalls): array
+    {
+        $results = [];
+        
+        // Get the ToolManager if available
+        $toolManager = null;
+        foreach ($this->pluginManager->getAll() as $plugin) {
+            if (method_exists($plugin, 'getToolManager')) {
+                $toolManager = $plugin->getToolManager();
+                break;
+            }
+        }
+        
+        // If no ToolManager is available, try to create one
+        if ($toolManager === null) {
+            try {
+                $toolManager = new \Viceroy\ToolManager();
+                $toolManager->discoverTools();
+            } catch (\Exception $e) {
+                // If we can't create ToolManager, we can't execute tools
+                return $results;
+            }
+        }
+        
+        foreach ($toolCalls as $toolCall) {
+            $toolName = $toolCall['function']['name'] ?? '';
+            $arguments = $toolCall['function']['arguments'] ?? [];
+            
+            if (!empty($toolName)) {
+                try {
+                    // Execute the tool using the ToolManager
+                    $toolResult = $toolManager->executeTool($toolName, $arguments);
+                    $results[] = [
+                        'tool_call_id' => $toolCall['id'] ?? '',
+                        'name' => $toolName,
+                        'content' => json_encode($toolResult)
+                    ];
+                } catch (\Exception $e) {
+                    $results[] = [
+                        'tool_call_id' => $toolCall['id'] ?? '',
+                        'name' => $toolName,
+                        'content' => json_encode(['error' => $e->getMessage()])
+                    ];
+                }
+            }
+        }
+        
+        return $results;
+    }
+    
     /**
      * Gets the endpoint URI
      *
@@ -141,7 +280,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
 
         $this->includeReasoning = TRUE;
         $this->reasoningParameters['reasoning']['max_tokens'] = $maxTokens;
-        $this->reasoningParameters['reasoning']['effort'] = $$effort;
+        $this->reasoningParameters['reasoning']['effort'] = $effort;
 
     }
 
@@ -276,177 +415,442 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     public function queryPost(string|array|callable $promptJson = [], ?callable $streamCallback = null): Response
     {
 
-        if (is_callable($promptJson)) {
-            $streamCallback = $promptJson;
-            $promptJson = [];
-        }
-        
 
-        if (empty($promptJson)) {
-            $promptJson = $this->getDefaultParameters();
-        } elseif (is_string($promptJson)) {
-            $defaultParams = $this->getDefaultParameters();
-            $promptJson = array_merge($defaultParams, ['messages' => $this->getRolesManager()->addMessage('user', $promptJson)->getMessages()]);
-        }
-        
 
-         if ($this->includeReasoning) {
-            $promptJson['include_reasoning'] = true;
+        $runAgain = True;
 
-            $promptJson += $this->reasoningParameters;
-         }
-        
-        $uri = $this->getEndpointUri() . $this->getCompletionPath();
+        $executionCount = 0;
 
-        $guzzleRequest = [
-            'json' => $promptJson,
-            'headers' => ['Content-Type' => 'application/json'],
-            'timeout' => 300, // default connection
-            'stream' => TRUE
-        ];
+        while ($runAgain) {
 
-        // print_r($guzzleRequest);
-        
-        $guzzleRequest = array_merge($guzzleRequest, $this->getGuzzleCustomOptions());
+            // LLM instruction: Reset all variables used in this while block
+            $toolsData = [];
+            $toolCalls = [];
+            $arguments = [];
+            $executionCount++;
+            $decoded = '';
+            $streamedData = null;
+            $thinkingData = null;
+            $thinkingModel = null;
+            $chunk = null;
+            $buffer = null;
+            $jsonString = null;
 
-        if (!empty($this->bearedToken)) {
-            $guzzleRequest['headers']['Authorization'] = 'Bearer ' . trim($this->bearedToken);
-        }
+            $runAgain = False; // By default, we don't need to repeat a call to LLM unless tool calls have been detected.
 
-        if (is_callable($this->guzzleParametersFormationCallback)) {
-            [$uri, $guzzleRequest] = call_user_func($this->guzzleParametersFormationCallback, $uri, $guzzleRequest);
-        }
+            if ($executionCount === 1) {
+                if (is_callable($promptJson)) {
+                    $streamCallback = $promptJson;
+                    $promptJson = [];
+                }
 
-        $timer = microtime(TRUE);
-        $llmQueryStartTime = time();
-        try {
-            if ($streamCallback) {
 
-                $guzzleRequest['json']['stream'] = TRUE;
-                $numberOfTokensReceived = 0;
-                $response = $this->guzzleObject->post($uri, $guzzleRequest);
-                $body = $response->getBody();
-                $buffer = '';
-                $streamedData = '';
+                if (empty($promptJson)) {
+                    $promptJson = $this->getDefaultParameters();
+                } elseif (is_string($promptJson)) {
+                    $defaultParams = $this->getDefaultParameters();
+                    $promptJson = array_merge($defaultParams, ['messages' => $this->getRolesManager()->addMessage('user', $promptJson)->getMessages()]);
+                }
 
-                $thinkingMode = NULL;
-                $thinkingData = '';
 
-                while (!$body->eof()) {
-                    $chunk = $body->read(1);
+                if ($this->includeReasoning) {
+                    $promptJson['include_reasoning'] = true;
 
-                    // echo $chunk;
-                    
-                    $buffer .= $chunk;
+                    $promptJson += $this->reasoningParameters;
+                }
 
-                    if (str_ends_with($buffer, "\n\n")) {
-                        $jsonString = substr($buffer, 6);
-                        $decoded = json_decode($jsonString, TRUE);
-
-                        if (is_array($decoded) &&
-                            array_key_exists('choices', $decoded) &&
-                            !empty($decoded['choices']) &&
-                            array_key_exists('finish_reason', $decoded['choices'][0]) &&
-                            null === $decoded['choices'][0]['finish_reason']) {
-
-                            $numberOfTokensReceived++;
-                            $deltaTimeFloat = time() - $llmQueryStartTime;
-                            if ($deltaTimeFloat > 0) {
-                                $tps = round($numberOfTokensReceived / $deltaTimeFloat);
-                                $this->setCurrentTokensPerSecond($tps);
-                                $this->currentTokensPerSecond = $tps;
-                            } else {
-                                $this->setCurrentTokensPerSecond($numberOfTokensReceived);
-                            }
-
-                            if (!isset($decoded['choices'][0]['delta']['content'])) {
-                                $streamResult = NULL;
-                            } else {
-                                $toStream = $decoded['choices'][0]['delta']['content'];
-
-                                if (empty($toStream) && !empty($decoded['choices'][0]['delta']['reasoning'])) {
-                                    $toStream = $decoded['choices'][0]['delta']['reasoning'];
-
-                                    if ($thinkingMode === NULL) {
-                                        $toStream = "<think>\n$toStream";
-                                        $thinkingData = $toStream;
-                                        $thinkingMode = TRUE;
-                                    } else {
-                                        $thinkingData .= $toStream;
-                                    }
-                                }
-
-                                if ($thinkingMode === TRUE && !empty($decoded['choices'][0]['delta']['content'])) {
-                                    $toStream = "\n</think>\n$toStream";
-                                    $thinkingData .= $toStream;
-                                    $thinkingMode = FALSE;
-                                }
-
-                                 $streamResult = call_user_func($streamCallback, $toStream, $this->getCurrentTokensPerSecond());
-                            }
-                            
-
-                            if (FALSE === $streamResult) {
-                                // If we receive a FALSE return value from the callback assume we want to break the streaming.
-                                break;
-                            }
-
-                            if (isset($decoded['choices'][0]['delta']['content'])) {
-                                $streamedData .= $decoded['choices'][0]['delta']['content'];
-                            }
-
-                            $buffer = '';
-                        } else {
-                            if ('[DONE]' === $buffer) {
-                                break;
-                            }
-                            if (!str_starts_with($buffer, ':')) {
-
-                                if (isset($decoded['choices'][0]['delta']['content'])) { // some openrouter models include a last content data line here
-                                    $toStream = $decoded['choices'][0]['delta']['content'];
-                                    call_user_func($streamCallback, $toStream, $this->getCurrentTokensPerSecond());
-                                    $streamedData .= $toStream;
-                                }
-
-                                break;
-                            } else {
-                               $buffer = '';
-                            }
-                        }
+                // Add tool definitions to the prompt if tool support is enabled
+                if ($this->toolSupportEnabled) {
+                    if ('system' === $this->toolPromptPlacement) {
+                        $idx = 0;
+                    } else {
+                        // will be put in the first User request
+                        $idx = 1;
                     }
 
+                    // If we have explicit tool definitions, use them
+                    if (!empty($this->toolDefinitions)) {
+                        $toolDefinitionsJson = $this->toolDefinitions;
+
+                        // Add the tool message to the messages array
+                        if (!isset($promptJson['messages'])) {
+                            $promptJson['messages'] = [];
+                        }
+
+                        $promptJson['tools'] = $toolDefinitionsJson;
+
+                    } else {
+                        // Try to get tool definitions from ToolManager
+                        $toolDefinitions = $this->listTools();
+                        if (!empty($toolDefinitions)) {
+                            $toolDefinitionsJson = json_encode($toolDefinitions);
+
+                            $toolMessage =  <<<EOP
+# Tool Usage Instructions
+
+You are an expert assistant with access to external tools that can provide real-time information or perform actions. Your primary goal is to help users solve their problems efficiently while following these strict protocols:
+
+## Tool Usage Protocol
+
+1. **When to Use Tools**: Only use tools when the user's request requires information that's not in your knowledge base, or when you need to perform actions that only external systems can do.
+
+2. **Tool Selection**: Review the available tools and select the one(s) most appropriate for the user's request. Choose only the tools that can actually help with the specific query.
+
+3. **Tool Execution Format**: When you need to call a tool, respond with exactly one message containing only a tool_call object (no other content) in this format:
+```
+{
+  "tool_calls": [
+    {
+      "function": {
+        "name": "tool_name",
+        "arguments": "{\"parameter1\": \"value1\", \"parameter2\": \"value2\"}"
+      }
+    }
+  ]
+}
+```
+
+4. **No Natural Language in Tool Calls**: Do not add any text content or explanation when making tool calls. The tool_call must be the only content in your response.
+
+5. **Processing Tool Results**: When you receive tool results, analyze them carefully and provide a natural language response that answers the user's original question based on the tool information.
+
+6. **Final Response Protocol**: When you have all the information needed to fully answer the user's request, provide a complete natural language response. This final response should be the only content in your message - no tool calls, no additional formatting.
+
+7. **Error Handling**: If a tool fails or returns unexpected results, acknowledge the limitation and explain what you can do with the available information.
+
+8. **Multiple Tools**: If your task requires multiple tools, call them sequentially or in parallel (if supported) but ensure you process each tool's result appropriately.
+
+## Available Tools
+[TOOL_DEFINITIONS_HERE]
+
+## Important Rules
+
+- Never call tools that aren't listed in the available tools
+- Never explain your tool selection process in natural language
+- Never provide tool call responses with natural language text
+- Never ask the user to provide tool parameters
+- If you cannot answer a question with available tools, explain the limitation clearly
+
+## Response Format
+
+- Tool calls: JSON object with tool_calls only
+- Final responses: Natural language text only
+- Do not mix formats in the same response
+
+## Examples
+
+**User:** "What's the weather in Paris?"
+**Assistant:**
+```
+{
+  "tool_calls": [
+    {
+      "function": {
+        "name": "get_weather",
+        "arguments": "{\"location\": \"Paris, France\"}"
+      }
+    }
+  ]
+}
+```
+
+**User:** "What's the current time in Tokyo?"
+**Assistant:**
+```
+{
+  "tool_calls": [
+    {
+      "function": {
+        "name": "get_current_time",
+        "arguments": "{\"timezone\": \"Asia/Tokyo\"}"
+      }
+    }
+  ]
+}
+```
+
+Remember: Your job is to seamlessly integrate tool usage with natural language responses to provide the best possible assistance to users.
+```
+EOP;
+
+                            $toolMessage = "You have access to the following tools:\n\n" . $toolDefinitionsJson;
+
+                            // Add the tool message to the messages array
+                            if (!isset($promptJson['messages'])) {
+                                $promptJson['messages'] = [];
+                            }
+                            $promptJson['messages'][$idx]['content'] = $promptJson['messages'][$idx]['content'] . "\n" . json_encode($toolMessage);
+                        }
+                    }
                 }
 
-                if (isset($decoded['error'])) {
-                    var_dump($decoded);
-                    die;
-                }
-
-                $this->queryTime = microtime(TRUE) - $timer;
-                $this->response = new Response($response);
-                $this->response->setWasStreamed();
-                $jsonString = substr($buffer, 6);
-                $decoded = json_decode($jsonString, TRUE);
-
-                $this->setQueryStats($decoded);
-
-                $this->response->setStreamedContent($thinkingData . $streamedData);
-                $this->response->setContent($thinkingData . $streamedData);
             } else {
-                $response = $this->guzzleObject->post($uri, $guzzleRequest);
-                $this->queryTime = microtime(TRUE) - $timer;
-                $this->response = new Response($response);
-
-                $fullResponseString = $this->response->getRawContent();
-                $fullResponse = json_decode($fullResponseString, TRUE);
-                $this->setQueryStats($fullResponse);
-
+                // This is not the first loop, a tool call was detected.
+                $promptJson['messages'] = $this->getRolesManager()->getMessages();
             }
-        } catch (GuzzleException $e) {
-            $this->queryTime = NULL;
-            throw new RuntimeException("Guzzle request failed: " . $e->getMessage());
-        }
+            $uri = $this->getEndpointUri() . $this->getCompletionPath();
 
+            $guzzleRequest = [
+                'json' => $promptJson,
+                'headers' => ['Content-Type' => 'application/json'],
+                'timeout' => 300, // default connection
+                'stream' => TRUE
+            ];
+
+            // print_r($guzzleRequest);
+
+            $guzzleRequest = array_merge($guzzleRequest, $this->getGuzzleCustomOptions());
+
+            if (!empty($this->bearedToken)) {
+                $guzzleRequest['headers']['Authorization'] = 'Bearer ' . trim($this->bearedToken);
+            }
+
+            if (is_callable($this->guzzleParametersFormationCallback)) {
+                [$uri, $guzzleRequest] = call_user_func($this->guzzleParametersFormationCallback, $uri, $guzzleRequest);
+            }
+
+            $timer = microtime(TRUE);
+            $llmQueryStartTime = time();
+            try {
+                if ($streamCallback) {
+
+                    $guzzleRequest['json']['stream'] = TRUE;
+                    $numberOfTokensReceived = 0;
+                    $response = $this->guzzleObject->post($uri, $guzzleRequest);
+                    $body = $response->getBody();
+                    $buffer = '';
+                    $streamedData = '';
+
+                    $thinkingMode = NULL;
+                    $thinkingData = '';
+
+                    while (!$body->eof()) {
+                        $chunk = $body->read(1);
+
+                        //echo $chunk;
+
+                        $buffer .= $chunk;
+                        if (str_starts_with($buffer,'<function=')) {
+                            $a = 1;
+                        }
+
+                        if (str_ends_with($buffer, "\n\n")) {
+                            $jsonString = substr($buffer, 6);
+                            $decoded = json_decode($jsonString, TRUE);
+
+                            if (isset($decoded['choices'][0]['delta']['role'])
+                            && 'assistant' == $decoded['choices'][0]['delta']['role']
+                            && null == $decoded['choices'][0]['delta']['content']
+                            ) {
+                                $buffer = '';
+                                continue;
+                            }
+
+                            if (isset($decoded['choices'][0]['delta']['tool_calls'])
+                               // && null == $decoded['choices'][0]['delta']['role']
+                            ) {
+
+
+                                $toolCalls = $decoded['choices'][0]['delta']['tool_calls'];
+                                $idx = $decoded['choices'][0]['delta']['tool_calls'][0]['index'];
+                                $arguments = $decoded['choices'][0]['delta']['tool_calls'][0]['function']['arguments'];
+
+                                if (isset($toolsData[$idx])) {
+                                    $toolsData[$idx]['function']['arguments'] .= $arguments;
+                                } else {
+                                    $toolsData[] = $toolCalls[0];
+                                }
+
+                                $a = 1;
+                                $buffer = '';
+                                continue;
+                            }
+
+
+
+                            $finish_reason = $decoded['choice'][0]['finish_reason'] ?? null;
+                            $object = $decoded['object'] ?? null;
+
+                            if (is_array($decoded) &&
+                                array_key_exists('choices', $decoded) &&
+                                !empty($decoded['choices']) &&
+                                array_key_exists('finish_reason', $decoded['choices'][0]) &&
+                                null === $decoded['choices'][0]['finish_reason']) {
+
+                                $numberOfTokensReceived++;
+                                $deltaTimeFloat = time() - $llmQueryStartTime;
+                                if ($deltaTimeFloat > 0) {
+                                    $tps = round($numberOfTokensReceived / $deltaTimeFloat);
+                                    $this->setCurrentTokensPerSecond($tps);
+                                    $this->currentTokensPerSecond = $tps;
+                                } else {
+                                    $this->setCurrentTokensPerSecond($numberOfTokensReceived);
+                                }
+
+                                // Check for tool calls in the streaming response
+                                $finish_reason = $decoded["choices"][0]["finish_reason"];
+                                if (
+                                    isset($decoded['choices'][0]['delta']['tool_calls'][0]['type']) && $decoded['choices'][0]['delta']['tool_calls'][0]['type'] === 'function'
+                                ) {
+                                    $toolCalls = $decoded['choices'][0]['delta']['tool_calls'];
+                                    $toolsData[] = $toolCalls[0];
+                                }
+
+                                if (!isset($decoded['choices'][0]['delta']['content']) ) {
+                                    $streamResult = NULL;
+                                } else {
+                                    $toStream = $decoded['choices'][0]['delta']['content'];
+
+                                    if (empty($toStream) && !empty($decoded['choices'][0]['delta']['reasoning'])) {
+                                        $toStream = $decoded['choices'][0]['delta']['reasoning'];
+
+                                        if ($thinkingMode === NULL) {
+                                            $toStream = "<tool_call>\n$toStream";
+                                            $thinkingData = $toStream;
+                                            $thinkingMode = TRUE;
+                                        } else {
+                                            $thinkingData .= $toStream;
+                                        }
+                                    }
+
+                                    if ($thinkingMode === TRUE && !empty($decoded['choices'][0]['delta']['content'])
+                                    && isset($decoded['choices'][0]['delta']['role'])
+                                    ) {
+                                        $toStream = "\n<tool_call>\n$toStream";
+                                        $thinkingData .= $toStream;
+                                        $thinkingMode = FALSE;
+                                    }
+
+                                    if ($toStream !== "<tool_call>\n" &&
+                                        !str_starts_with($toStream,'<function=')
+                                    ) {
+                                        $streamResult = call_user_func($streamCallback, $toStream, $this->getCurrentTokensPerSecond());
+                                    }
+
+
+                                }
+
+
+                                if (FALSE === $streamResult) {
+                                    // If we receive a FALSE return value from the callback assume we want to break the streaming.
+                                    break;
+                                }
+
+                                if (isset($decoded['choices'][0]['delta']['content'])) {
+                                    $streamedData .= $decoded['choices'][0]['delta']['content'];
+                                }
+
+                                $finish_reason = $decoded['choices'][0]['finish_reason'];
+                                if (isset($decoded['choices'][0]['delta']['tool_calls'])) {
+                                    $idx = $decoded['choices'][0]['delta']['tool_calls'][0]['index'];
+                                    $arguments = $decoded['choices'][0]['delta']['tool_calls'][0]['function']['arguments'];
+
+                                    $toolsData[$idx]['function']['arguments'] .= $arguments;
+                                    $a = 1;
+                                }
+                                $buffer = '';
+                            } else {
+                                if ('[DONE]' === $buffer) {
+                                    break;
+                                }
+                                if (!str_starts_with($buffer, ':')) {
+
+                                    if (isset($decoded['choices'][0]['delta']['content'])) { // some openrouter models include a last content data line here
+                                        $toStream = $decoded['choices'][0]['delta']['content'];
+                                        call_user_func($streamCallback, $toStream, $this->getCurrentTokensPerSecond());
+                                        $streamedData .= $toStream;
+                                    }
+
+                                    break;
+                                } else {
+                                    $buffer = '';
+                                }
+                            }
+                        }
+
+                    }
+
+                    if (isset($decoded['error'])) {
+                        var_dump($decoded);
+                        die;
+                    }
+
+                    $this->queryTime = microtime(TRUE) - $timer;
+                    $this->response = new Response($response);
+                    $this->response->setWasStreamed();
+                    $jsonString = substr($buffer, 6);
+                    $decoded = json_decode($jsonString, TRUE);
+
+                    $this->setQueryStats($decoded);
+
+                    $this->response->setStreamedContent($thinkingData . $streamedData);
+                    $this->response->setContent($thinkingData . $streamedData);
+
+                    // Check if the response contains tool calls and process them
+                    if (isset($decoded['choices'][0]['delta']['tool_calls'])) {
+                        $toolCalls = $decoded['choices'][0]['delta']['tool_calls'];
+                        $toolResults = $this->processToolCalls($toolCalls);
+                        // Add tool results to the conversation
+                        if (!empty($toolResults)) {
+                            // In a real implementation, we would send these results back to the LLM
+                            // For now, we'll just log them and continue with the original response
+                            //error_log("Tool results processed: " . json_encode($toolResults));
+                        }
+                    }
+                } else {
+                    $response = $this->guzzleObject->post($uri, $guzzleRequest);
+                    $this->queryTime = microtime(TRUE) - $timer;
+                    $this->response = new Response($response);
+
+                    $fullResponseString = $this->response->getRawContent();
+                    $fullResponse = json_decode($fullResponseString, TRUE);
+                    $this->setQueryStats($fullResponse);
+
+                    // Check if the response contains tool calls and process them
+                    if (isset($fullResponse['choices'][0]['message']['tool_calls'])) {
+                        $toolCalls = $fullResponse['choices'][0]['message']['tool_calls'];
+                        $toolResults = $this->processToolCalls($toolCalls);
+                        // Add tool results to the conversation
+                        if (!empty($toolResults)) {
+                            // This is a simplified approach - in a real implementation,
+                            // we would need to send the tool results back to the LLM
+                            // For now, we'll just return the original response
+                        }
+                    }
+                }
+            } catch (GuzzleException $e) {
+                $this->queryTime = NULL;
+                throw new RuntimeException("Guzzle request failed: " . $e->getMessage());
+            }
+
+            if (!empty($toolsData)) {
+
+                $messages = $this->getRolesManager()->getMessages();
+
+                $a = 1;
+                $messages[] = [
+                  'role' => 'assistant',
+                  'content' => null,
+                  'tool_calls' => $toolsData,
+                ];
+
+                $toolResults = $this->processToolCalls($toolsData);
+
+                foreach ($toolResults as $toolResult) {
+                    $messages[] = [
+                        'role' => 'tool',
+                        'content' => $toolResult['content'],
+                        'tool_call_id' => $toolResult['tool_call_id'],
+                        'name' => $toolResult['name'],
+                    ];
+                }
+
+                $this->getRolesManager()->setMessages($messages);
+
+                $runAgain = TRUE;
+            }
+
+        }
         return $this->response;
     }
 
@@ -712,20 +1116,55 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      * @return array Array of tools with their definitions
      */
     public function listTools(): array {
-        // Check if MCP client plugin is registered
-        $mcpPlugin = $this->pluginManager->get('mcp_client');
-
-        // If MCP plugin is not registered, return empty array
-        if (!$mcpPlugin) {
-            return [];
+        // Try to get ToolManager from plugins first
+        $toolManager = null;
+        foreach ($this->pluginManager->getAll() as $plugin) {
+            if (method_exists($plugin, 'getToolManager')) {
+                $toolManager = $plugin->getToolManager();
+                break;
+            }
         }
-
-        // Use the plugin's handleMethodCall to call the 'tools/list' method
-        try {
-            return $mcpPlugin->handleMethodCall('tools/list', []);
-        } catch (\Exception $e) {
-            // If there's an error, return empty array
-            return [];
+        
+        // If no ToolManager from plugins, create a new one
+        if ($toolManager === null) {
+            try {
+                $toolManager = new \Viceroy\ToolManager();
+                $toolManager->discoverTools();
+            } catch (\Exception $e) {
+                return [];
+            }
         }
+        
+        // Get tool definitions from ToolManager
+        return $toolManager->getToolDefinitions();
+    }
+    
+    /**
+     * Get all available tools from the ToolManager
+     *
+     * @return array Array of tool names
+     */
+    public function getAvailableTools(): array {
+        // Try to get ToolManager from plugins first
+        $toolManager = null;
+        foreach ($this->pluginManager->getAll() as $plugin) {
+            if (method_exists($plugin, 'getToolManager')) {
+                $toolManager = $plugin->getToolManager();
+                break;
+            }
+        }
+        
+        // If no ToolManager from plugins, create a new one
+        if ($toolManager === null) {
+            try {
+                $toolManager = new \Viceroy\ToolManager();
+                $toolManager->discoverTools();
+            } catch (\Exception $e) {
+                return [];
+            }
+        }
+        
+        // Get tool names from ToolManager
+        return $toolManager->getToolNames();
     }
 }

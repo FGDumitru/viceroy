@@ -76,7 +76,7 @@ class ToolManager
     /**
      * Execute a tool by name
      */
-    public function executeTool(string $name, array $arguments): array
+    public function executeTool(string $name,  $arguments): array
     {
         // First try modular tools
         $tool = $this->registry->getTool($name);
@@ -84,10 +84,13 @@ class ToolManager
             if (!$this->registry->isToolEnabled($name)) {
                 throw new \RuntimeException("Tool '{$name}' is disabled");
             }
-            if (!$tool->validateArguments($arguments)) {
+
+            $argumentsDecoded = json_decode($arguments, true);
+
+            if (!$tool->validateArguments($argumentsDecoded)) {
                 throw new \InvalidArgumentException("Invalid arguments for tool '{$name}'");
             }
-            return $tool->execute($arguments);
+            return $tool->execute($argumentsDecoded);
         }
 
         // Then try legacy tools
