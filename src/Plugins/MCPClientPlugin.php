@@ -155,7 +155,7 @@ class MCPClientPlugin implements PluginInterface
     /**
      * Get list of available tools
      */
-    public function listTools(string $cursor = null): array
+    public function listTools(string|null $cursor = null): array
     {
         $params = [];
         if ($cursor !== null) {

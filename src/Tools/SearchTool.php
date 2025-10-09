@@ -13,6 +13,7 @@ class SearchTool implements ToolInterface
 
     public function __construct(string $searchEndpoint = 'http://192.168.0.121:8080')
     {
+  
         $this->searchEndpoint = $searchEndpoint;
         $this->httpClient = new Client([
             'base_uri' => $this->searchEndpoint,
@@ -63,6 +64,8 @@ class SearchTool implements ToolInterface
         $query = $arguments['query'];
         $limit = $arguments['limit'] ?? 5;
 
+        var_dump($query, $limit);
+        
         try {
             //error_log("Attempting to connect to SearchNX with query: " . $query);
 
