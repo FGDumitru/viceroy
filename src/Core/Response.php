@@ -124,10 +124,11 @@ class Response
      *   - content (string)
      *   - think tags (if present)
      */
-    private function getChoice(): array
+    private function getChoice()
     {
         if (!$this->wasStreamed()) {
             $content = $this->getContent();
+            return $content;
             $contentArray = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
             $choices = $contentArray['choices'];
             return $choices[0]['message'];
@@ -164,15 +165,15 @@ class Response
     {
         if ($this->processedContent === null) {
             if (!$this->wasStreamed) {
-                $choice = $this->getChoice();
-                $content = $choice['content'] ?? '';
+                $content = $this->getChoice();
+
             } else {
                 $content = $this->getStreamedContent();
             }
 
             // Extract think tags
             preg_match_all('/<think>(.*?)<\/think>/s', $content, $matches);
-            $this->thinkContent = implode("\n", $matches[1] ?? []);
+            $this->thinkContent = implode("\n", $matches[0] ?? []);
 
             // Remove think tags from final output
             $this->processedContent = preg_replace('/<think>.*?<\/think>/s', '', $content);

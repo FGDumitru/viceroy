@@ -64,10 +64,10 @@ class SearchTool implements ToolInterface
         $query = $arguments['query'];
         $limit = $arguments['limit'] ?? 5;
 
-        var_dump($query, $limit);
+//        var_dump($query, $limit);
         
         try {
-            //error_log("Attempting to connect to SearchNX with query: " . $query);
+//            error_log("Attempting to connect to SearchNX with query: " . $query);
 
             $searchResponse = $this->httpClient->get('/search', [
                 'query' => [

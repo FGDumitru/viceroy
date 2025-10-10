@@ -23,20 +23,25 @@ $connection->addToolDefinition($toolDefinition);
 $searchTool = new SearchTool('http://Mitica:HanSolo1024-@search.wiro.ro');
 $toolDefinition = $searchTool->getDefinition();
 $connection->addToolDefinition($toolDefinition);
-// Example prompt that would trigger the tool usage
-$prompt = "Based on the current date and time, tell me in which yearly quarter are we right now and if right now it's night, morning, mid-day or evening.  My location is Bucharest, Romania";
 
-//$response = $connection->queryPost($prompt);
+$connection->setConnectionTimeout(864000);
+
+// Example prompt that would trigger the tool usage
+$prompt = "Based on the current date and time, tell me in which yearly quarter are we right now and if right now it's night, morning, mid-day or evening.  My location is Bucharest, Romania. Then search for the latest news in Romania related to technology and AI and summarize them for me.";
 
 // Execute the query with streaming
 try {
     $response = $connection->queryPost($prompt, function ($chunk, $tps) {
-        echo $chunk;
+        echo $chunk; // Display each chunk as it arrives
         return true; // Continue streaming
     });
+
+//    $response = $connection->queryPost($prompt);
 } catch (Exception $e) {
     var_dump($e);
 }
 
-echo $response->getRawResponse()->getBody();
+//echo $response->getThinkContent() . "\n";
+//echo $response->getLlmResponse();
+
 echo "\n\nTool execution completed.\n";
