@@ -587,7 +587,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                     }
 
                     // Read from the stream without detaching
-                    $chunk = $body->read(4096);
+                    $chunk = $body->read(100);
 
                     if ($chunk === '') {
                         // No data available, sleep briefly to prevent CPU spinning
@@ -604,7 +604,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                         $line = trim($line);
 
                         //DEBUG
-//                        echo $line . PHP_EOL;
+//                        echo "\tDEBUG LINE: " . $line . PHP_EOL;
 
                         if ($line === '' || str_starts_with($line, ':')) {
                             continue;
@@ -624,7 +624,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                             $finishReason = $decoded['choices'][0]['finish_reason'] ?? NULL;
 
                             // Handle reasoning (thinking) mode
-                            if (!empty($delta['reasoning_content'])) {
+                            if (array_key_exists('reasoning_content', $delta) && $delta['reasoning_content'] !== '') {
                                 $toStream = $delta['reasoning_content'];
                                 if ($thinkingMode === NULL) {
                                     // Start thinking mode with opening tag
@@ -661,7 +661,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                             }
 
                             // Handle content
-                            if (!empty($delta['content'])) {
+                            if (is_string($delta['content'] ?? NULL) && $delta['content'] !== '') {
                                 $toStream = $delta['content'];
 
                                 // Check if content contains thinking tags
@@ -829,8 +829,8 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                 }
 
 
-                // Extract resoning content calls from response structure
-                if (!empty($decoded['choices'][0]['message']['reasoning_content'])) {
+                // Extract reasoning content calls from response structure
+                if (isset($decoded['choices'][0]['message']['reasoning_content']) && $decoded['choices'][0]['message']['reasoning_content'] !== '') {
                     $thinkingContent = $decoded['choices'][0]['message']['reasoning_content'];
                 }
 
