@@ -20,7 +20,7 @@ $timeTool = new GetCurrentDateTimeTool();
 $toolDefinition = $timeTool->getDefinition();
 $connection->addToolDefinition($toolDefinition);
 
-$searchTool = new SearchTool('http://Mitica:HanSolo1024-@search.wiro.ro');
+$searchTool = new SearchTool();
 $toolDefinition = $searchTool->getDefinition();
 $connection->addToolDefinition($toolDefinition);
 
@@ -30,18 +30,21 @@ $connection->setConnectionTimeout(864000);
 $prompt = "Based on the current date and time, tell me in which yearly quarter are we right now and if right now it's night, morning, mid-day or evening.  My location is Bucharest, Romania. Then search for the latest news in Romania related to technology and AI and summarize them for me.";
 
 // Execute the query with streaming
-try {
-    $response = $connection->queryPost($prompt, function ($chunk, $tps) {
-        echo $chunk; // Display each chunk as it arrives
-        return true; // Continue streaming
-    });
+$useStreaming = FALSE;
 
-//    $response = $connection->queryPost($prompt);
+try {
+    if ($useStreaming) {
+        $response = $connection->queryPost($prompt, function ($chunk, $tps) {
+            echo $chunk; // Display each chunk as it arrives
+            return true; // Continue streaming
+        });
+    } else {
+        $response = $connection->queryPost($prompt);
+        echo $response->getThinkContent() . "\n";
+        echo $response->getLlmResponse();
+    }
 } catch (Exception $e) {
     var_dump($e);
 }
-
-//echo $response->getThinkContent() . "\n";
-//echo $response->getLlmResponse();
 
 echo "\n\nTool execution completed.\n";
