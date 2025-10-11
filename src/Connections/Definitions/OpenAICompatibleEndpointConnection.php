@@ -136,6 +136,10 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      * @var int $streamIdleTimeout Timeout for idle stream in seconds
      */
     private int $streamIdleTimeout = 3600;
+    /**
+     * @var true
+     */
+    private bool $toolEncountered = false;
 
     /**
      * Enable tool support for this connection
@@ -488,6 +492,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         $runAgain = TRUE;
         $executionCount = 0;
         $maxExecutionCount = 10; // Prevent infinite loops
+        $this->toolEncountered = false;
 
         while ($runAgain) {
             $toolsData = [];
@@ -571,6 +576,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
 
         try {
             if ($streamCallback) {
+                // Streaming mode code (unchanged)
                 $guzzleRequest['json']['stream'] = TRUE;
                 $response = $this->guzzleObject->post($uri, $guzzleRequest);
                 $body = $response->getBody();
@@ -604,7 +610,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                         $line = trim($line);
 
                         //DEBUG
-//                        echo "\tDEBUG LINE: " . $line . PHP_EOL;
+//                    echo "\tDEBUG LINE: " . $line . PHP_EOL;
 
                         if ($line === '' || str_starts_with($line, ':')) {
                             continue;
@@ -681,57 +687,53 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                                     $toStream = $closeTag . "\n" . $toStream;
                                 }
 
-                                // Check for tool calls in content using the specific format
-                                if (preg_match_all('/```\s*(\w+)(.*?)```/s', $toStream, $matches)) {
-                                    // Extract potential tool calls from content
-                                    for ($i = 0; $i < count($matches[1]); $i++) {
-                                        $toolName = $matches[1][$i];
-                                        $toolContent = trim($matches[2][$i]);
+                                $streamedContent .= $toStream;
 
-                                        // Parse the tool content to extract parameters
-                                        $parameters = [];
-                                        $lines = explode("\n", $toolContent);
-
-                                        foreach ($lines as $line) {
-                                            $line = trim($line);
-                                            if (empty($line)) continue;
-
-                                            // Check if line contains a parameter in format: parameter_name value
-                                            if (preg_match('/^(\w+)\s+(.+)$/', $line, $paramMatch)) {
-                                                $paramName = $paramMatch[1];
-                                                $paramValue = $paramMatch[2];
-                                                $parameters[$paramName] = $paramValue;
-                                            }
-                                        }
-
-                                        // Create tool call structure
-                                        $toolCalls[] = [
-                                            'id' => 'call_' . uniqid(),
-                                            'type' => 'function',
-                                            'function' => [
-                                                'name' => $toolName,
-                                                'arguments' => json_encode($parameters)
-                                            ]
-                                        ];
-
-                                        // Notify about tool call
-                                        if ($streamCallback) {
-                                            call_user_func($streamCallback, "\n[Calling tool: {$toolName}]\n", 0);
-                                        }
-                                    }
-
-                                    // Remove tool calls from content
-                                    $toStream = preg_replace('/```\s*\w+.*?```/s', '', $toStream);
+                                if (str_contains($toStream, '<tool_call>')) {
+                                    $this->toolEncountered = true;
                                 }
 
-                                $streamedContent .= $toStream;
+                                // Check for tool calls in content using the specific format
+                                if (preg_match_all('/<tool_call>(.*?)<\/tool_call>/s', $streamedContent, $matches)) {
+                                    // Extract potential tool calls from content
+                                    $lines = explode("\n", $matches[1][0]);
+                                    $toolName = $lines[0];
+                                    $paramName = strip_tags($lines[1]);
+                                    $paramValue = strip_tags($lines[2]);
+                                    $parameters[$paramName] = $paramValue;
+
+                                    // Create tool call structure
+                                    $toolCalls[] = [
+                                        'id' => 'call_' . uniqid(),
+                                        'type' => 'function',
+                                        'function' => [
+                                            'name' => $toolName,
+                                            'arguments' => json_encode($parameters)
+                                        ]
+                                    ];
+
+
+                                    // Remove tool calls from content
+                                    $streamedContent = preg_replace('/<tool_call>(.*?)<\/tool_call>/s', '', $streamedContent);
+
+                                }
+
+
                                 $numberOfTokensReceived++;
                                 $deltaTime = max(time() - $llmQueryStartTime, 1);
                                 $tps = (int) ($numberOfTokensReceived / $deltaTime);
                                 $this->setCurrentTokensPerSecond($tps);
                                 $this->currentTokensPerSecond = $tps;
 
-                                $streamResult = call_user_func($streamCallback, $toStream, $tps);
+                                if (!$this->toolEncountered) {
+                                    $streamResult = call_user_func($streamCallback, $toStream, $tps);
+                                }
+
+                                if (str_contains($toStream, '</tool_call>')) {
+                                    $this->toolEncountered = false;
+                                }
+
+
                                 if ($streamResult === FALSE) {
                                     break 2;
                                 }
@@ -786,27 +788,14 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                 }
 
                 // Check for tool calls in content using the specific format
-                if (preg_match_all('/```\s*(\w+)(.*?)```/s', $streamedContent, $matches)) {
+//                if (preg_match_all('/```\s*(\w+)(.*?)```/s', $streamedContent, $matches)) {
+                    if (preg_match_all('/<tool_call>(.*?)<\/tool_call>/s', $streamedContent, $matches)) {
                     // Extract potential tool calls from content
-                    for ($i = 0; $i < count($matches[1]); $i++) {
-                        $toolName = $matches[1][$i];
-                        $toolContent = trim($matches[2][$i]);
-
-                        // Parse the tool content to extract parameters
-                        $parameters = [];
-                        $lines = explode("\n", $toolContent);
-
-                        foreach ($lines as $line) {
-                            $line = trim($line);
-                            if (empty($line)) continue;
-
-                            // Check if line contains a parameter in format: parameter_name value
-                            if (preg_match('/^(\w+)\s+(.+)$/', $line, $paramMatch)) {
-                                $paramName = $paramMatch[1];
-                                $paramValue = $paramMatch[2];
-                                $parameters[$paramName] = $paramValue;
-                            }
-                        }
+                        $lines = explode("\n", $matches[1][0]);
+                        $toolName = $lines[0];
+                        $paramName = strip_tags($lines[1]);
+                        $paramValue = strip_tags($lines[2]);
+                        $parameters[$paramName] = $paramValue;
 
                         // Create tool call structure
                         $toolCalls[] = [
@@ -817,10 +806,10 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                                 'arguments' => json_encode($parameters)
                             ]
                         ];
-                    }
+
 
                     // Remove tool calls from content
-                    $streamedContent = preg_replace('/```\s*\w+.*?```/s', '', $streamedContent);
+                    $streamedContent = preg_replace('/<tool_call>(.*?)<\/tool_call>/s', '', $streamedContent);
                 }
 
                 // Extract tool calls from response structure
@@ -828,13 +817,10 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                     $toolCalls = array_merge($toolCalls, $decoded['choices'][0]['message']['tool_calls']);
                 }
 
-
                 // Extract reasoning content calls from response structure
                 if (isset($decoded['choices'][0]['message']['reasoning_content']) && $decoded['choices'][0]['message']['reasoning_content'] !== '') {
                     $thinkingContent = $decoded['choices'][0]['message']['reasoning_content'];
                 }
-
-
             }
 
         } catch (GuzzleException $e) {
@@ -848,7 +834,6 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
             'tool_calls' => $toolCalls,
         ];
     }
-
     private function buildPromptJson(string|array $promptJson): array
     {
         if (empty($promptJson)) {

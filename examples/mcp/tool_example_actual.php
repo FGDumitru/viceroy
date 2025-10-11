@@ -30,7 +30,7 @@ $connection->setConnectionTimeout(864000);
 $prompt = "Based on the current date and time, tell me in which yearly quarter are we right now and if right now it's night, morning, mid-day or evening.  My location is Bucharest, Romania. Then search for the latest news in Romania related to technology and AI and summarize them for me.";
 
 // Execute the query with streaming
-$useStreaming = FALSE;
+$useStreaming = true;
 
 try {
     if ($useStreaming) {
