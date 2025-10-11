@@ -521,8 +521,14 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
             $thinkingData = $responseResult['thinking'] ?? '';
             $toolCalls = $responseResult['tool_calls'] ?? [];
 
+            $thinkingText = '';
+
+            if (!empty($thinkingData)) {
+                $thinkingText = '<' . $this->getThinkingTag() . ">\n" . $thinkingData . "\n</"  . $this->getThinkingTag() . ">\n" ;
+            }
+
             // Final response content
-            $finalContent =  '<' . $this->getThinkingTag() . ">\n" . $thinkingData . "\n</" . $this->getThinkingTag() . ">\n" . $streamedData ;
+            $finalContent =  $thinkingText. $streamedData ;
             $this->response->setStreamedContent($finalContent);
             $this->response->setContent($finalContent);
 
@@ -591,6 +597,9 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                     if (time() - $lastDataTime > $this->streamIdleTimeout) {
                         throw new RuntimeException("Stream idle timeout exceeded after {$this->streamIdleTimeout} seconds");
                     }
+
+                    $this->toolEncountered = false;
+
 
                     // Read from the stream without detaching
                     $chunk = $body->read(100);
@@ -727,6 +736,8 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
 
                                 if (!$this->toolEncountered) {
                                     $streamResult = call_user_func($streamCallback, $toStream, $tps);
+                                } else {
+                                    $streamResult = null;
                                 }
 
                                 if (str_contains($toStream, '</tool_call>')) {
@@ -734,7 +745,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                                 }
 
 
-                                if ($streamResult === FALSE) {
+                                if ( $streamResult === FALSE) {
                                     break 2;
                                 }
                             }
