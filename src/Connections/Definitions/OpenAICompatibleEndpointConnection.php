@@ -12,6 +12,7 @@ use Viceroy\Core\PluginInterface;
 use Viceroy\Core\PluginManager;
 use Viceroy\Core\Response;
 use Viceroy\Core\RolesManager;
+use Viceroy\Tools\Interfaces\ToolInterface;
 
 /**
  * Represents a connection to an OpenAI-compatible API endpoint.
@@ -181,8 +182,9 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      *
      * @return self
      */
-    public function addToolDefinition(array $toolDefinition): self {
-        $this->toolDefinitions[] = $toolDefinition;
+    public function addToolDefinition(ToolInterface $tool): self {
+        $this->enableToolSupport();
+            $this->toolDefinitions[] = $tool->getDefinition();
         return $this;
     }
 
