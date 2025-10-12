@@ -69,7 +69,7 @@ class WebPageToMarkdownTool implements ToolInterface
             'type' => 'function',
             'function' => [
                 'name' => 'visit_webpage',
-                'description' => 'Use the tool "visit_webpage" functionality to visit the page and browse its contents. This gives you url browsing capabilities. It prioritizes extracting the main readable content and converts it to pure Markdown text.',
+                'description' => 'Use the tool "visit_webpage" functionality to visit the page and browse its contents. This gives you url browsing and parsing capabilities in real-time. It prioritizes extracting the main readable content and converts it to pure Markdown text.',
                 'parameters' => [
                     'type' => 'object',
                     'properties' => [

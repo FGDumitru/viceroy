@@ -21,7 +21,7 @@ $connection->setConnectionTimeout(864000);
 $prompt = "Based on the current date and time, tell me in which yearly quarter are we right now and if right now it's night, morning, mid-day or evening.  My location is Bucharest, Romania. Then search for the latest news in Romania related to technology and AI, get the url contents and summarize each page for me. Make sure to tell me the urls as well that you visit";
 //$prompt = "Based on the current date and time, tell me in which yearly quarter are we right now and if right now it's night, morning, mid-day or evening.  My location is Bucharest, Romania.";
 //$prompt = "What is the today's crypto fear and greed index and btc price? You must find out today's date first and get the data from that day";
-$prompt = '/nothink Get the all Reddit posts titles and their links  from https://old.reddit.com/hot .  Order the post by the newest first. Important: Show me ALL the links, don\'t skip any link! You may extract the links manually.';
+$prompt = 'Get the all Reddit posts titles and their comments links from https://old.reddit.com/hot .  Order the post by the newest first. Important: Show me ALL the links, and their post time , don\'t skip any link! You may extract the links manually.';
 // Execute the query with streaming
 $useStreaming = true;
 
