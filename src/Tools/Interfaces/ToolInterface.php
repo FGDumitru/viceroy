@@ -17,7 +17,7 @@ interface ToolInterface
     /**
      * Execute the tool with provided arguments
      */
-    public function execute(array $arguments): array;
+    public function execute(array $arguments, $configuration): array;
 
     /**
      * Validate the arguments before execution

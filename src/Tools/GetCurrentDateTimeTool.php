@@ -46,7 +46,7 @@ class GetCurrentDateTimeTool implements ToolInterface
         return true;
     }
 
-    public function execute( $arguments): array
+    public function execute( $arguments, $configuration): array
     {
         $timezone = $arguments['timezone'] ?? 'UTC';
 

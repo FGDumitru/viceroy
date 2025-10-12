@@ -59,7 +59,7 @@ class SearchTool implements ToolInterface
         return isset($arguments['query']) && is_string($arguments['query']);
     }
 
-    public function execute(array $arguments): array
+    public function execute(array $arguments, $configuration): array
     {
         $query = $arguments['query'];
         $limit = $arguments['limit'] ?? 5;

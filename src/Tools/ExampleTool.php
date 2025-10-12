@@ -62,7 +62,7 @@ class ExampleTool implements ToolInterface
         return true;
     }
 
-    public function execute(array $arguments): array
+    public function execute(array $arguments, $configuration): array
     {
         $message = $arguments['message'] ?? 'Hello World';
         

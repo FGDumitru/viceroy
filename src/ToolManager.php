@@ -76,7 +76,7 @@ class ToolManager
     /**
      * Execute a tool by name
      */
-    public function executeTool(string $name,  $arguments): array
+    public function executeTool(string $name,  $arguments, $configuration): array
     {
         // First try modular tools
         $tool = $this->registry->getTool($name);
@@ -90,7 +90,7 @@ class ToolManager
             if (!$tool->validateArguments($argumentsDecoded)) {
                 throw new \InvalidArgumentException("Invalid arguments for tool '{$name}'");
             }
-            return $tool->execute($argumentsDecoded);
+            return $tool->execute($argumentsDecoded, $configuration);
         }
 
         // Then try legacy tools

@@ -244,7 +244,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
             if (!empty($toolName)) {
                 try {
                     // Execute the tool using the ToolManager
-                    $toolResult = $toolManager->executeTool($toolName, $arguments);
+                    $toolResult = $toolManager->executeTool($toolName, $arguments, $this->getConfiguration());
                     $results[] = [
                         'tool_call_id' => $toolCall['id'] ?? '',
                         'name' => $toolName,

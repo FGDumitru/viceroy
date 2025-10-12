@@ -104,7 +104,7 @@ class WebPageToMarkdownTool implements ToolInterface
         return true;
     }
 
-    public function execute(array $arguments): array
+    public function execute(array $arguments, $configuration): array
     {
         $url = $arguments['url'];
 
