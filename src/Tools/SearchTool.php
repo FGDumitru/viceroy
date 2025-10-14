@@ -11,13 +11,15 @@ class SearchTool implements ToolInterface
     private Client $httpClient;
     private string $searchEndpoint;
 
-    public function __construct(string $searchEndpoint = 'http://192.168.0.121:8080')
+    private $debugMode = false;
+
+    public function __construct(string $searchEndpoint = 'http://192.168.0.121:8080', bool $debugMode = false)
     {
-  
+        $this->debugMode = $debugMode;
         $this->searchEndpoint = $searchEndpoint;
         $this->httpClient = new Client([
             'base_uri' => $this->searchEndpoint,
-            'timeout' => 10.0,
+            'timeout' => 30.0,
             'http_errors' => false
         ]);
     }
@@ -64,10 +66,12 @@ class SearchTool implements ToolInterface
         $query = $arguments['query'];
         $limit = $arguments['limit'] ?? 5;
 
-//        var_dump($query, $limit);
+
         
         try {
-//            error_log("Attempting to connect to SearchNX with query: " . $query);
+          if ($this->debugMode) {
+            error_log("Attempting to connect to SearchNX with query: " . $query);
+          }
 
             $searchResponse = $this->httpClient->get('/search', [
                 'query' => [
@@ -86,8 +90,10 @@ class SearchTool implements ToolInterface
             $statusCode = $searchResponse->getStatusCode();
             $body = $searchResponse->getBody()->getContents();
 
-            //error_log("SearchNX response status: " . $statusCode);
-            //error_log("SearchNX raw response body: " . var_export($body, true));
+            if ($this->debugMode) {
+              error_log("SearchNX response status: " . $statusCode);
+              error_log("SearchNX raw response body: " . var_export($body, TRUE));
+            }
 
             if ($statusCode !== 200) {
                 return [
@@ -105,7 +111,7 @@ class SearchTool implements ToolInterface
             $firstChar = substr(trim($body), 0, 1);
             if ($firstChar === '{' || $firstChar === '[') {
                 $results = json_decode($body, true);
-                if (json_last_error() !== JSON_ERROR_NONE) {
+                if ($this->debugMode &&  json_last_error() !== JSON_ERROR_NONE) {
                     error_log("JSON decode error: " . json_last_error_msg());
                     error_log("Problematic JSON string: " . $body);
                     return [
@@ -160,7 +166,9 @@ class SearchTool implements ToolInterface
                 'isError' => false
             ];
         } catch (GuzzleException $e) {
+          if ($this->debugMode) {
             error_log("SearchNX connection error: " . $e->getMessage());
+          }
             return [
                 'content' => [
                     [
@@ -171,7 +179,9 @@ class SearchTool implements ToolInterface
                 'isError' => true
             ];
         } catch (\Exception $e) {
+          if ($this->debugMode) {
             error_log("Unexpected error: " . $e->getMessage());
+          }
             return [
                 'content' => [
                     [

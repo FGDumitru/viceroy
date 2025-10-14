@@ -12,7 +12,7 @@ use Viceroy\Tools\WebPageToMarkdownTool;
 $connection = new OpenAICompatibleEndpointConnection('../config.json');
 
 // Add a tool definition to the connection
-$connection->addToolDefinition(new SearchTool());
+$connection->addToolDefinition(new SearchTool('https://Mitica:HanSolo1024-@search.wiro.ro', true));
 $connection->addToolDefinition(new GetCurrentDateTimeTool());
 $connection->addToolDefinition(new WebPageToMarkdownTool());
 $connection->addToolDefinition(new GetRedditHot());
@@ -23,9 +23,11 @@ $connection->setConnectionTimeout(864000);
 $prompt = "Based on the current date and time, tell me in which yearly quarter are we right now and if right now it's night, morning, mid-day or evening.  My location is Bucharest, Romania. Then search for the latest news in Romania related to technology and AI, get the url contents and summarize each page for me. Make sure to tell me the urls as well that you visit";
 //$prompt = "Based on the current date and time, tell me in which yearly quarter are we right now and if right now it's night, morning, mid-day or evening.  My location is Bucharest, Romania.";
 //$prompt = "What is the today's crypto fear and greed index and btc price? You must find out today's date first and get the data from that day";
-$prompt = 'Get the latest Reddit posts.';
+$prompt = 'Get the all the latest Reddit posts.';
+
+$prompt = '/nothink Please extract all the relevant information from hotnews.ro frontpage. Present it in a paragraph style, without tables - use bullet points. Prefix with the string "[AD]" the ones that you think are advertisements - especially those that link to other domains. But first, extract a list of all entities mentioned on the page. Do not output repeated entities.';
 // Execute the query with streaming
-$useStreaming = false;
+$useStreaming = true;
 
 try {
     if ($useStreaming) {

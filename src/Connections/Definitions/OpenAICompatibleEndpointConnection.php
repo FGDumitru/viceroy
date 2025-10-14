@@ -131,12 +131,12 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     /**
      * @var int $streamReadTimeout Timeout for reading from stream in seconds
      */
-    private int $streamReadTimeout = 3600;
+    private int $streamReadTimeout = 3600000;
 
     /**
      * @var int $streamIdleTimeout Timeout for idle stream in seconds
      */
-    private int $streamIdleTimeout = 3600;
+    private int $streamIdleTimeout = 3600000;
     /**
      * @var true
      */
@@ -555,8 +555,14 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
             'json' => $promptJson,
             'headers' => ['Content-Type' => 'application/json'],
             'timeout' => $this->streamReadTimeout,
+            'connect_timeout' => $this->streamReadTimeout,
             'stream' => TRUE,
             'read_timeout' => $this->streamReadTimeout,
+          'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Viceroy-WebPageToMarkdownTool/2.2', // Version bump
+          'Accept-Language' => 'en-US,en;q=0.9',
+          'Accept-Encoding' => 'gzip, deflate, br',
+          'Connection' => 'keep-alive',
+          'DNT' => '1',
         ];
 
         $guzzleRequest = array_merge($guzzleRequest, $this->getGuzzleCustomOptions());
@@ -696,6 +702,8 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                                     $thinkingContent .= $closeTag . "\n";
                                     $thinkingMode = FALSE;
                                     $toStream = $closeTag . "\n" . $toStream;
+                                } else {
+
                                 }
 
                                 $streamedContent .= $toStream;
@@ -754,6 +762,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                         }
                     }
                 }
+
 
                 // Close thinking mode if still open
                 if ($thinkingMode === TRUE) {

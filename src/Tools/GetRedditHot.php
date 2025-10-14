@@ -71,12 +71,25 @@ class GetRedditHot implements ToolInterface
           $connection->addToolDefinition(new WebPageToMarkdownTool());
           $prompt = <<<'EOF'
 Get the all Reddit posts titles and their comments links from https://old.reddit.com/hot .
-Your output should be a JSON array object where each entry has a 'title' and a 'link' field. Do not output any other addition explication pre or post preamble.
+Your output should be a JSON array object where each entry has a 'title' and a 'link' field. Do not output any other addition explication pre or post preamble. Prefix the json object with tripple ticks followed immediately by the "json" string and suffix it by another tripple ticks.
+
+# Example output
+```json
+(the actual json object here)
+```
+
 EOF;
 
           $connection->queryPost($prompt);
+          $LLMOutput = $connection->getLastResponse()->getLlmResponse();
 
-          $result = $this->extractJsonFromText($connection->getLastResponse()->getLlmResponse());
+//          $LLMOutput = <<<EOP
+//Get the all Reddit posts titles and their comments links from https://old.reddit.com/hot .
+//Your output should be a JSON array object where each entry has a 'title' and a 'link' field. Do not output any other addition explication pre or post preamble.
+//EOP;
+
+
+          $result = $this->extractJsonFromText($LLMOutput);
 
             return [
                 'content' => [

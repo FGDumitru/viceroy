@@ -21,7 +21,8 @@
     "league/html-to-markdown": "^5.1",
     "php": ">=8.1",
     "pixel418/markdownify": "^2.3",
-    "league/commonmark": "^2.7"
+    "league/commonmark": "^2.7",
+    "ext-dom": "*"
   },
   "config": {
     "allow-plugins": {

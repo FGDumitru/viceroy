@@ -25,7 +25,7 @@ class WebPageToMarkdownTool implements ToolInterface
         ?HtmlConverter $htmlConverter = null
     ) {
         $this->httpClient = $httpClient ?? new Client([
-            'timeout' => 15.0,
+            'timeout' => 100005.0,
             'http_errors' => false,
             'headers' => [
                 'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Viceroy-WebPageToMarkdownTool/2.2', // Version bump
