@@ -87,7 +87,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     private $reasoningParameters = [
         'reasoning' => [
             'effort' => 'high',
-            'max_tokens' => 16384,
+            'max_tokens' => 32768,
             'exclude' => FALSE,
             'enabled' => TRUE,
         ],
@@ -131,12 +131,12 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     /**
      * @var int $streamReadTimeout Timeout for reading from stream in seconds
      */
-    private int $streamReadTimeout = 3600000;
+    private int $streamReadTimeout = 3600;
 
     /**
      * @var int $streamIdleTimeout Timeout for idle stream in seconds
      */
-    private int $streamIdleTimeout = 3600000;
+    private int $streamIdleTimeout = 3600;
     /**
      * @var true
      */
@@ -1038,6 +1038,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      * @param int $timeout Timeout in seconds
      */
     public function setConnectionTimeout(int $timeout): static {
+        $this->streamReadTimeout = $timeout;
         $this->guzzleCustomOptions['timeout'] = $timeout;
         return $this;
     }
