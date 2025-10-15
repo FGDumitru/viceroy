@@ -223,6 +223,9 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      */
     private function processToolCalls(array $toolCalls): array {
         $results = [];
+        
+        // DEBUG: Log incoming tool calls
+        error_log("DEBUG: processToolCalls() received toolCalls: " . json_encode($toolCalls, JSON_PRETTY_PRINT));
 
         // Get the ToolManager if available
         $toolManager = NULL;
@@ -252,17 +255,30 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         foreach ($toolCalls as $toolCall) {
             $toolName = $toolCall['function']['name'] ?? '';
             $arguments = $toolCall['function']['arguments'] ?? '';
+            
+            // DEBUG: Log individual tool call processing
+            error_log("DEBUG: Processing tool call - Name: '$toolName', Arguments: '$arguments'");
 
             if (!empty($toolName)) {
                 try {
+                    // DEBUG: Log before execution
+                    error_log("DEBUG: About to execute tool '$toolName' with arguments: '$arguments'");
+                    
                     // Execute the tool using the ToolManager
                     $toolResult = $toolManager->executeTool($toolName, $arguments, $this->getConfiguration());
+                    
+                    // DEBUG: Log execution result
+                    error_log("DEBUG: Tool execution result: " . json_encode($toolResult, JSON_PRETTY_PRINT));
+                    
                     $results[] = [
                         'tool_call_id' => $toolCall['id'] ?? '',
                         'name' => $toolName,
                         'content' => json_encode($toolResult),
                     ];
                 } catch (\Exception $e) {
+                    // DEBUG: Log execution error
+                    error_log("DEBUG: Tool execution error: " . $e->getMessage());
+                    
                     $results[] = [
                         'tool_call_id' => $toolCall['id'] ?? '',
                         'name' => $toolName,
@@ -272,8 +288,12 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
             }
         }
 
+        // DEBUG: Log final results
+        error_log("DEBUG: processToolCalls() returning results: " . json_encode($results, JSON_PRETTY_PRINT));
+        
         return $results;
     }
+    
 
     /**
      * Gets the endpoint URI
@@ -729,9 +749,18 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                                     // Extract potential tool calls from content
                                     $lines = explode("\n", $matches[1][0]);
                                     $toolName = $lines[0];
-                                    $paramName = strip_tags($lines[1]);
-                                    $paramValue = strip_tags($lines[2]);
-                                    $parameters[$paramName] = $paramValue;
+                                    $parameters = [];
+                                    
+                                    // Process all parameter pairs (name/value)
+                                    // Skip the first line (tool name) and process pairs
+                                    $lineCount = count($lines);
+                                    for ($i = 1; $i < $lineCount; $i += 2) {
+                                        if (isset($lines[$i]) && isset($lines[$i + 1])) {
+                                            $paramName = strip_tags($lines[$i]);
+                                            $paramValue = strip_tags($lines[$i + 1]);
+                                            $parameters[$paramName] = $paramValue;
+                                        }
+                                    }
 
                                     // Create tool call structure
                                     $toolCalls[] = [
@@ -827,9 +856,18 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                     // Extract potential tool calls from content
                         $lines = explode("\n", $matches[1][0]);
                         $toolName = $lines[0];
-                        $paramName = strip_tags($lines[1]);
-                        $paramValue = strip_tags($lines[2]);
-                        $parameters[$paramName] = $paramValue;
+                        $parameters = [];
+                        
+                        // Process all parameter pairs (name/value)
+                        // Skip the first line (tool name) and process pairs
+                        $lineCount = count($lines);
+                        for ($i = 1; $i < $lineCount; $i += 2) {
+                            if (isset($lines[$i]) && isset($lines[$i + 1])) {
+                                $paramName = strip_tags($lines[$i]);
+                                $paramValue = strip_tags($lines[$i + 1]);
+                                $parameters[$paramName] = $paramValue;
+                            }
+                        }
 
                         // Create tool call structure
                         $toolCalls[] = [

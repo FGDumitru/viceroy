@@ -65,6 +65,7 @@ class RandomNumber implements Interfaces\ToolInterface
             'isError' => false
         ];
     }
+    
 
     /**
      * @inheritDoc

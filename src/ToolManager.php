@@ -76,8 +76,10 @@ class ToolManager
     /**
      * Execute a tool by name
      */
-    public function executeTool(string $name,  $arguments, $configuration): array
-    {
+    public function executeTool(string $name,  $arguments, $configuration): array {
+        // DEBUG: Log incoming arguments to ToolManager
+        error_log("DEBUG: ToolManager.executeTool() received - Name: '$name', Arguments: '$arguments', Arguments type: " . gettype($arguments));
+        
         // First try modular tools
         $tool = $this->registry->getTool($name);
         if ($tool !== null) {
@@ -85,12 +87,27 @@ class ToolManager
                 throw new \RuntimeException("Tool '{$name}' is disabled");
             }
 
+            // DEBUG: Log before JSON decoding
+            error_log("DEBUG: About to JSON decode arguments: '$arguments'");
+            
             $argumentsDecoded = json_decode($arguments, true);
+            
+            // DEBUG: Log after JSON decoding
+            error_log("DEBUG: JSON decode result: " . json_encode($argumentsDecoded, JSON_PRETTY_PRINT) . " (JSON error: " . json_last_error_msg() . ")");
 
             if (!$tool->validateArguments($argumentsDecoded)) {
                 throw new \InvalidArgumentException("Invalid arguments for tool '{$name}'");
             }
-            return $tool->execute($argumentsDecoded, $configuration);
+            
+            // DEBUG: Log before tool execution
+            error_log("DEBUG: About to execute tool '$name' with decoded arguments: " . json_encode($argumentsDecoded, JSON_PRETTY_PRINT));
+            
+            $result = $tool->execute($argumentsDecoded, $configuration);
+            
+            // DEBUG: Log tool execution result
+            error_log("DEBUG: Tool execution result: " . json_encode($result, JSON_PRETTY_PRINT));
+            
+            return $result;
         }
 
         // Then try legacy tools
@@ -101,6 +118,7 @@ class ToolManager
 
         throw new \RuntimeException("Tool '{$name}' not found");
     }
+    
 
     /**
      * Check if a tool exists
