@@ -414,7 +414,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
 
         // If no model is specified by the calling class then we'll try to use the preferred one if it's specified.
         $this->setLLMmodelName($this->configuration->getConfigKey('preferredModel') ?? $this->defaultModelName);
-        $this->setEndpointUri($this->configuration->getConfigKey('apiEndpoint') ?? $this->endpointUri);
+        $this->setEndpointUri($this->configuration->getConfigKey('host') ?? $this->endpointUri);
         $this->setBearedToken($this->configuration->getConfigKey('bearer'));
 
         // Set thinking tag from config if available
