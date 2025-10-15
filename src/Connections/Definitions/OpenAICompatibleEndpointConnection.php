@@ -129,6 +129,11 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     private array $toolDefinitions = [];
 
     /**
+     * @var array<ToolInterface> $toolInstances Tool instances for execution
+     */
+    private array $toolInstances = [];
+
+    /**
      * @var int $streamReadTimeout Timeout for reading from stream in seconds
      */
     private int $streamReadTimeout = 3600;
@@ -178,13 +183,14 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     /**
      * Add a tool definition to the list of tools
      *
-     * @param array $toolDefinition The tool definition
+     * @param ToolInterface $tool The tool instance
      *
      * @return self
      */
     public function addToolDefinition(ToolInterface $tool): self {
         $this->enableToolSupport();
-            $this->toolDefinitions[] = $tool->getDefinition();
+        $this->toolDefinitions[] = $tool->getDefinition();
+        $this->toolInstances[] = $tool;
         return $this;
     }
 
@@ -204,6 +210,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      */
     public function clearToolDefinitions(): self {
         $this->toolDefinitions = [];
+        $this->toolInstances = [];
         return $this;
     }
 
@@ -235,6 +242,11 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                 // If we can't create ToolManager, we can't execute tools
                 return $results;
             }
+        }
+
+        // Register custom tools that were added via addToolDefinition()
+        foreach ($this->toolInstances as $tool) {
+            $toolManager->registerTool($tool);
         }
 
         foreach ($toolCalls as $toolCall) {
