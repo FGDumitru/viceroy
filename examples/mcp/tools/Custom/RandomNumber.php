@@ -24,7 +24,7 @@ class RandomNumber implements Interfaces\ToolInterface
             'type' => 'function',
             'function' => [
                 'name' => 'randomNumber',
-                'description' => 'Returns a number between min and max values.',
+                'description' => 'Returns a number between min and max values. Always specify min and max values. If not specified, min defaults to 0 and max defaults to 100.',
                 'parameters' => [
                     'type' => 'object',
                     'properties' => [
