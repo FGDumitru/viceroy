@@ -8,10 +8,19 @@ class ToolManager
 {
     private ToolRegistry $registry;
     private array $legacyTools = [];
+    private bool $debugMode = false;
 
     public function __construct()
     {
         $this->registry = new ToolRegistry();
+    }
+
+    /**
+     * Set debug mode
+     */
+    public function setDebugMode(bool $debugMode): void
+    {
+        $this->debugMode = $debugMode;
     }
 
     /**
@@ -78,7 +87,9 @@ class ToolManager
      */
     public function executeTool(string $name,  $arguments, $configuration): array {
         // DEBUG: Log incoming arguments to ToolManager
-        error_log("DEBUG: ToolManager.executeTool() received - Name: '$name', Arguments: '$arguments', Arguments type: " . gettype($arguments));
+        if ($this->debugMode) {
+            error_log("DEBUG: ToolManager.executeTool() received - Name: '$name', Arguments: '$arguments', Arguments type: " . gettype($arguments));
+        }
         
         // First try modular tools
         $tool = $this->registry->getTool($name);
@@ -88,24 +99,32 @@ class ToolManager
             }
 
             // DEBUG: Log before JSON decoding
-            error_log("DEBUG: About to JSON decode arguments: '$arguments'");
+            if ($this->debugMode) {
+                error_log("DEBUG: About to JSON decode arguments: '$arguments'");
+            }
             
             $argumentsDecoded = json_decode($arguments, true);
             
             // DEBUG: Log after JSON decoding
-            error_log("DEBUG: JSON decode result: " . json_encode($argumentsDecoded, JSON_PRETTY_PRINT) . " (JSON error: " . json_last_error_msg() . ")");
+            if ($this->debugMode) {
+                error_log("DEBUG: JSON decode result: " . json_encode($argumentsDecoded, JSON_PRETTY_PRINT) . " (JSON error: " . json_last_error_msg() . ")");
+            }
 
             if (!$tool->validateArguments($argumentsDecoded)) {
                 throw new \InvalidArgumentException("Invalid arguments for tool '{$name}'");
             }
             
             // DEBUG: Log before tool execution
-            error_log("DEBUG: About to execute tool '$name' with decoded arguments: " . json_encode($argumentsDecoded, JSON_PRETTY_PRINT));
+            if ($this->debugMode) {
+                error_log("DEBUG: About to execute tool '$name' with decoded arguments: " . json_encode($argumentsDecoded, JSON_PRETTY_PRINT));
+            }
             
             $result = $tool->execute($argumentsDecoded, $configuration);
             
             // DEBUG: Log tool execution result
-            error_log("DEBUG: Tool execution result: " . json_encode($result, JSON_PRETTY_PRINT));
+            if ($this->debugMode) {
+                error_log("DEBUG: Tool execution result: " . json_encode($result, JSON_PRETTY_PRINT));
+            }
             
             return $result;
         }

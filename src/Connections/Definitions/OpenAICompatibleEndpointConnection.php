@@ -148,6 +148,11 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
     private bool $toolEncountered = false;
 
     /**
+     * @var bool $debugMode Whether debug logging is enabled
+     */
+    private bool $debugMode = false;
+
+    /**
      * Enable tool support for this connection
      *
      * @return self
@@ -225,7 +230,9 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         $results = [];
         
         // DEBUG: Log incoming tool calls
-        error_log("DEBUG: processToolCalls() received toolCalls: " . json_encode($toolCalls, JSON_PRETTY_PRINT));
+        if ($this->debugMode) {
+            error_log("DEBUG: processToolCalls() received toolCalls: " . json_encode($toolCalls, JSON_PRETTY_PRINT));
+        }
 
         // Get the ToolManager if available
         $toolManager = NULL;
@@ -240,6 +247,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         if ($toolManager === NULL) {
             try {
                 $toolManager = new \Viceroy\ToolManager();
+                $toolManager->setDebugMode($this->debugMode);
                 $toolManager->discoverTools();
             } catch (\Exception $e) {
                 // If we can't create ToolManager, we can't execute tools
@@ -257,18 +265,24 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
             $arguments = $toolCall['function']['arguments'] ?? '';
             
             // DEBUG: Log individual tool call processing
-            error_log("DEBUG: Processing tool call - Name: '$toolName', Arguments: '$arguments'");
+            if ($this->debugMode) {
+                error_log("DEBUG: Processing tool call - Name: '$toolName', Arguments: '$arguments'");
+            }
 
             if (!empty($toolName)) {
                 try {
                     // DEBUG: Log before execution
-                    error_log("DEBUG: About to execute tool '$toolName' with arguments: '$arguments'");
+                    if ($this->debugMode) {
+                        error_log("DEBUG: About to execute tool '$toolName' with arguments: '$arguments'");
+                    }
                     
                     // Execute the tool using the ToolManager
                     $toolResult = $toolManager->executeTool($toolName, $arguments, $this->getConfiguration());
                     
                     // DEBUG: Log execution result
-                    error_log("DEBUG: Tool execution result: " . json_encode($toolResult, JSON_PRETTY_PRINT));
+                    if ($this->debugMode) {
+                        error_log("DEBUG: Tool execution result: " . json_encode($toolResult, JSON_PRETTY_PRINT));
+                    }
                     
                     $results[] = [
                         'tool_call_id' => $toolCall['id'] ?? '',
@@ -277,7 +291,9 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                     ];
                 } catch (\Exception $e) {
                     // DEBUG: Log execution error
-                    error_log("DEBUG: Tool execution error: " . $e->getMessage());
+                    if ($this->debugMode) {
+                        error_log("DEBUG: Tool execution error: " . $e->getMessage());
+                    }
                     
                     $results[] = [
                         'tool_call_id' => $toolCall['id'] ?? '',
@@ -289,7 +305,9 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         }
 
         // DEBUG: Log final results
-        error_log("DEBUG: processToolCalls() returning results: " . json_encode($results, JSON_PRETTY_PRINT));
+        if ($this->debugMode) {
+            error_log("DEBUG: processToolCalls() returning results: " . json_encode($results, JSON_PRETTY_PRINT));
+        }
         
         return $results;
     }
@@ -370,6 +388,18 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
      */
     public function setStreamIdleTimeout(int $timeout): OpenAICompatibleEndpointConnection {
         $this->streamIdleTimeout = $timeout;
+        return $this;
+    }
+
+    /**
+     * Sets the debug mode
+     *
+     * @param bool $debugMode Whether to enable debug logging
+     *
+     * @return self Chainable instance
+     */
+    public function setDebugMode(bool $debugMode): OpenAICompatibleEndpointConnection {
+        $this->debugMode = $debugMode;
         return $this;
     }
 

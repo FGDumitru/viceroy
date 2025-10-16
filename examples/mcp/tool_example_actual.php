@@ -10,7 +10,7 @@ use Viceroy\Tools\SearchTool;
 use Viceroy\Tools\WebPageToMarkdownTool;
 
 // Create the main connection
-$connection = new OpenAICompatibleEndpointConnection('../config.json');
+$connection = new OpenAICompatibleEndpointConnection('./config.json');
 
 // Add a tool definition to the connection
 $connection->addToolDefinition(new SearchTool('https://Mitica:HanSolo1024-@search.wiro.ro', true));
@@ -32,10 +32,10 @@ $connection->setConnectionTimeout(3600);
 //$prompt = 'Get the all the latest Reddit posts.';
 //
 //$prompt = 'Please extract all the news from "https://www.hotnews.ro" frontpage. Present it in a paragraph style, without tables - use bullet points. Do not output the links that are obviously advertisements or link to a different domain.';
-//$prompt = "Find the latest paleontology news from today.";
+$prompt = "Find the latest paleontology news from today.";
 // Execute the query with streaming
 
-$prompt = 'Please give me a number between 50 and 60';
+//$prompt = 'Please give me a number between 50 and 60';
 $useStreaming = true;
 
 try {
