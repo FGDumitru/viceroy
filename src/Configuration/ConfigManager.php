@@ -70,21 +70,31 @@ class ConfigManager {
     return $this->promptContent;
   }
 
-  /**
-   * Processes JSON prompt blueprint into executable format
-   *
-   * This method:
-   * 1. Reads the raw prompt parameters using readParameters()
-   * 2. Initializes the messages array
-   * 3. Caches the processed content in $promptContent
-   *
-   * @param string $promptType Type of prompt to process (e.g. 'chat', 'query')
-   * @return void
-   * @throws \RuntimeException If prompt parameters cannot be read
-   */
-  private function processJsonPromptBlueprint($promptType) {
-    $this->promptContent = $this->readParameters($promptType);
-    $this->promptContent['messages'] = [];
-  }
+   /**
+    * Processes JSON prompt blueprint into executable format
+    *
+    * This method:
+    * 1. Reads the raw prompt parameters using readParameters()
+    * 2. Initializes the messages array
+    * 3. Caches the processed content in $promptContent
+    *
+    * @param string $promptType Type of prompt to process (e.g. 'chat', 'query')
+    * @return void
+    * @throws \RuntimeException If prompt parameters cannot be read
+    */
+   private function processJsonPromptBlueprint($promptType) {
+     $this->promptContent = $this->readParameters($promptType);
+     $this->promptContent['messages'] = [];
+   }
 
-}
+   /**
+    * Gets a configuration value
+    *
+    * @param string $key Configuration key
+    * @return string|null The configuration value or null if key doesn't exist
+    */
+   public function getConfigKey(string $key): string|null {
+     return $this->configObjects->getConfigKey($key);
+   }
+
+ }

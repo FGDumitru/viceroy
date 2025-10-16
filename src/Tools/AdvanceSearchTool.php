@@ -14,8 +14,13 @@ class AdvanceSearchTool implements ToolInterface
     private string $searchEndpoint;
     private $debugMode = false;
 
-    public function __construct(string $searchEndpoint = 'http://192.168.0.121:8080', bool $debugMode = false)
+    public function __construct(null|string $searchEndpoint = 'http://192.168.0.121:8080', bool $debugMode = false)
     {
+
+        if (is_null($searchEndpoint)) {
+            $searchEndpoint = 'http://192.168.0.121:8080';
+        }
+
         $this->debugMode = $debugMode;
         $this->searchEndpoint = $searchEndpoint;
         $this->httpClient = new Client([
@@ -68,9 +73,12 @@ class AdvanceSearchTool implements ToolInterface
         $query = $arguments['query'];
         $limit = $arguments['limit'] ?? 3;
 
+        // Get search endpoint from config or fallback
+        $searchEndpoint = $configuration->getConfigKey('search_endpoint') ?: 'http://127.0.0.1:8080';
+
         // First, perform the search
-        error_log("AdvanceSearchTool: Performing search");
-        $searchResults = $this->performSearch($query, $limit);
+        error_log("AdvanceSearchTool: Performing search with endpoint: " . $searchEndpoint);
+        $searchResults = $this->performSearch($query, $limit, $searchEndpoint);
         if ($searchResults['isError']) {
             error_log("AdvanceSearchTool: Search failed: " . json_encode($searchResults));
             return $searchResults;
@@ -145,14 +153,19 @@ class AdvanceSearchTool implements ToolInterface
         ];
     }
 
-    private function performSearch(string $query, int $limit): array
+    private function performSearch(string $query, int $limit, string $searchEndpoint): array
     {
         try {
             if ($this->debugMode) {
-                error_log("Attempting to connect to SearchNX with query: " . $query);
+                error_log("Attempting to connect to SearchNX with query: " . $query . " at " . $searchEndpoint);
             }
 
-            $searchResponse = $this->httpClient->get('/search', [
+            $client = new Client([
+                'base_uri' => $searchEndpoint,
+                'timeout' => 30.0,
+                'http_errors' => false
+            ]);
+            $searchResponse = $client->get('/search', [
                 'query' => [
                     'q' => $query,
                     'limit' => $limit,
@@ -208,7 +221,7 @@ class AdvanceSearchTool implements ToolInterface
                         [
                             'title' => 'Search Result',
                             'content' => $body,
-                            'url' => $this->searchEndpoint . '/search?q=' . urlencode($query),
+                            'url' => $searchEndpoint . '/search?q=' . urlencode($query),
                             'score' => 1.0,
                             'engine' => 'searxng',
                             'category' => 'general'

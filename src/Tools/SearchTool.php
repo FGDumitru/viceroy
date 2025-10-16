@@ -13,8 +13,13 @@ class SearchTool implements ToolInterface
 
     private $debugMode = false;
 
-    public function __construct(string $searchEndpoint = 'http://192.168.0.121:8080', bool $debugMode = false)
+    public function __construct(null|string $searchEndpoint = 'http://192.168.0.121:8080', bool $debugMode = false)
     {
+
+        if (is_null($searchEndpoint)) {
+            $searchEndpoint = 'http://192.168.0.121:8080';
+        }
+
         $this->debugMode = $debugMode;
         $this->searchEndpoint = $searchEndpoint;
         $this->httpClient = new Client([
@@ -66,14 +71,20 @@ class SearchTool implements ToolInterface
         $query = $arguments['query'];
         $limit = $arguments['limit'] ?? 5;
 
+        // Get search endpoint from config or fallback
+        $searchEndpoint = $configuration->getConfigKey('search_endpoint') ?: 'http://127.0.0.1:8080';
 
-        
         try {
-          if ($this->debugMode) {
-            error_log("Attempting to connect to SearchNX with query: " . $query);
-          }
+           if ($this->debugMode) {
+             error_log("Attempting to connect to SearchNX with query: " . $query . " at " . $searchEndpoint);
+           }
 
-            $searchResponse = $this->httpClient->get('/search', [
+            $client = new Client([
+                'base_uri' => $searchEndpoint,
+                'timeout' => 30.0,
+                'http_errors' => false
+            ]);
+            $searchResponse = $client->get('/search', [
                 'query' => [
                     'q' => $query,
                     'limit' => $limit,
@@ -131,7 +142,7 @@ class SearchTool implements ToolInterface
                         [
                             'title' => 'Search Result',
                             'content' => $body,
-                            'url' => $this->searchEndpoint . '/search?q=' . urlencode($query),
+                            'url' => $searchEndpoint . '/search?q=' . urlencode($query),
                             'score' => 1.0,
                             'engine' => 'searxng',
                             'category' => 'general'
