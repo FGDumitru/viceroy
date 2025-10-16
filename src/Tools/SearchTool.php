@@ -19,7 +19,7 @@ class SearchTool implements ToolInterface
         $this->searchEndpoint = $searchEndpoint;
         $this->httpClient = new Client([
             'base_uri' => $this->searchEndpoint,
-            'timeout' => 30.0,
+            'timeout' => 10.0,
             'http_errors' => false
         ]);
     }

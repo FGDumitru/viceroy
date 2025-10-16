@@ -7,6 +7,7 @@ use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 use Viceroy\Tools\GetCurrentDateTimeTool;
 use Viceroy\Tools\GetRedditHot;
 use Viceroy\Tools\AdvanceSearchTool;
+use Viceroy\Tools\SearchTool;
 use Viceroy\Tools\WebPageToMarkdownTool;
 
 // Create the main connection
@@ -14,6 +15,7 @@ $connection = new OpenAICompatibleEndpointConnection('./config.json');
 
 // Add a tool definition to the connection
 $connection->addToolDefinition(new AdvanceSearchTool('https://Mitica:HanSolo1024-@search.wiro.ro', true));
+$connection->addToolDefinition(new SearchTool('https://Mitica:HanSolo1024-@search.wiro.ro'));
 $connection->addToolDefinition(new GetCurrentDateTimeTool());
 $connection->addToolDefinition(new WebPageToMarkdownTool());
 $connection->addToolDefinition(new GetRedditHot());
@@ -28,11 +30,11 @@ $connection->setConnectionTimeout(3600);
 // Example prompt that would trigger the tool usage
 //$prompt = "Based on the current date and time, tell me in which yearly quarter are we right now and if right now it's night, morning, mid-day or evening.  My location is Bucharest, Romania. Then search for the latest news in Romania related to technology and AI, get the url contents and summarize each page for me. Make sure to tell me the urls as well that you visit";
 //$prompt = "Based on the current date and time, tell me in which yearly quarter are we right now and if right now it's night, morning, midday or evening.  My location is Bucharest, Romania.";
-//$prompt = "What is the today's crypto fear and greed index and btc price? You must find out today's date first and get the data from that day";
+$prompt = "What is the today's crypto fear and greed index and btc price? Check https://alternative.me/crypto/fear-and-greed-index/,  https://feargreedmeter.com/ and https://api.alternative.me/fng/ to get the latest crypto values for fear and greed + btc price";
 //$prompt = 'Get the all the latest Reddit posts.';
 //
 //$prompt = 'Please extract all the news from "https://www.hotnews.ro" frontpage. Present it in a paragraph style, without tables - use bullet points. Do not output the links that are obviously advertisements or link to a different domain.';
-$prompt = "Use only the advance_search tool to find the latest paleontology news from today (in detail). Do not use any other tools.";
+//$prompt = "Use only the advance_search tool to find the latest paleontology news from today (in detail). Do not use any other tools.";
 // Execute the query with streaming
 
 //$prompt = 'Please give me a number between 50 and 60';

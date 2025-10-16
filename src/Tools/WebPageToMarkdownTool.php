@@ -80,7 +80,7 @@ class WebPageToMarkdownTool implements ToolInterface
                         'timeout' => [
                             'type' => 'number',
                             'description' => 'Connection timeout in seconds (default: 5)',
-                            'default' => 5
+                            'default' => 10
                         ]
                     ],
                     'required' => ['url']
@@ -116,7 +116,7 @@ class WebPageToMarkdownTool implements ToolInterface
     public function execute(array $arguments, $configuration): array
     {
         $url = $arguments['url'];
-        $timeout = $arguments['timeout'] ?? 5;
+        $timeout = $arguments['timeout'] ?? 10;
 
         if (!$this->validateArguments($arguments)) {
             return [
