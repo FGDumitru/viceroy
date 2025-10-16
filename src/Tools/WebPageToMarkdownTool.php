@@ -69,7 +69,7 @@ class WebPageToMarkdownTool implements ToolInterface
             'type' => 'function',
             'function' => [
                 'name' => 'visit_webpage',
-                'description' => 'Use the tool "visit_webpage" functionality to visit the page and browse its contents. This gives you url browsing and parsing capabilities in real-time. It prioritizes extracting the main readable content and converts it to pure Markdown text.',
+                'description' => 'Use the tool "visit_webpage" functionality to visit the page and browse its contents. This gives you url browsing and parsing capabilities in real-time. It prioritizes extracting the main readable content and converts it to pure Markdown text. Optionally, return the raw webpage content.',
                 'parameters' => [
                     'type' => 'object',
                     'properties' => [
@@ -81,6 +81,11 @@ class WebPageToMarkdownTool implements ToolInterface
                             'type' => 'number',
                             'description' => 'Connection timeout in seconds (default: 5)',
                             'default' => 10
+                        ],
+                        'raw' => [
+                            'type' => 'boolean',
+                            'description' => 'If true, return the raw webpage content instead of converted Markdown. This is useful for API calls that may return JSON objects',
+                            'default' => false
                         ]
                     ],
                     'required' => ['url']
@@ -110,6 +115,10 @@ class WebPageToMarkdownTool implements ToolInterface
             return false;
         }
 
+        if (isset($arguments['raw']) && !is_bool($arguments['raw'])) {
+            return false;
+        }
+
         return true;
     }
 
@@ -117,6 +126,7 @@ class WebPageToMarkdownTool implements ToolInterface
     {
         $url = $arguments['url'];
         $timeout = $arguments['timeout'] ?? 10;
+        $raw = $arguments['raw'] ?? false;
 
         if (!$this->validateArguments($arguments)) {
             return [
@@ -158,6 +168,18 @@ class WebPageToMarkdownTool implements ToolInterface
                         ]
                     ],
                     'isError' => true
+                ];
+            }
+
+            if ($raw) {
+                return [
+                    'content' => [
+                        [
+                            'type' => 'text',
+                            'text' => $body
+                        ]
+                    ],
+                    'isError' => false
                 ];
             }
 

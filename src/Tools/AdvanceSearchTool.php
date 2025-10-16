@@ -36,7 +36,7 @@ class AdvanceSearchTool implements ToolInterface
             'type' => 'function',
             'function' => [
                 'name' => 'advance_search',
-                'description' => 'Performs an advanced search using SearXNG, fetches cleaned content for each result, and summarizes it.',
+                'description' => 'Performs an advanced search using SearXNG, fetches cleaned content for each result, and summarizes it. Use this tool for advanced searches and research tasks that require results aggregation usually.',
                 'parameters' => [
                     'type' => 'object',
                     'properties' => [
@@ -47,7 +47,7 @@ class AdvanceSearchTool implements ToolInterface
                         'limit' => [
                             'type' => 'integer',
                             'description' => 'Maximum number of results to return and summarize.',
-                            'default' => 3
+                            'default' => 10
                         ]
                     ],
                     'required' => ['query']
@@ -85,8 +85,8 @@ class AdvanceSearchTool implements ToolInterface
                 break;
             }
             $url = $result['url'];
-//            $title = $result['title'];
-            error_log("AdvanceSearchTool: Processing result " . ($index + 1) . ": " .  $url);
+            $title = $result['title'];
+            error_log("AdvanceSearchTool: Processing result " . ($index + 1) . ":  $title ->" .  $url);
 
             // Fetch and clean content
             $cleanedContent = $this->fetchCleanedContent($url);
@@ -97,9 +97,29 @@ class AdvanceSearchTool implements ToolInterface
             error_log("AdvanceSearchTool: Fetched content, length: " . strlen($cleanedContent));
             // Summarize
             $summaryData = $this->summarizeContent($cleanedContent, $query, $configuration);
-            error_log("AdvanceSearchTool: Summarized content: " . substr($summaryData['content'], 0, 100) . "... Relevant: " . ($summaryData['relevant_info_contained'] ? 'yes' : 'no'));
+            error_log("AdvanceSearchTool: Summarized content: " . substr($summaryData['content'], 0, 100) . "... Relevant: " . ($summaryData['relevant_info_contained'] ? 'yes' : 'no') . ", Listing: " . ($summaryData['is_listing'] ? 'yes' : 'no'));
 
-            if ($summaryData['relevant_info_contained']) {
+            if ($summaryData['is_listing']) {
+                // Get relevant links from LLM
+                $links = $this->getRelevantLinks($cleanedContent, $query, $configuration);
+                foreach ($links as $link) {
+                    if (count($summarizedResults) >= $limit) {
+                        break;
+                    }
+                    error_log("AdvanceSearchTool: Crawling relevant link from listing: " . $link);
+                    $linkCleaned = $this->fetchCleanedContent($link);
+                    if ($linkCleaned === null) {
+                        continue;
+                    }
+                    $linkSummary = $this->summarizeContent($linkCleaned, $query, $configuration);
+                    if ($linkSummary['relevant_info_contained']) {
+                        $summarizedResults[] = [
+                            'url' => $link,
+                            'summary' => $linkSummary['content']
+                        ];
+                    }
+                }
+            } elseif ($summaryData['relevant_info_contained']) {
                 $summarizedResults[] = [
                     //'title' => $title,
                     'url' => $url,
@@ -202,7 +222,7 @@ class AdvanceSearchTool implements ToolInterface
                 'total' => count($results['results'] ?? []),
                 'results' => array_map(function($result) {
                     return [
-                       // 'title' => $result['title'] ?? '',
+                       'title' => $result['title'] ?? '',
                        // 'content' => $result['content'] ?? '',
                         'url' => $result['url'] ?? '',
                         //'score' => $result['score'] ?? 0.0,
@@ -276,7 +296,7 @@ class AdvanceSearchTool implements ToolInterface
             $content = substr($content, 0, $maxLength) . '...';
         }
 
-        $prompt = "Summarize this webpage content and determine if it contains relevant information about the query (Note: Pages that aggregate or list articles/news/other pages are not relevant, a page should be concerned with a single subject): '{$query}'. Return a JSON object with 'content' (summary string) and 'relevant_info_contained' (boolean). Content: " . $content . '/nothink';
+        $prompt = "Summarize this webpage content and determine if it contains relevant information about the query and if it's a listing page (aggregates or lists articles/news/other pages). Return a JSON object with 'content' (summary string), 'relevant_info_contained' (boolean), and 'is_listing' (boolean). Content: " . $content . '/nothink';
 
         try {
             $summaryConnection->setSystemMessage("You are a helpful assistant that summarizes webpage content concisely and determines relevance. Always respond with valid JSON.");
@@ -285,19 +305,57 @@ class AdvanceSearchTool implements ToolInterface
             $llmContent = $response->getLlmResponse();
             $thinkContent = $response->getThinkContent();
             error_log("AdvanceSearchTool: LLM response length: " . strlen($llmContent) . ", Think length: " . strlen($thinkContent));
-            $responseText = $llmContent ?: $thinkContent ?: '{"content": "No content", "relevant_info_contained": false}';
+            $responseText = $llmContent ?: $thinkContent ?: '{"content": "No content", "relevant_info_contained": false, "is_listing": false}';
             $parsed = json_decode($responseText, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 error_log("AdvanceSearchTool: JSON decode error: " . json_last_error_msg());
-                return ['content' => 'Invalid JSON response', 'relevant_info_contained' => false];
+                return ['content' => 'Invalid JSON response', 'relevant_info_contained' => false, 'is_listing' => false];
             }
             return [
                 'content' => $parsed['content'] ?? 'No summary',
-                'relevant_info_contained' => $parsed['relevant_info_contained'] ?? false
+                'relevant_info_contained' => $parsed['relevant_info_contained'] ?? false,
+                'is_listing' => $parsed['is_listing'] ?? false
             ];
         } catch (\Exception $e) {
             error_log("AdvanceSearchTool: Query failed: " . $e->getMessage());
-            return ['content' => "Summary failed: " . $e->getMessage(), 'relevant_info_contained' => false];
+            return ['content' => "Summary failed: " . $e->getMessage(), 'relevant_info_contained' => false, 'is_listing' => false];
+        }
+    }
+
+    private function extractLinks(string $markdown): array
+    {
+        preg_match_all('/\[([^\]]+)\]\(([^)]+)\)/', $markdown, $matches);
+        return $matches[2]; // urls
+    }
+
+    private function getRelevantLinks(string $content, string $query, $configuration): array
+    {
+        // Create a new connection for link extraction
+        $linkConnection = new \Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection($configuration);
+
+        // Limit content to avoid overflow
+        $maxLength = 100000;
+        if (strlen($content) > $maxLength) {
+            $content = substr($content, 0, $maxLength) . '...';
+        }
+
+        $prompt = "This is a listing page. Extract the top 5 most relevant links related to the query '{$query}' from the content. Return a JSON object with 'links' as array of strings (urls). Content: " . $content . '/nothink';
+
+        try {
+            $linkConnection->setSystemMessage("You are a helpful assistant that extracts relevant links from webpage content. Always respond with valid JSON.");
+            $response = $linkConnection->queryPost($prompt);
+            $llmContent = $response->getLlmResponse();
+            $thinkContent = $response->getThinkContent();
+            $responseText = $llmContent ?: $thinkContent ?: '{"links": []}';
+            $parsed = json_decode($responseText, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                error_log("AdvanceSearchTool: JSON decode error in getRelevantLinks: " . json_last_error_msg());
+                return [];
+            }
+            return $parsed['links'] ?? [];
+        } catch (\Exception $e) {
+            error_log("AdvanceSearchTool: getRelevantLinks failed: " . $e->getMessage());
+            return [];
         }
     }
 }
