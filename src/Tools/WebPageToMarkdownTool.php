@@ -25,7 +25,7 @@ class WebPageToMarkdownTool implements ToolInterface
         ?HtmlConverter $htmlConverter = null
     ) {
         $this->httpClient = $httpClient ?? new Client([
-            'timeout' => 100005.0,
+            'timeout' => 5.0,
             'http_errors' => false,
             'headers' => [
                 'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Viceroy-WebPageToMarkdownTool/2.2', // Version bump
@@ -76,6 +76,11 @@ class WebPageToMarkdownTool implements ToolInterface
                         'url' => [
                             'type' => 'string',
                             'description' => 'The URL of the webpage to visit'
+                        ],
+                        'timeout' => [
+                            'type' => 'number',
+                            'description' => 'Connection timeout in seconds (default: 5)',
+                            'default' => 5
                         ]
                     ],
                     'required' => ['url']
@@ -101,12 +106,17 @@ class WebPageToMarkdownTool implements ToolInterface
             return false;
         }
 
+        if (isset($arguments['timeout']) && (!is_numeric($arguments['timeout']) || $arguments['timeout'] <= 0)) {
+            return false;
+        }
+
         return true;
     }
 
     public function execute(array $arguments, $configuration): array
     {
         $url = $arguments['url'];
+        $timeout = $arguments['timeout'] ?? 5;
 
         if (!$this->validateArguments($arguments)) {
             return [
@@ -121,7 +131,19 @@ class WebPageToMarkdownTool implements ToolInterface
         }
 
         try {
-            $response = $this->httpClient->get($url);
+            $client = new Client([
+                'timeout' => $timeout,
+                'http_errors' => false,
+                'headers' => [
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Viceroy-WebPageToMarkdownTool/2.2', // Version bump
+                    'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                    'Accept-Language' => 'en-US,en;q=0.9',
+                    'Accept-Encoding' => 'gzip, deflate, br',
+                    'Connection' => 'keep-alive',
+                    'DNT' => '1',
+                ]
+            ]);
+            $response = $client->get($url);
 
             $statusCode = $response->getStatusCode();
             $contentType = $response->getHeaderLine('content-type');
@@ -310,7 +332,7 @@ class WebPageToMarkdownTool implements ToolInterface
 
     private function detectCharset(string $html): ?string
     {
-        if (preg_match('/<meta[^>]+charset=["\']?([^"\'\s\/]+)/i', $html, $matches)) {
+        if (preg_match('/<meta[^>]+charset\s*=\s*["\']?([^"\'>\s\/]+)/i', $html, $matches)) {
             $charset = trim($matches[1]);
             if (!empty($charset)) {
                 return strtoupper($charset);
@@ -324,7 +346,12 @@ class WebPageToMarkdownTool implements ToolInterface
         $originalCharset = $detectedCharset ?: 'UTF-8';
 
         if ($originalCharset !== 'UTF-8' && function_exists('mb_convert_encoding')) {
-            return mb_convert_encoding($html, 'UTF-8', $originalCharset);
+            try {
+                return mb_convert_encoding($html, 'UTF-8', $originalCharset);
+            } catch (\ValueError $e) {
+                // Invalid charset, return as is
+                return $html;
+            }
         }
 
         return $html;

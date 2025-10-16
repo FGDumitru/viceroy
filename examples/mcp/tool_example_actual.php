@@ -6,14 +6,14 @@ require_once __DIR__ . '/tools/Custom/RandomNumber.php';
 use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 use Viceroy\Tools\GetCurrentDateTimeTool;
 use Viceroy\Tools\GetRedditHot;
-use Viceroy\Tools\SearchTool;
+use Viceroy\Tools\AdvanceSearchTool;
 use Viceroy\Tools\WebPageToMarkdownTool;
 
 // Create the main connection
 $connection = new OpenAICompatibleEndpointConnection('./config.json');
 
 // Add a tool definition to the connection
-$connection->addToolDefinition(new SearchTool('https://Mitica:HanSolo1024-@search.wiro.ro', true));
+$connection->addToolDefinition(new AdvanceSearchTool('https://Mitica:HanSolo1024-@search.wiro.ro', true));
 $connection->addToolDefinition(new GetCurrentDateTimeTool());
 $connection->addToolDefinition(new WebPageToMarkdownTool());
 $connection->addToolDefinition(new GetRedditHot());
@@ -32,7 +32,7 @@ $connection->setConnectionTimeout(3600);
 //$prompt = 'Get the all the latest Reddit posts.';
 //
 //$prompt = 'Please extract all the news from "https://www.hotnews.ro" frontpage. Present it in a paragraph style, without tables - use bullet points. Do not output the links that are obviously advertisements or link to a different domain.';
-$prompt = "Find the latest paleontology news from today.";
+$prompt = "Use only the advance_search tool to find the latest paleontology news from today (in detail). Do not use any other tools.";
 // Execute the query with streaming
 
 //$prompt = 'Please give me a number between 50 and 60';
