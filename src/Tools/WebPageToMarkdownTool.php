@@ -3,16 +3,16 @@
 namespace Viceroy\Tools;
 
 use DOMDocument;
-use DOMXPath;
 use DOMNode;
-use League\HTMLToMarkdown\HtmlConverter;
-use League\HTMLToMarkdown\Converter\TextConverter;
-use Viceroy\Tools\Interfaces\ToolInterface;
+use DOMXPath;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
+use League\HTMLToMarkdown\Converter\TextConverter;
+use League\HTMLToMarkdown\HtmlConverter;
 use Psr\Http\Message\UriInterface;
+use Viceroy\Tools\Interfaces\ToolInterface;
 
 class WebPageToMarkdownTool implements ToolInterface
 {
@@ -127,6 +127,8 @@ class WebPageToMarkdownTool implements ToolInterface
 
     public function execute(array $arguments, $configuration): array
     {
+
+        var_dump($arguments);
         $url = $arguments['url'];
         $timeout = $arguments['timeout'] ?? 10;
         $raw = $arguments['raw'] ?? false;

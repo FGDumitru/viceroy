@@ -70,8 +70,8 @@ class GetRedditHot implements ToolInterface
           $connection->getConfiguration()->setFullConfigData($configuration);
           $connection->addToolDefinition(new WebPageToMarkdownTool());
           $prompt = <<<'EOF'
-Get the all Reddit posts titles and their comments links from https://old.reddit.com/hot .
-Your output should be a JSON array object where each entry has a 'title' and a 'link' field. Do not output any other addition explication pre or post preamble. Prefix the json object with tripple ticks followed immediately by the "json" string and suffix it by another tripple ticks.
+Get the all Reddit posts titles and their comments links from https://old.reddit.com/hot.rss .
+Your output should be a JSON array object where each entry has a 'title' and a 'link' field. Do not output any other addition explication pre or post preamble. Prefix the json object with triple ticks followed immediately by the "json" string and suffix it by another triple ticks.
 
 # Example output
 ```json
@@ -113,25 +113,30 @@ EOF;
         }
     }
 
-  /**
-   * Extracts a JSON block that is wrapped in a Markdown code fence.
-   *
-   * @param string $text  The input text that may contain a JSON block.
-   * @return string|null  The raw JSON string (without the surrounding fence) or null if nothing is found.
-   */
-  function extractJsonFromText(string $text): ?string
-  {
-    // Look for a Markdown code fence that starts with ```json
-    // The pattern is intentionally lazy (.*?) so it stops at the first closing ```.
-    // \s* allows optional new‑line / spaces before/after the JSON payload.
-    if (preg_match('/```json\s*([\s\S]*?)\s*```/i', $text, $m)) {
-      // $m[1] contains everything between the fences
-      return trim($m[1]);   // trim() removes leading/trailing newlines / spaces
+/**
+ * Extracts a JSON block (with or without Markdown fences) from a text.
+ *
+ * @param string $text  The input text that may contain a JSON block.
+ * @return string|null  The raw JSON string or null if nothing is found.
+ */
+function extractJsonFromText(string $text): ?string
+{
+    // Step 1: remove possible quotes or tags around the content
+    $text = trim($text, " \t\n\r\0\x0B'\"");
+
+    // Step 2: try to find a ```json ... ``` fenced block
+    if (preg_match('/```json\s*(.*?)\s*```/is', $text, $m)) {
+        return trim($m[1]);
     }
 
-    // If no fence was found, return null
+    // Step 3: fallback — try to find a bare JSON array or object
+    if (preg_match('/(\{.*\}|\[.*\])/s', $text, $m)) {
+        return trim($m[1]);
+    }
+
     return null;
-  }
+}
+
 
 
 }
