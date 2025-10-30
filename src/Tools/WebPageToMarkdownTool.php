@@ -19,11 +19,14 @@ class WebPageToMarkdownTool implements ToolInterface
     private Client $httpClient;
     private HtmlConverter $htmlConverter;
     private TextConverter $textConverter;
+    private bool $debugMode = false;
 
     public function __construct(
         ?Client $httpClient = null,
-        ?HtmlConverter $htmlConverter = null
+        ?HtmlConverter $htmlConverter = null,
+        bool $debugMode = false
     ) {
+        $this->debugMode = $debugMode;
         $this->httpClient = $httpClient ?? new Client([
             'timeout' => 5.0,
             'http_errors' => false,
@@ -143,6 +146,7 @@ class WebPageToMarkdownTool implements ToolInterface
         try {
             $client = new Client([
                 'timeout' => $timeout,
+                'allow_redirects' => true,
                 'http_errors' => false,
                 'headers' => [
                     'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Viceroy-WebPageToMarkdownTool/2.2', // Version bump
@@ -171,6 +175,9 @@ class WebPageToMarkdownTool implements ToolInterface
                 ];
             }
 
+            if ($this->debugMode) {
+                echo PHP_EOL . "Got Guzzle body of length " . strlen($body)  . PHP_EOL;
+            }
             if ($raw) {
                 return [
                     'content' => [
@@ -193,7 +200,8 @@ class WebPageToMarkdownTool implements ToolInterface
                     . json_encode(json_decode($body, true), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
                     . "\n```";
             } else {
-                $markdownContent = $this->textConverter->convert($body);
+              $markdownContent = $body;
+//                $markdownContent = $this->textConverter->convert($body);
             }
 
             $markdownContent = trim($markdownContent);
@@ -212,7 +220,9 @@ class WebPageToMarkdownTool implements ToolInterface
                 'isError' => false
             ];
         } catch (GuzzleException $e) {
-            error_log("WebPageToMarkdownTool Guzzle error for URL {$url}: " . $e->getMessage());
+            if ($this->debugMode) {
+                error_log("WebPageToMarkdownTool Guzzle error for URL {$url}: " . $e->getMessage());
+            }
             return [
                 'content' => [
                     [
@@ -223,7 +233,9 @@ class WebPageToMarkdownTool implements ToolInterface
                 'isError' => true
             ];
         } catch (\Exception $e) {
-            error_log("WebPageToMarkdownTool unexpected error for URL {$url}: " . $e->getMessage());
+            if ($this->debugMode) {
+                error_log("WebPageToMarkdownTool unexpected error for URL {$url}: " . $e->getMessage());
+            }
             return [
                 'content' => [
                     [
