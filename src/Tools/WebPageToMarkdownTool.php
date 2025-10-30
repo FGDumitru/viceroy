@@ -196,7 +196,7 @@ class WebPageToMarkdownTool implements ToolInterface
                 $finalUri = (string)$response->getHeaderLine('X-Guzzle-Effective-Uri') ?: $url;
                 $markdownContent = $this->extractAndConvertMainContent($body, $finalUri);
             } elseif (str_contains($contentType, 'text/plain')) {
-                $markdownContent = $this->textConverter->convert($body);
+                $markdownContent = $body;
             } elseif (str_contains($contentType, 'application/json') || str_contains($contentType, 'application/xml')) {
                 $markdownContent = "```" . (str_contains($contentType, 'json') ? 'json' : 'xml') . "\n"
                     . json_encode(json_decode($body, true), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
@@ -250,121 +250,115 @@ class WebPageToMarkdownTool implements ToolInterface
         }
     }
 
-    /**
-     * Extracts main content from HTML, resolves relative URLs, and converts to Markdown.
-     *
-     * @param string $html Input HTML content.
-     * @param string $baseUrl The base URL of the page (after redirects).
-     * @return string Markdown representation of the main content.
-     */
-    private function extractAndConvertMainContent(string $html, string $baseUrl): string
-    {
-        if (empty($html)) {
-            return '';
+   /**
+ * Extracts main content from HTML, resolves relative URLs, and converts to Markdown.
+ *
+ * @param string $html Input HTML content.
+ * @param string $baseUrl The base URL of the page (after redirects).
+ * @return string Markdown representation of the main content.
+ */
+private function extractAndConvertMainContent(string $html, string $baseUrl): string
+{
+    if (empty($html)) {
+        return '';
+    }
+
+    libxml_use_internal_errors(true);
+    $dom = new DOMDocument();
+
+    $charset = $this->detectCharset($html);
+    $encodedHtml = $this->ensureHtmlEncoding($html, $charset);
+    $dom->loadHTML($encodedHtml, LIBXML_NOCDATA | LIBXML_COMPACT);
+
+    $xpath = new DOMXPath($dom);
+
+    // STEP 1: Remove obvious non-content elements
+    $unwantedSelectors = [
+        '//comment()',
+        '//script', '//style', '//nav', '//footer', '//header', '//aside',
+        '//iframe', '//noscript', '//form', '//ins', '//del', '//button',
+        '//input', '//select', '//textarea', '//svg', '//canvas',
+        '//*[contains(@class, "ad") or contains(@id, "ad")]',
+        '//*[contains(@class, "cookie") or contains(@id, "cookie")]',
+        '//*[contains(@class, "modal") or contains(@id, "modal")]',
+        '//*[contains(@class, "dialog") or contains(@id, "dialog")]',
+        '//*[contains(@class, "sidebar") or contains(@id, "sidebar")]',
+        '//*[contains(@class, "menu") or contains(@id, "menu")]',
+        '//*[contains(@class, "social") or contains(@id, "social")]',
+        '//*[contains(@class, "related") or contains(@id, "related")]',
+        '//*[contains(@class, "share") or contains(@id, "share")]',
+        '//*[contains(@class, "hero") or contains(@id, "hero")]',
+        '//*[contains(@class, "promo") or contains(@id, "promo")]',
+        '//*[contains(@class, "skip-link") or contains(@id, "skip-link")]'
+    ];
+    foreach ($unwantedSelectors as $selector) {
+        foreach ($xpath->query($selector) as $node) {
+            $node->parentNode?->removeChild($node);
         }
+    }
 
-        libxml_use_internal_errors(true);
-
-        $dom = new DOMDocument();
-
-        $charset = $this->detectCharset($html);
-        $encodedHtml = $this->ensureHtmlEncoding($html, $charset);
-
-        $dom->loadHTML($encodedHtml, LIBXML_NOCDATA | LIBXML_COMPACT);
-
-        $xpath = new DOMXPath($dom);
-
-        // Step 1: Aggressive removal of known non-content elements (broad selectors)
-        $unwantedSelectors = [
-            '//comment()',
-            '//script',
-            '//style',
-            '//nav',
-            '//footer',
-            '//header',
-            '//aside',
-            '//iframe',
-            '//noscript',
-            '//form',
-            '//ins',
-            '//del',
-            '//button',
-            '//input',
-            '//select',
-            '//textarea',
-            '//svg',
-            '//canvas',
-            '//*[contains(@class, "ad")]',
-            '//*[contains(@class, "ads")]',
-            '//*[contains(@id, "ad")]',
-            '//*[contains(@id, "ads")]',
-            '//*[contains(@class, "cookie")]',
-            '//*[contains(@id, "cookie")]',
-            '//*[contains(@class, "modal")]',
-            '//*[contains(@id, "modal")]',
-            '//*[contains(@class, "dialog")]',
-            '//*[contains(@id, "dialog")]',
-            '//*[contains(@class, "sidebar")]',
-            '//*[contains(@id, "sidebar")]',
-            '//*[contains(@class, "menu")]',
-            '//*[contains(@id, "menu")]',
-            '//*[contains(@class, "social")]',
-            '//*[contains(@id, "social")]',
-            '//*[contains(@class, "related")]',
-            '//*[contains(@id, "related")]',
-            '//*[contains(@class, "share")]',
-            '//*[contains(@id, "share")]',
-            '//*[contains(@class, "hero")]',
-            '//*[contains(@id, "hero")]',
-            '//*[contains(@class, "promo")]',
-            '//*[contains(@id, "promo")]',
-            '//*[contains(@class, "skip-link")]',
-            '//*[contains(@id, "skip-link")]',
-        ];
-
-        foreach ($unwantedSelectors as $selector) {
-            foreach ($xpath->query($selector) as $node) {
-                if ($node->parentNode) {
-                    $node->parentNode->removeChild($node);
-                }
-            }
+    // STEP 2: Remove invisible or JS-based links
+    foreach ($xpath->query('//a') as $a) {
+        $href = $a->getAttribute('href');
+        if (stripos($href, 'javascript:') === 0 || trim($a->textContent) === '') {
+            $a->parentNode?->removeChild($a);
+        } else {
+            // Clean up tracking parameters
+            $cleanHref = preg_replace('/([?&])(utm_[^&]+)/i', '', $href);
+            $a->setAttribute('href', $cleanHref);
         }
+    }
 
-        // Step 2: Try to find the main content block using heuristics
-        // For sites like Reddit, a broader content area might be more appropriate
-        $mainContentNode = $this->findMainContentNode($dom, $xpath);
+    // STEP 3: Detect main content
+    $mainContentNode = $this->findMainContentNode($dom, $xpath)
+        ?? $dom->getElementsByTagName('body')->item(0);
 
-        if (!$mainContentNode) {
-            // Fallback to body if no specific main content node found
-            $mainContentNode = $dom->getElementsByTagName('body')->item(0);
-        }
-
-        if (!$mainContentNode) {
-            libxml_clear_errors();
-            libxml_use_internal_errors(false);
-            return '';
-        }
-
-        // Step 3: Resolve relative URLs within the identified main content's children
-        $this->resolveRelativeUrls($mainContentNode, new Uri($baseUrl));
-
-        // Step 4: Extract the *inner HTML* of the main content node
-        // This method reliably gets only the children's HTML
-        $innerHtmlFragment = '';
-        foreach ($mainContentNode->childNodes as $childNode) {
-            // Use saveHTML($node) for each child to get its full HTML, then concatenate
-            $innerHtmlFragment .= $dom->saveHTML($childNode);
-        }
-
-        // Step 5: Convert the cleaned inner HTML fragment to Markdown using the League converter
-        // With strip_tags = true, this should aggressively remove any unconvertible HTML
-        $markdown = $this->htmlConverter->convert($innerHtmlFragment);
-
+    if (!$mainContentNode) {
         libxml_clear_errors();
         libxml_use_internal_errors(false);
-
-        return $this->cleanMarkdown($markdown);
+        return '';
     }
+
+    // STEP 4: Resolve relative URLs
+    $this->resolveRelativeUrls($mainContentNode, new Uri($baseUrl));
+
+    // STEP 5: Extract clean inner HTML
+    $innerHtmlFragment = '';
+    foreach ($mainContentNode->childNodes as $childNode) {
+        $innerHtmlFragment .= $dom->saveHTML($childNode);
+    }
+
+    // STEP 6: Convert to Markdown
+    $markdown = $this->htmlConverter->convert($innerHtmlFragment);
+
+    // STEP 7: Post-process Markdown to remove any remaining junk
+    $markdown = $this->cleanerMarkdown($markdown);
+
+    libxml_clear_errors();
+    libxml_use_internal_errors(false);
+
+    return $markdown;
+}
+
+/**
+ * Remove leftover HTML or JS artifacts from Markdown.
+ */
+private function cleanerMarkdown(string $markdown): string
+{
+    // Remove any remaining HTML tags
+    $markdown = preg_replace('/<[^>]+>/', '', $markdown);
+
+    // Remove markdown links with javascript or empty URLs
+    $markdown = preg_replace('/\[[^\]]*\]\((?:javascript:[^)]+|#|)\)/i', '', $markdown);
+
+    // Remove redundant whitespace, slashes, and escape characters
+    $markdown = preg_replace('/\\\\+/', '', $markdown);
+    $markdown = preg_replace("/\n{3,}/", "\n\n", $markdown);
+    $markdown = trim($markdown);
+
+    return $markdown;
+}
+
 
     private function detectCharset(string $html): ?string
     {

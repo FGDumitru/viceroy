@@ -6,8 +6,6 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 use Viceroy\Tools\Interfaces\ToolInterface;
-use Viceroy\Tools\WebPageToMarkdownTool;
-
 
 /**
  * Enhanced GetRedditHot tool with advanced functionality including:
@@ -49,7 +47,6 @@ class GetRedditHot implements ToolInterface
             ]
         ]);
         $this->cacheTtl = $cacheTtl;
-
     }
 
     public function getName(): string
@@ -182,12 +179,12 @@ class GetRedditHot implements ToolInterface
 
                 // Content analysis
                 if ($includeContentAnalysis && !empty($post['link'])) {
-                    $enhancedPost['content'] = $this->analyzeContent($post['content'], $configuration, TRUE);
+                    $enhancedPost['content_summary'] = $this->analyzeContent($post['link'], $configuration);
                     if ($includeSentimentAnalysis) {
                         // If content analysis failed, use description for sentiment
-                        $sentimentText = $enhancedPost['content'];
+                        $sentimentText = $enhancedPost['content_summary'];
                         if (strpos($sentimentText, 'not accessible') !== false || strpos($sentimentText, 'failed') !== false) {
-                            $sentimentText = $post['content'] ?? '';
+                            $sentimentText = $post['description'] ?? '';
                         }
                         $enhancedPost['content_sentiment'] = $this->analyzeSentiment($sentimentText, $configuration);
                     } else {
@@ -197,7 +194,7 @@ class GetRedditHot implements ToolInterface
                     $enhancedPost['content_summary'] = 'Content analysis disabled';
                     if ($includeSentimentAnalysis) {
                         // Use description for sentiment if content analysis is disabled
-                        $enhancedPost['content_sentiment'] = $this->analyzeSentiment($post['content'] ?? '', $configuration);
+                        $enhancedPost['content_sentiment'] = $this->analyzeSentiment($post['description'] ?? '', $configuration);
                     } else {
                         $enhancedPost['content_sentiment'] = 'Sentiment analysis disabled';
                     }
@@ -210,7 +207,7 @@ class GetRedditHot implements ToolInterface
                         // If comment analysis failed, use description for sentiment
                         $sentimentText = $enhancedPost['comments_summary'];
                         if (strpos($sentimentText, 'not accessible') !== false || strpos($sentimentText, 'failed') !== false) {
-                            $sentimentText = $post['content'] ?? '';
+                            $sentimentText = $post['description'] ?? '';
                         }
                         $enhancedPost['comments_sentiment'] = $this->analyzeSentiment($sentimentText, $configuration);
                     } else {
@@ -337,7 +334,7 @@ class GetRedditHot implements ToolInterface
                     'subreddit' => $postData['subreddit'] ?? 'unknown',
                     'category' => $postData['category'] ?? '',
                     'published_at' => $pubDate,
-                    'content' => html_entity_decode(strip_tags($description), ENT_QUOTES | ENT_HTML5, 'UTF-8')
+                    'description' => html_entity_decode(strip_tags($description), ENT_QUOTES | ENT_HTML5, 'UTF-8')
                 ];
 
                 $posts[] = $post;
@@ -373,10 +370,9 @@ class GetRedditHot implements ToolInterface
             }
 
             // Comments pattern: <a href="...">1234 comments</a>
-            // Comments pattern: <a href="...">[comments]</a> OR <a href="...">1234 comments</a>
-            if (preg_match("/<a[^>]*href=\"([^\"]*)\"[^>]*>\\[(\\d+\\s+)?comments\\]<\/a>/i", $description, $matches)) {
-                $data["comments"] = isset($matches[2]) ? (int) $matches[2] : 0;
-                $data["comments_link"] = html_entity_decode($matches[1], ENT_QUOTES | ENT_HTML5, "UTF-8");
+            if (preg_match('/<a[^>]*href="([^"]*)"[^>]*>(\d+)\s+comments<\/a>/i', $description, $matches)) {
+                $data['comments'] = (int) $matches[2];
+                $data['comments_link'] = html_entity_decode($matches[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
             }
 
             // Author pattern: submitted by <a href="...">author</a>
@@ -405,7 +401,7 @@ class GetRedditHot implements ToolInterface
     /**
      * Analyze content of a linked URL using LLM
      */
-    private function analyzeContent(string $url, $configuration, $isString = FALSE): string
+    private function analyzeContent(string $url, $configuration): string
     {
         $cacheKey = self::CACHE_PREFIX_CONTENT . md5($url);
         
@@ -422,22 +418,10 @@ class GetRedditHot implements ToolInterface
             }
             $analysisConnection = new \Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection($config);
             
-            if (!$isString) {
-                $analysisConnection->addToolDefinition(new WebPageToMarkdownTool());
-            }
-
-
-            if (!$isString) {
-                $prompt = "Please visit and analyze the content at this URL: {$url}\n\n" .
-                        "Provide a concise summary of the main content in 2-3 sentences. " .
-                        "Focus on the key information, main points, or overall topic. " .
-                        "If the content is inaccessible or not text-based, respond with 'Content not accessible'.";
-                } else {
-                $prompt = "Please analyze the following content:\n\n<content>{$url}</content>\n\n" .
-                        "Provide a concise summary of the main content in 2-3 sentences. " .
-                        "Focus on the key information, main points, or overall topic.";
-            }
-            
+            $prompt = "Please visit and analyze the content at this URL: {$url}\n\n" .
+                     "Provide a concise summary of the main content in 2-3 sentences. " .
+                     "Focus on the key information, main points, or overall topic. " .
+                     "If the content is inaccessible or not text-based, respond with 'Content not accessible'.";
 
             $response = $analysisConnection->queryPost($prompt);
             $summary = $response->getLlmResponse();
@@ -457,115 +441,106 @@ class GetRedditHot implements ToolInterface
      */
     private function analyzeComments(string $commentsUrl, $configuration): string
     {
+        $cacheKey = self::CACHE_PREFIX_COMMENTS . md5($commentsUrl);
+        
+        if ($this->isCached($cacheKey)) {
+            return $this->getCached($cacheKey);
+        }
+
         try {
-            // Generate cache key
-            $cacheKey = 'reddit_comments_' . md5($commentsUrl);
+            // Fetch the actual RSS feed for comments by appending .rss
+            $rssUrl = $commentsUrl . ".rss";
             
-            // Check cache first
-            $cacheFile = sys_get_temp_dir() . '/' . $cacheKey;
-            if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < 3600) { // 1 hour cache
-                return file_get_contents($cacheFile);
+            $response = $this->httpClient->get($rssUrl);
+            if ($response->getStatusCode() !== 200) {
+                $errorMsg = "Comments analysis failed: Unable to fetch comments RSS feed (HTTP " . $response->getStatusCode() . ")";
+                $this->setCache($cacheKey, $errorMsg);
+                return $errorMsg;
             }
+
+            $rssContent = $response->getBody()->getContents();
             
-            // Convert Reddit URL to JSON API format
-            $jsonUrl = rtrim($commentsUrl, '/') . '.json';            
-            
-            // Create HTTP client
-            $client = new \GuzzleHttp\Client([
-                'timeout' => 10,
-                'headers' => [
-                    'User-Agent' => 'Viceroy-Reddit-Tool/1.0'
-                ]
-            ]);
-            
-            // Fetch JSON data
-            $response = $client->get($jsonUrl);
-            $jsonData = $response->getBody()->getContents();
-            
-            // Parse JSON
-            $data = json_decode($jsonData, true);
-            if (!$data) {
-                return "Unable to parse JSON for comment analysis";
+            // Parse the RSS feed
+            libxml_use_internal_errors(true);
+            $xml = simplexml_load_string($rssContent);
+            if (!$xml) {
+                $errors = libxml_get_errors();
+                libxml_clear_errors();
+                $errorMsg = "Comments analysis failed: XML parsing failed - " . implode(", ", array_map(fn($e) => $e->message, $errors));
+                $this->setCache($cacheKey, $errorMsg);
+                return $errorMsg;
             }
-            
-            // Extract comments from JSON structure
+
+            // Extract comments from the RSS feed
             $comments = [];
+            $entries = $xml->entry ?? [];
             
-            // Reddit JSON returns an array with post data and comments
-            if (is_array($data) && count($data) >= 2) {
-                $commentsData = $data[1]; // Comments are usually in the second element
-                
-                // Recursive function to extract comments
-                $extractComments = function($commentData) use (&$extractComments) {
-                    $comments = [];
-                    
-                    if (isset($commentData['data']['children'])) {
-                        foreach ($commentData['data']['children'] as $child) {
-                            if (isset($child['data']['body'])) {
-                                $commentText = $child['data']['body'];
-                                $commentText = strip_tags($commentText);
-                                $commentText = trim($commentText);
-                                
-                                if (!empty($commentText) && strlen($commentText) > 10) {
-                                    $comments[] = $commentText;
-                                }
-                            }
-                            
-                            // Extract replies recursively
-                            if (isset($child['data']['replies']) && is_array($child['data']['replies'])) {
-                                $replies = $extractComments($child['data']['replies']);
-                                $comments = array_merge($comments, $replies);
-                            }
-                        }
+            foreach ($entries as $entry) {
+                if (isset($entry->content)) {
+                    $commentText = (string) $entry->content;
+                    $commentText = html_entity_decode(strip_tags($commentText), ENT_QUOTES | ENT_HTML5, "UTF-8");
+                    if (!empty(trim($commentText))) {
+                        $comments[] = $commentText;
                     }
-                    
-                    return $comments;
-                };
-                
-                $comments = $extractComments($commentsData);
+                }
             }
-            
+
             $commentCount = count($comments);
             
-            if (empty($comments)) {
-                $result = "No comments found in the comments thread";
-                file_put_contents($cacheFile, $result);
+            if ($commentCount === 0) {
+                $result = "Comments analysis: No comments found";
+                $this->setCache($cacheKey, $result);
                 return $result;
             }
+
+            // Create a new connection for sentiment analysis
+            $config = $configuration;
+            if ($configuration instanceof ViceroyConnectionsDefinitionsOpenAICompatibleEndpointConnection) {
+                $config = $configuration->getConfiguration();
+            }
+            $analysisConnection = new ViceroyConnectionsDefinitionsOpenAICompatibleEndpointConnection($config);
             
-            // Limit comments to analyze to avoid token limits
-            $maxComments = 100;
-            $commentsToAnalyze = array_slice($comments, 0, $maxComments);
+            // Prepare comments for analysis (limit to first 20 comments to avoid token limits)
+            $commentsText = implode("
+
+", array_slice($comments, 0, 20));
             
-            // Create LLM connection for sentiment analysis
-            $connection = new \Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection($configuration);
-            
-            // Prepare comments for analysis
-            $commentsText = implode("\n\n---\n\n", $commentsToAnalyze);
-            
-            $prompt = "Please analyze the sentiment of these Reddit comments and provide a summary:\n\n" . 
-                     "Comments ({$commentCount} total, analyzing first " . count($commentsToAnalyze) . "):\n" . 
-                     $commentsText . "\n\n" .
-                     "Please provide:\n" .
-                     "1. Total comment count: {$commentCount}\n" .
-                     "2. Overall sentiment analysis (positive, negative, neutral, or mixed)\n" .
-                     "3. Brief explanation of the sentiment (4-5 sentences)\n" .
-                     "4. Key themes or topics mentioned\n" .
-                     "5. Any notable patterns in the comments\n\n" .
-                     "Format your response as a concise summary.";
-            
-            // Get sentiment analysis from LLM
-            // Get sentiment analysis from LLM
-            $response = $connection->query($prompt);
-            $sentimentAnalysis = (is_string($response) ? $response : $response->getLlmResponse());
+            $prompt = "Analyze these " . $commentCount . " Reddit comments and provide:
+" .
+                     "1. Overall sentiment: (positive, negative, neutral, or mixed)
+" .
+                     "2. Main themes/topics discussed
+" .
+                     "3. General consensus or controversy level
+" .
+                     "4. Brief summary in 2-3 sentences
+
+" .
+                     "Comments to analyze:
+" . $commentsText . "
+
+" .
+                     "Please format your response as a concise analysis covering these points.";
+
+            $response = $analysisConnection->queryPost($prompt);
+            $sentimentAnalysis = $response->getLlmResponse();
+
+            // Combine count and sentiment analysis
+            $result = "Comments analysis: Found " . $commentCount . " comments. " . $sentimentAnalysis;
             
             // Cache the result
-            file_put_contents($cacheFile, $sentimentAnalysis);
-            
-            return $sentimentAnalysis;
-            
-        } catch (\Exception $e) {
-            return "Error analyzing comments: " . $e->getMessage();
+            $this->setCache($cacheKey, $result);
+
+            return $result;
+
+        } catch (GuzzleHttpExceptionGuzzleException $e) {
+            $errorMsg = "Comments analysis failed: Network error - " . $e->getMessage();
+            $this->setCache($cacheKey, $errorMsg);
+            return $errorMsg;
+        } catch (Exception $e) {
+            $errorMsg = "Comments analysis failed: " . $e->getMessage();
+            $this->setCache($cacheKey, $errorMsg);
+            return $errorMsg;
         }
     }
 
