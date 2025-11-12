@@ -123,20 +123,25 @@ $totalRequiredAnswersPerQuestion = 1;
 $requiredCorrectAnswers = 1;
 
 // ======================= Configuration =======================
-// Initialize connection with maximum possible timeout
-$llmConnection = new OpenAICompatibleEndpointConnection();
-$llmConnection->setConnectionTimeout(3600 * 4); // 4h timeout for a single response.
+// Initialize connection with reasonable timeouts
+$llmConnection = new OpenAICompatibleEndpointConnection('config.json');
+$llmConnection->setConnectionTimeout(3000); // 5 minutes timeout for a single response
+$llmConnection->setStreamIdleTimeout(3000); // 30 seconds idle timeout
+$llmConnection->setStreamReadTimeout(6000); // 60 seconds read timeout
+ $llmConnection->setDebugMode(false); // Enable debug mode for troubleshooting streaming issues
 
 $results = [];
 
 
-$useHardCodedDebugParameters = FALSE;
+$useHardCodedDebugParameters = false;
 
 if ($useHardCodedDebugParameters) {
-    $additionalParams = '--endpoint=https://openrouter.ai/api --specific-models=moonshotai/kimi-vl-a3b-thinking:free';
+    // $additionalParams = '--endpoint=https://openrouter.ai/api --specific-models=moonshotai/kimi-vl-a3b-thinking:free';
+    $additionalParams = '--model="V_Magistral-Small-2509" --total-required-answers=600';
     $ex = explode(' ', $additionalParams);
     foreach ($ex as $item) {
         $argv[] = $item;
+        $argc = count($argv);
     }
 }
 
@@ -1262,7 +1267,16 @@ SYSTEM_PROMPT;
 
                     $llmConnection->setParameter('user', 'Viceroy Library (0.1)- Benchmark example');
                     
-                    $response = $llmConnection->queryPost([], function($chunk) {
+                    // Add timeout protection for the queryPost call
+                    $queryStartTime = microtime(true);
+                    $maxQueryTime = 14400; // 5 minutes maximum per query
+                    
+                    $response = $llmConnection->queryPost([], function($chunk) use ($queryStartTime, $maxQueryTime) {
+                        // Check if we've exceeded the maximum query time
+                        if (microtime(true) - $queryStartTime > $maxQueryTime) {
+                            echo "\n\033[1;31mERROR: Query timeout exceeded ({$maxQueryTime}s). Aborting to prevent hanging.\033[0m\n";
+                            throw new RuntimeException("Query timeout exceeded");
+                        }
                         echo $chunk;
                     });
 

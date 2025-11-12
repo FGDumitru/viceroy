@@ -689,10 +689,11 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
 
                     // Read from the stream without detaching
                     $chunk = $body->read(1);
+                    //echo $chunk;
 
                     if ($chunk === '') {
                         // No data available, sleep briefly to prevent CPU spinning
-                        usleep(100); // 100ms
+                        usleep(10000); // 100ms
                         continue;
                     }
 
@@ -1106,7 +1107,20 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                     $promptJson['messages'][$idx] = ['role' => 'user', 'content' => ''];
                 }
 
-                $promptJson['messages'][$idx]['content'] .= "\n" . $toolMessage;
+                
+                // Handle both array-based content and legacy string-based content
+                if (is_array($promptJson['messages'][$idx]['content'])) {
+                    // Find the text element in the content array and append to it
+                    foreach ($promptJson['messages'][$idx]['content'] as &$contentItem) {
+                        if (isset($contentItem['type']) && $contentItem['type'] === 'text' && isset($contentItem['text'])) {
+                            $contentItem['text'] .= "\n" . $toolMessage;
+                            break;
+                        }
+                    }
+                } else {
+                    // Legacy string-based content (backward compatibility)
+                    $promptJson['messages'][$idx]['content'] .= "\n" . $toolMessage;
+                }
             }
         }
 

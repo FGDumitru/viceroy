@@ -2,11 +2,11 @@
 
 namespace Viceroy\Tools;
 
-use Viceroy\Tools\Interfaces\ToolInterface;
-use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
-use Viceroy\Configuration\ConfigManager;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Viceroy\Configuration\ConfigManager;
+use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
+use Viceroy\Tools\Interfaces\ToolInterface;
 
 class AdvanceSearchTool implements ToolInterface
 {
@@ -645,7 +645,7 @@ class AdvanceSearchTool implements ToolInterface
             $content = substr($content, 0, $maxLength) . '...';
         }
 
-        $prompt = "This is a listing page. Extract the top 5 most relevant links related to the query '{$query}' from the content. Return a JSON object with 'links' as array of strings (urls). Content: " . $content . '/nothink';
+        $prompt = "This is a listing page. Extract the top 5 most relevant links (ignore any RSS links) related to the query '{$query}' from the content. Return a JSON object with 'links' as array of strings (urls). Content: " . $content . '/nothink';
 
         try {
             $systemMessage = "You are a helpful assistant that extracts relevant links from webpage content. Always respond with valid JSON.";

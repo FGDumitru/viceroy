@@ -17,13 +17,13 @@ class SendTelegramMessageTool implements ToolInterface
             'type' => 'function',
             'function' => [
                 'name' => 'send_telegram_message',
-                'description' => 'Sends a telegram message to the user. Automatically splits long messages (>4000 characters) into multiple parts with [part/total] numbering.',
+                'description' => 'Sends a telegram message to the user. Automatically splits long messages (>4000 characters) into multiple parts with intelligent boundary detection and [part/total] numbering.',
                 'parameters' => [
                     'type' => 'object',
                     'properties' => [
                         'message' => [
                             'type' => 'string',
-                            'description' => 'The message content to send via Telegram. If longer than 4000 characters, it will be automatically split into multiple messages.'
+                            'description' => 'The message content to send via Telegram. If longer than 4000 characters, it will be automatically split into multiple messages using intelligent boundary detection (paragraphs, sentences, words) while preserving URLs.'
                         ]
                     ],
                     'required' => ['message']
@@ -38,11 +38,17 @@ class SendTelegramMessageTool implements ToolInterface
     }
 
     /**
-     * Split a message into chunks of maximum 4000 characters
+     * Split a message into chunks of maximum 4000 characters using intelligent boundaries
      *
      * This method splits a message that exceeds Telegram's 4096 character limit into
-     * smaller chunks of 4000 characters each (leaving a buffer for the [X/Y] prefix).
-     * The splitting is done by character count to ensure all content is preserved.
+     * smaller chunks using a priority-based approach:
+     * 1. Paragraph boundaries (\n\n)
+     * 2. Line boundaries (\n)
+     * 3. Sentence endings (., !, ? followed by space)
+     * 4. Word boundaries (spaces)
+     * 5. Last resort: character boundaries
+     *
+     * Links and URLs are protected from splitting and moved entirely to the next chunk if needed.
      *
      * @param string $message The message to split
      * @return array Array of message chunks, each with a maximum length of 4000 characters
@@ -57,15 +63,210 @@ class SendTelegramMessageTool implements ToolInterface
         }
         
         $chunks = [];
-        $currentPosition = 0;
+        $remainingText = $message;
         
-        while ($currentPosition < $messageLength) {
-            $chunk = substr($message, $currentPosition, $maxLength);
+        while (!empty($remainingText)) {
+            $chunk = $this->extractIntelligentChunk($remainingText, $maxLength);
             $chunks[] = $chunk;
-            $currentPosition += $maxLength;
+            $remainingText = substr($remainingText, strlen($chunk));
         }
         
         return $chunks;
+    }
+    
+    /**
+     * Extract an intelligent chunk from the beginning of text
+     *
+     * @param string $text The text to extract from
+     * @param int $maxLength Maximum length of the chunk
+     * @return string The extracted chunk
+     */
+    private function extractIntelligentChunk(string $text, int $maxLength): string
+    {
+        // If the entire text fits, return it
+        if (strlen($text) <= $maxLength) {
+            return $text;
+        }
+        
+        // First, check if we have URLs that would be split and move them to next chunk
+        $urlSplitPos = $this->handleUrlBoundaries($text, $maxLength);
+        if ($urlSplitPos !== false && $urlSplitPos > 0) {
+            return substr($text, 0, $urlSplitPos);
+        }
+        
+        // Get the candidate chunk (max length)
+        $candidate = substr($text, 0, $maxLength);
+        
+        // Try to split at paragraph boundaries first
+        $splitPos = $this->findBestSplitPosition($candidate, $maxLength, "\n\n");
+        if ($splitPos !== false) {
+            return substr($text, 0, $splitPos);
+        }
+        
+        // Try to split at line boundaries
+        $splitPos = $this->findBestSplitPosition($candidate, $maxLength, "\n");
+        if ($splitPos !== false) {
+            return substr($text, 0, $splitPos);
+        }
+        
+        // Try to split at sentence boundaries
+        $splitPos = $this->findSentenceBoundary($candidate, $maxLength);
+        if ($splitPos !== false) {
+            return substr($text, 0, $splitPos);
+        }
+        
+        // Try to split at word boundaries
+        $splitPos = $this->findWordBoundary($candidate, $maxLength);
+        if ($splitPos !== false) {
+            return substr($text, 0, $splitPos);
+        }
+        
+        // Absolute last resort: split at max length
+        return $candidate;
+    }
+    
+    /**
+     * Find the best split position for a given delimiter
+     *
+     * @param string $text The text to search in
+     * @param int $maxLength Maximum allowed length
+     * @param string $delimiter The delimiter to split on
+     * @return int|false The split position or false if not found
+     */
+    private function findBestSplitPosition(string $text, int $maxLength, string $delimiter): int|false
+    {
+        $lastPos = strrpos($text, $delimiter);
+        if ($lastPos !== false && $lastPos > 0) {
+            return $lastPos + strlen($delimiter);
+        }
+        return false;
+    }
+    
+    /**
+     * Find sentence boundaries (., !, ? followed by space)
+     *
+     * @param string $text The text to search in
+     * @param int $maxLength Maximum allowed length
+     * @return int|false The split position or false if not found
+     */
+    private function findSentenceBoundary(string $text, int $maxLength): int|false
+    {
+        // Look for sentence endings followed by space
+        $patterns = ['\. ', '! ', '? '];
+        
+        $bestPos = false;
+        
+        foreach ($patterns as $pattern) {
+            $offset = 0;
+            while (($pos = strpos($text, $pattern, $offset)) !== false) {
+                $splitPos = $pos + strlen($pattern);
+                if ($splitPos < $maxLength) {
+                    // Keep track of the best (closest to maxLength) position
+                    if ($bestPos === false || $splitPos > $bestPos) {
+                        $bestPos = $splitPos;
+                    }
+                }
+                $offset = $pos + 1;
+            }
+        }
+        
+        return $bestPos;
+    }
+    
+    /**
+     * Find word boundaries (spaces) that don't break URLs
+     *
+     * @param string $text The text to search in
+     * @param int $maxLength Maximum allowed length
+     * @return int|false The split position or false if not found
+     */
+    private function findWordBoundary(string $text, int $maxLength): int|false
+    {
+        // Find the last space before max length
+        $lastSpace = strrpos(substr($text, 0, $maxLength), ' ');
+        if ($lastSpace !== false && $lastSpace > 0) {
+            // Make sure we're not in the middle of a URL
+            $beforeSpace = substr($text, 0, $lastSpace);
+            $afterSpace = substr($text, $lastSpace + 1);
+            
+            if (!$this->isUrlFragment($afterSpace) && !$this->isUrlFragment($beforeSpace)) {
+                return $lastSpace;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Handle URL boundaries by moving entire URLs to next chunk
+     *
+     * @param string $text The text to analyze
+     * @param int $maxLength Maximum allowed length
+     * @return int|false The split position or false if not found
+     */
+    private function handleUrlBoundaries(string $text, int $maxLength): int|false
+    {
+        // Look for URLs near the boundary
+        $urlPattern = '/https?:\/\/[^\s]+/i';
+        
+        if (preg_match_all($urlPattern, $text, $matches, PREG_OFFSET_CAPTURE)) {
+            foreach ($matches[0] as $match) {
+                $urlStart = $match[1];
+                $urlEnd = $urlStart + strlen($match[0]);
+                
+                // If URL spans across the boundary, split before it
+                if ($urlStart < $maxLength && $urlEnd > $maxLength) {
+                    // Try to find a good split point before the URL
+                    $beforeUrl = substr($text, 0, $urlStart);
+                    
+                    // Try to find a sentence or word boundary before the URL
+                    $sentencePos = $this->findSentenceBoundary($beforeUrl, $urlStart);
+                    if ($sentencePos !== false && $sentencePos > 0) {
+                        return $sentencePos;
+                    }
+                    
+                    // Try word boundary
+                    $wordPos = strrpos($beforeUrl, ' ');
+                    if ($wordPos !== false && $wordPos > 0) {
+                        return $wordPos;
+                    }
+                    
+                    // Last resort: split right before the URL
+                    return $urlStart;
+                }
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Check if a text fragment is part of a URL
+     *
+     * @param string $text The text to check
+     * @return bool True if it appears to be part of a URL
+     */
+    private function isUrlFragment(string $text): bool
+    {
+        // Check for common URL patterns
+        $urlPatterns = [
+            '/^https?:\/\//i',
+            '/www\./i',
+            '/\.com$/i',
+            '/\.org$/i',
+            '/\.net$/i',
+            '/\.io$/i',
+            '/\.gov$/i',
+            '/\.edu$/i'
+        ];
+        
+        foreach ($urlPatterns as $pattern) {
+            if (preg_match($pattern, $text)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     /**
