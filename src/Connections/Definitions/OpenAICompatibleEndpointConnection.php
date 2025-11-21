@@ -615,18 +615,16 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
         $uri = $this->getEndpointUri() . $this->getCompletionPath();
         $guzzleRequest = [
             'json' => $promptJson,
-            'headers' => [
-                'Content-Type' => 'application/json',
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Viceroy-WebPageToMarkdownTool/2.2', // Version bump
-                'Accept-Language' => 'en-US,en;q=0.9',
-                'Accept-Encoding' => 'gzip, deflate, br',
-                'Connection' => 'keep-alive',
-                'DNT' => '1',
-            ],
+            'headers' => ['Content-Type' => 'application/json'],
             'timeout' => $this->streamReadTimeout,
             'connect_timeout' => $this->streamReadTimeout,
             'stream' => TRUE,
             'read_timeout' => $this->streamReadTimeout,
+          'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Viceroy-WebPageToMarkdownTool/2.2', // Version bump
+          'Accept-Language' => 'en-US,en;q=0.9',
+          'Accept-Encoding' => 'gzip, deflate, br',
+          'Connection' => 'keep-alive',
+          'DNT' => '1',
         ];
 
         $guzzleRequest = array_merge($guzzleRequest, $this->getGuzzleCustomOptions());
@@ -664,36 +662,21 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                 $this->response = new Response($response);
                 $this->response->setWasStreamed();
 
-                // Initialize empty delta counter for stream termination safety
-                $emptyDeltaCount = 0;
-                $lastContentTime = time(); // Track when we last received actual content
-                $contentTimeout = 10; // Assume completion if no content for 10 seconds
-                $emptyLineCount = 0; // Track consecutive empty lines for termination
-
                 while (!$body->eof()) {
                     // Check for idle timeout
                     if (time() - $lastDataTime > $this->streamIdleTimeout) {
                         throw new RuntimeException("Stream idle timeout exceeded after {$this->streamIdleTimeout} seconds");
                     }
 
-                    // Check for content-based timeout (for models that don't send proper termination signals)
-                    if (!empty($streamedContent) && (time() - $lastContentTime > $contentTimeout)) {
-                        if ($this->debugMode) {
-                            error_log("STREAM DEBUG: Terminating stream due to content timeout - no content received for {$contentTimeout} seconds");
-                        }
-                        break;
-                    }
-
                     $this->toolEncountered = false;
 
 
                     // Read from the stream without detaching
-                    $chunk = $body->read(1);
-                    //echo $chunk;
+                    $chunk = $body->read(100);
 
                     if ($chunk === '') {
                         // No data available, sleep briefly to prevent CPU spinning
-                        usleep(10000); // 100ms
+                        usleep(100); // 100ms
                         continue;
                     }
 
@@ -705,135 +688,25 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                     foreach ($lines as $line) {
                         $line = trim($line);
 
-                        // Enhanced debug logging for streaming analysis
-                        if ($this->debugMode) {
-                            error_log("STREAM DEBUG: Raw line received: " . $line);
-                        }
+                        //DEBUG
+//                    echo "\tDEBUG LINE: " . $line . PHP_EOL;
 
                         if ($line === '' || str_starts_with($line, ':')) {
-                            if ($this->debugMode) {
-                                error_log("STREAM DEBUG: Skipping empty/comment line: " . $line);
-                            }
-                            // Track consecutive empty lines for termination detection
-                            if ($line === '') {
-                                $emptyLineCount++;
-                                if ($this->debugMode) {
-                                    error_log("STREAM DEBUG: Empty line count: $emptyLineCount");
-                                }
-                                // If we get 1 empty line after receiving content, assume completion
-                                if (!empty($streamedContent) && $emptyLineCount >= 1) {
-                                    if ($this->debugMode) {
-                                        //error_log("STREAM DEBUG: Terminating stream due to 1 empty line");
-                                    }
-                                    //break 2;
-                                }
-                            }
                             continue;
                         }
-                        
                         if (str_starts_with($line, 'data: ')) {
                             $jsonString = substr($line, 6);
-                            
-                            // Debug: Log the raw JSON string
-                            if ($this->debugMode) {
-                                error_log("STREAM DEBUG: JSON string extracted: " . $jsonString);
-                            }
-                            
-                            if (trim($jsonString) === '[DONE]') {
-                                // Stream explicitly marked as done
-                                if ($this->debugMode) {
-                                    error_log("STREAM DEBUG: Stream termination detected via [DONE] marker");
-                                }
+                            if ($jsonString === '[DONE]') {
                                 break 2;
                             }
 
                             $decoded = json_decode($jsonString, TRUE);
-                            $jsonError = json_last_error();
-                            
-                            // Debug: Log JSON decode result
-                            if ($this->debugMode) {
-                                if ($jsonError !== JSON_ERROR_NONE) {
-                                    error_log("STREAM DEBUG: JSON decode error: " . $jsonError . " - " . json_last_error_msg());
-                                } else {
-                                    error_log("STREAM DEBUG: JSON decoded successfully: " . json_encode($decoded, JSON_PRETTY_PRINT));
-                                }
-                            }
-                            
-                            if ($jsonError !== JSON_ERROR_NONE) {
+                            if (json_last_error() !== JSON_ERROR_NONE) {
                                 continue;
                             }
 
                             $delta = $decoded['choices'][0]['delta'] ?? [];
                             $finishReason = $decoded['choices'][0]['finish_reason'] ?? NULL;
-                            
-                            // Debug: Log key values for completion detection
-                            if ($this->debugMode) {
-                                error_log("STREAM DEBUG: finish_reason: " . var_export($finishReason, true));
-                                error_log("STREAM DEBUG: delta content: " . var_export($delta['content'] ?? NULL, true));
-                                error_log("STREAM DEBUG: delta keys: " . implode(', ', array_keys($delta)));
-                                error_log("STREAM DEBUG: choices structure: " . json_encode($decoded['choices'][0] ?? 'not found', JSON_PRETTY_PRINT));
-                            }
-                            
-                            // Primary completion check: finish_reason is the definitive indicator
-                            if ($finishReason !== NULL) {
-                                // Debug logging for completion detection
-                                if ($this->debugMode) {
-                                    error_log("STREAM DEBUG: Stream completion detected - finish_reason: $finishReason");
-                                    error_log("STREAM DEBUG: Valid finish reasons: stop, length, content_filter, function_call, tool_calls");
-                                    error_log("STREAM DEBUG: Is valid finish reason? " . (in_array($finishReason, ['stop', 'length', 'content_filter', 'function_call', 'tool_calls']) ? 'YES' : 'NO'));
-                                }
-                                // Any non-null finish_reason indicates completion
-                                // Standard reasons: stop, length, content_filter, function_call, tool_calls
-                                if (in_array($finishReason, ['stop', 'length', 'content_filter', 'function_call', 'tool_calls'])) {
-                                    if ($this->debugMode) {
-                                        error_log("STREAM DEBUG: Breaking due to valid finish_reason: $finishReason");
-                                    }
-                                    break 2;
-                                }
-                            } else {
-                                if ($this->debugMode) {
-                                    error_log("STREAM DEBUG: finish_reason is NULL - continuing stream processing");
-                                }
-                            }
-                            
-                            // Secondary completion check: empty delta with content received
-                            // This handles cases where finish_reason might be missing but stream is clearly done
-                            
-                            // Check for truly empty delta (no content, no tool_calls, no reasoning_content)
-                            $hasContent = isset($delta['content']) && $delta['content'] !== '';
-                            $hasToolCalls = isset($delta['tool_calls']) && !empty($delta['tool_calls']);
-                            $hasReasoning = isset($delta['reasoning_content']) && $delta['reasoning_content'] !== '';
-                            $deltaIsEmpty = !$hasContent && !$hasToolCalls && !$hasReasoning;
-                            
-                            if (!empty($streamedContent) && $deltaIsEmpty) {
-                                $emptyDeltaCount++;
-                                // Enhanced debug logging for empty delta detection
-                                if ($this->debugMode) {
-                                    error_log("STREAM DEBUG: Empty delta detected ($emptyDeltaCount/3) - checking for completion");
-                                    error_log("STREAM DEBUG: streamedContent length: " . strlen($streamedContent));
-                                    error_log("STREAM DEBUG: hasContent: " . ($hasContent ? 'YES' : 'NO'));
-                                    error_log("STREAM DEBUG: hasToolCalls: " . ($hasToolCalls ? 'YES' : 'NO'));
-                                    error_log("STREAM DEBUG: hasReasoning: " . ($hasReasoning ? 'YES' : 'NO'));
-                                    error_log("STREAM DEBUG: deltaIsEmpty: " . ($deltaIsEmpty ? 'YES' : 'NO'));
-                                }
-                                // If we get 3 consecutive empty deltas after receiving content, assume completion
-                                // This handles models that don't send proper finish_reason signals
-                                if ($emptyDeltaCount >= 3) {
-                                    if ($this->debugMode) {
-                                        error_log("STREAM DEBUG: Terminating stream due to 3 consecutive empty deltas");
-                                    }
-                                    break 2;
-                                }
-                            } else {
-                                // Enhanced debug logging for delta reset
-                                if ($this->debugMode && ($hasContent || $hasToolCalls || $hasReasoning)) {
-                                    error_log("STREAM DEBUG: Resetting emptyDeltaCount to 0 - received valid delta");
-                                    error_log("STREAM DEBUG: Delta content: " . var_export($delta['content'] ?? NULL, true));
-                                }
-                                // Reset counter when we get valid delta data
-                                $emptyDeltaCount = 0;
-                                $emptyLineCount = 0; // Also reset empty line count when we get valid data
-                            }
 
                             // Handle reasoning (thinking) mode
                             if (array_key_exists('reasoning_content', $delta) && $delta['reasoning_content'] !== '') {
@@ -875,7 +748,6 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                             // Handle content
                             if (is_string($delta['content'] ?? NULL) && $delta['content'] !== '') {
                                 $toStream = $delta['content'];
-                                $lastContentTime = time(); // Update last content time
 
                                 // Check if content contains thinking tags
                                 if (preg_match("/<$thinkingTag>(.*?)<\/$thinkingTag>/s", $toStream, $matches)) {
@@ -973,12 +845,6 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                 }
 
                 $this->queryTime = microtime(TRUE) - $timer;
-                
-                // Debug logging for stream completion
-                if ($this->debugMode) {
-                    error_log("DEBUG: Stream processing completed. Query time: " . round($this->queryTime, 2) . "s");
-                }
-                
                 if (isset($decoded['error'])) {
                     var_dump($decoded);
                     die;
@@ -1107,20 +973,7 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                     $promptJson['messages'][$idx] = ['role' => 'user', 'content' => ''];
                 }
 
-                
-                // Handle both array-based content and legacy string-based content
-                if (is_array($promptJson['messages'][$idx]['content'])) {
-                    // Find the text element in the content array and append to it
-                    foreach ($promptJson['messages'][$idx]['content'] as &$contentItem) {
-                        if (isset($contentItem['type']) && $contentItem['type'] === 'text' && isset($contentItem['text'])) {
-                            $contentItem['text'] .= "\n" . $toolMessage;
-                            break;
-                        }
-                    }
-                } else {
-                    // Legacy string-based content (backward compatibility)
-                    $promptJson['messages'][$idx]['content'] .= "\n" . $toolMessage;
-                }
+                $promptJson['messages'][$idx]['content'] .= "\n" . $toolMessage;
             }
         }
 
