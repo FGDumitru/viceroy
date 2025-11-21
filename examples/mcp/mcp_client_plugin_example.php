@@ -34,19 +34,11 @@ try {
       echo "Available tools: " . json_encode($tools, JSON_PRETTY_PRINT) . "\n\n";
     }
 
-    // Test with example tool first
-    echo "Testing example tool...\n";
-    $exampleResults = $mcpClient->executeTool('Example', ['message' => 'Test message from client']);
-    if (isset($exampleResults['error'])) {
-        throw new Exception($exampleResults['error']['message']);
-    }
-    echo "Example tool results: " . json_encode($exampleResults, JSON_PRETTY_PRINT) . "\n\n";
-
-    // Perform a search using the search tool
+    // Perform a search using the advance search tool
     echo "Searching for 'How old is the universe?'...\n";
-    $searchResults = $mcpClient->executeTool('Search', [
+    $searchResults = $mcpClient->executeTool('advance_search', [
         'query' => "How old is the universe?",
-        'limit' => 5
+        'limit' => 3
     ]);
     if (isset($searchResults['error'])) {
         echo "Search tool error: " . $searchResults['error']['message'] . "\n";

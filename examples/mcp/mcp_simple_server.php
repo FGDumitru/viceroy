@@ -172,7 +172,7 @@ switch ($request['method']) {
 
         // print_r($tools);
 
-        $toolName = $request['params']['name'] . 'Tool';
+        $toolName = $request['params']['name'];
         $toolFile = $tools[$toolName] ?? null;
 
         if (!$toolFile || !file_exists($toolFile)) {

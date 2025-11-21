@@ -1,5 +1,6 @@
 {
-  "apiEndpoint": "http://127.0.0.1:5000",
-  "preferredModel": "gpt-4o",
-  "bearer": ""
+  "host": "http://192.168.0.121:8855",
+  "preferredModel": "Qwen3-VL-2B-Instruct",
+  "bearer": "",
+  "search_endpoint" : "http://127.0.0.1:8080"
 }

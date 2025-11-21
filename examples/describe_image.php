@@ -8,7 +8,7 @@ use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 $llmConnection = new OpenAICompatibleEndpointConnection();
 $llmConnection->setConnectionTimeout(300); // 5 minute timeout for API calls
 // Select a vision model.
-$llmConnection->setLLMmodelName('MiniCPM-V-4_5'); // Set the desired model from config
+$llmConnection->setLLMmodelName('Qwen3-VL-32B-Instruct-UD-Q4_K_XL'); // Set the desired model from config
 
 // 1st example - describe and compare images.
 $queryString = 'Describe the attached images. Then perform a comparison.';

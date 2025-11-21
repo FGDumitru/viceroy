@@ -135,7 +135,8 @@ class RolesManager {
     }
 
     if (!$haveImages) {
-        $this->roles[] = ['role' => $role, 'content' => $message];
+        $content = [['type' => 'text', 'text' => $message]];
+        $this->roles[] = ['role' => $role, 'content' => $content];
     } else {
         $content = [['type' => 'text', 'text' => $message]];
         
@@ -199,7 +200,29 @@ public function addToolResults(array $toolResults) {
    * @return static Returns self for method chaining
    */
   public function setMessages(array $messages): static {
-    $this->roles = $messages;
+    // Normalize message format to ensure all messages use the new nested array structure
+    $normalizedMessages = [];
+    foreach ($messages as $message) {
+      if (isset($message['role']) && isset($message['content'])) {
+        // Check if content is already in the new format
+        if (is_array($message['content']) && isset($message['content'][0]['type'])) {
+          // Already in new format, use as-is
+          $normalizedMessages[] = $message;
+        } else {
+          // Convert from old format to new format
+          $content = [['type' => 'text', 'text' => $message['content']]];
+          $normalizedMessages[] = [
+            'role' => $message['role'],
+            'content' => $content
+          ];
+        }
+      } else {
+        // Invalid message format, skip it or handle as needed
+        $normalizedMessages[] = $message;
+      }
+    }
+    
+    $this->roles = $normalizedMessages;
     return $this;
   }
 
@@ -214,7 +237,8 @@ public function addToolResults(array $toolResults) {
       $this->roles[] = [];
     }
 
-    $this->roles[0] = ['role' => 'system', 'content' => $system];
+    $content = [['type' => 'text', 'text' => $system]];
+    $this->roles[0] = ['role' => 'system', 'content' => $content];
 
     return $this;
   }

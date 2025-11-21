@@ -123,20 +123,38 @@ $totalRequiredAnswersPerQuestion = 1;
 $requiredCorrectAnswers = 1;
 
 // ======================= Configuration =======================
-// Initialize connection with maximum possible timeout
-$llmConnection = new OpenAICompatibleEndpointConnection();
-$llmConnection->setConnectionTimeout(3600 * 4); // 4h timeout for a single response.
+// Initialize connection with reasonable timeouts
+$llmConnection = new OpenAICompatibleEndpointConnection('config.json');
+
+// Validate configuration is properly loaded
+try {
+    $config = $llmConnection->getConfiguration();
+    if (!$config->configKeyExists('host') && !$config->configKeyExists('apiEndpoint')) {
+        die("\033[1;31mError: API endpoint not configured. Please check your config.json file.\033[0m\n");
+    }
+} catch (Exception $e) {
+    echo "\033[1;31mError loading configuration: " . $e->getMessage() . "\033[0m\n";
+    exit(1);
+}
+
+// Set reasonable timeouts (5 minutes max for model loading, 30 seconds for operations)
+$llmConnection->setConnectionTimeout(3000); // 5 minutes timeout for connection
+$llmConnection->setStreamIdleTimeout(3000);  // 30 seconds idle timeout
+$llmConnection->setStreamReadTimeout(6000);  // 60 seconds read timeout
+$llmConnection->setDebugMode(false); // Enable debug mode for troubleshooting streaming issues
 
 $results = [];
 
 
-$useHardCodedDebugParameters = FALSE;
+$useHardCodedDebugParameters = false;
 
 if ($useHardCodedDebugParameters) {
-    $additionalParams = '--endpoint=https://openrouter.ai/api --specific-models=moonshotai/kimi-vl-a3b-thinking:free';
+    // $additionalParams = '--endpoint=https://openrouter.ai/api --specific-models=moonshotai/kimi-vl-a3b-thinking:free';
+    $additionalParams = '--model="V_Magistral-Small-2509" --total-required-answers=600';
     $ex = explode(' ', $additionalParams);
     foreach ($ex as $item) {
         $argv[] = $item;
+        $argc = count($argv);
     }
 }
 
@@ -819,37 +837,47 @@ function prepareQuestion(&$entry) {
 
 /**
  * Validates LLM response against expected answers.
- * This version robustly finds the content of the LAST <response> tag.
+ * This version handles both tagged and untagged responses.
  */
 function validateResponse($entry, $response) {
     echo "\n\t## Expected response: " . json_encode($entry['answers']) . "\n";
 
     $finalResponse = '';
 
-    // 1. Find the character position of the last opening <response> tag.
+    // First try to extract content from <response> tags
     $last_open_tag_pos = strrpos($response, '<response>');
 
-    // 2. Proceed only if an opening tag was found.
     if ($last_open_tag_pos !== false) {
-        // 3. Get the substring that starts *after* the opening tag.
-        // strlen('<response>') is 10.
+        // Get the substring that starts *after* the opening tag
         $content_and_onward = substr($response, $last_open_tag_pos + 10);
 
-        // 4. Find the position of the first closing tag *in that remaining part*.
+        // Find the position of the first closing tag *in that remaining part*
         $first_close_tag_pos = strpos($content_and_onward, '</response>');
 
         if ($first_close_tag_pos !== false) {
-            // 5. If a closing tag exists, our content is everything before it.
+            // If a closing tag exists, our content is everything before it
             $finalResponse = substr($content_and_onward, 0, $first_close_tag_pos);
         } else {
-            // 6. If no closing tag is found, the rest of the string is our content.
+            // If no closing tag is found, the rest of the string is our content
             $finalResponse = $content_and_onward;
         }
     }
 
+    // If no tagged content found, try to extract the last line or use the whole response
     if (empty($finalResponse)) {
-        $finalResponse = $response;
+        // Try to get the last meaningful line
+        $lines = array_filter(array_map('trim', explode("\n", $response)));
+        if (!empty($lines)) {
+            $finalResponse = end($lines);
+        } else {
+            $finalResponse = $response;
+        }
     }
+    
+    // Clean up the response - remove common prefixes/suffixes
+    $finalResponse = trim($finalResponse);
+    $finalResponse = preg_replace('/^(Answer:|Response:|Result:)\s*/i', '', $finalResponse);
+    $finalResponse = preg_replace('/\s*(Answer|Response|Result)[\s:]*$/i', '', $finalResponse);
     
     echo "\nFinal Response: " . trim($finalResponse) . "\n";
 
@@ -859,14 +887,36 @@ function validateResponse($entry, $response) {
     $clean = str_replace(' ', '', $clean);
 
     if ($entry['type'] === 'mcq') {
-        $selected = ($clean === '') ? [] : preg_split('/\s*,\s*/', $clean);
+        // Handle empty responses more gracefully
+        if ($clean === '') {
+            echo "\n\tWARNING: Empty response received for MCQ question\n";
+            echo "Selected Response: []\n";
+            return false;
+        }
+        
+        $selected = preg_split('/\s*,\s*/', $clean);
+        
+        // Filter out empty values that might result from splitting
+        $selected = array_filter($selected, function($item) {
+            return trim($item) !== '';
+        });
+        
+        // Re-index array to ensure proper indexing
+        $selected = array_values($selected);
 
         echo "Selected Response: ";
         print_r($selected);
 
+        // Check if we have any valid selections
+        if (empty($selected)) {
+            echo "\n\tWARNING: No valid selections found after processing response\n";
+            return false;
+        }
+
         $correct = array_map('strtolower', $entry['answers']);
 
         if (count($selected) !== count($correct)) {
+            echo "\n\tRESPONSE MISMATCH: Different count - Expected " . count($correct) . ", got " . count($selected) . "\n";
             return false;
         }
         
@@ -877,7 +927,9 @@ function validateResponse($entry, $response) {
              return true;
         }
 
-        echo "\n\tRESPONSE MISMATCH \n";
+        echo "\n\tRESPONSE MISMATCH: Content differs\n";
+        echo "Expected: [" . implode(', ', $correct) . "]\n";
+        echo "Got: [" . implode(', ', $selected) . "]\n";
         return false;
     }
 
@@ -907,12 +959,45 @@ function validateResponse($entry, $response) {
 }
 
 function extractCleanResponse($response) {
+    // Handle null or empty input
+    if (is_null($response) || $response === '') {
+        echo "\n\tWARNING: extractCleanResponse received null or empty response\n";
+        return '';
+    }
+    
+    $finalResponse = '';
+    
+    // Try to extract content from <response> tags first
     preg_match_all('/<response>(.*?)<\/response>/s', $response, $matches);
-    $finalResponse = end($matches[1]) ?? '';
+    if (!empty($matches[1])) {
+        $finalResponse = end($matches[1]);
+    }
+    
+    // If no tagged content found, try to extract the last meaningful line
+    if (empty($finalResponse)) {
+        $lines = array_filter(array_map('trim', explode("\n", $response)));
+        if (!empty($lines)) {
+            $finalResponse = end($lines);
+        } else {
+            $finalResponse = $response;
+        }
+    }
+    
+    // Clean up the response
+    $finalResponse = trim($finalResponse);
+    $finalResponse = preg_replace('/^(Answer:|Response:|Result:)\s*/i', '', $finalResponse);
+    $finalResponse = preg_replace('/\s*(Answer|Response|Result)[\s:]*$/i', '', $finalResponse);
     
     $clean = strtolower(trim($finalResponse));
     $clean = trim($clean, '.');
     $clean = str_replace(' ', '', $clean);
+
+    // Additional check for completely empty response after cleaning
+    if ($clean === '') {
+        echo "\n\tWARNING: Response became empty after cleaning\n";
+        echo "Original response: " . var_export($response, true) . "\n";
+        echo "Final response: " . var_export($finalResponse, true) . "\n";
+    }
 
     return $clean;
 }
@@ -1022,9 +1107,17 @@ if ($listModels) {
  
  // Only perform model discovery if --specific-models was NOT used
  if (!is_array($specificModels) || count($specificModels) === 0) {
-
-     $models = $llmConnection->getAvailableModels();
-     sort($models);
+     try {
+         $models = $llmConnection->getAvailableModels();
+         if (empty($models)) {
+             echo "\033[1;31mError: No models available from the endpoint.\033[0m\n";
+             exit(1);
+         }
+         sort($models);
+     } catch (Exception $e) {
+         echo "\033[1;31mError retrieving models: " . $e->getMessage() . "\033[0m\n";
+         exit(1);
+     }
  }
  
  if ($bearer === null) {
@@ -1155,8 +1248,11 @@ foreach ($models as $modelIndex => $model) {
     $startTime = microtime(true);
     $modelStartTime = $startTime;
 
-    // Process each question for the current model
-    $questionsToProcess = $questionCountLimit ? array_slice($benchmarkData, 0, $questionCountLimit, true) : $benchmarkData;
+    // Process each question for the current model (limit to 5 questions per model)
+    $maxQuestionsPerModel = 5;
+    $questionsToProcess = $questionCountLimit
+        ? array_slice($benchmarkData, 0, min($questionCountLimit, $maxQuestionsPerModel), true)
+        : array_slice($benchmarkData, 0, $maxQuestionsPerModel, true);
     foreach ($questionsToProcess as $qIndex => $entry) {
         $currentQuestion++;
         prepareQuestion($entry);
@@ -1241,7 +1337,7 @@ SYSTEM_PROMPT;
                     $llmConnection->getRolesManager()
                         ->clearMessages()
                         ->setSystemMessage($systemPrompt) // Fix for Nemotron models
-                        ->addMessage('user', "Please answer the following question and encapsulate your final answer between <response> tags. If you need to reason or explain you may do that BEFORE the response tags. Inside the response tags include only the actual, direct, response without any explanations. Be as concise as possible.\nE.G.\n<response>Your answer to the question here without any explanations.</response>\n\nIt's very important that you respond in the mentioned format, between <response></response> xml tags.\n\n{$entry['full_prompt']}\nNOTE:  For multiple options questions you don't have to worry about the options or response order, the response options or your response can be in any order - do not think about it.$prefix");
+                        ->addMessage('user', "Please answer the following question. You may provide your reasoning before giving your final answer, but please provide your final answer clearly. If you use <response> tags, put only the actual answer inside them without explanations. Be as concise as possible.\n\n{$entry['full_prompt']}\n\nNOTE: For multiple choice questions, provide the letter(s) of your answer(s). For open-ended questions, provide a direct answer. Your response can be in any format - just make sure your final answer is clear and identifiable.$prefix");
                         
                     $parameters = $llmConnection->getDefaultParameters();
                     $llmConnection->setParameter('n_predict', $maxOutputContext);
@@ -1262,9 +1358,44 @@ SYSTEM_PROMPT;
 
                     $llmConnection->setParameter('user', 'Viceroy Library (0.1)- Benchmark example');
                     
-                    $response = $llmConnection->queryPost([], function($chunk) {
-                        echo $chunk;
-                    });
+                    // Add timeout protection for the queryPost call
+                    $queryStartTime = microtime(true);
+                    $maxQueryTime = 300; // 5 minutes maximum per query (300 seconds, not 14400)
+                    
+                    $streamedContent = '';
+                    $response = null;
+                    
+                    try {
+                        $response = $llmConnection->queryPost([], function($chunk) use ($queryStartTime, $maxQueryTime, &$streamedContent) {
+                            // Check if we've exceeded the maximum query time
+                            if (microtime(true) - $queryStartTime > $maxQueryTime) {
+                                echo "\n\033[1;31mERROR: Query timeout exceeded ({$maxQueryTime}s). Aborting to prevent hanging.\033[0m\n";
+                                throw new RuntimeException("Query timeout exceeded");
+                            }
+                            echo $chunk;
+                            $streamedContent .= $chunk;
+                        });
+                        
+                        // Additional check: ensure we have a valid response object
+                        if (is_null($response)) {
+                            throw new Exception("queryPost returned null response");
+                        }
+                        
+                    } catch (Exception $e) {
+                        echo "\n\033[1;31mError during LLM query: " . $e->getMessage() . "\033[0m\n";
+                        $content = 'Query ERROR: ' . $e->getMessage();
+                        $reasoning = '';
+                        $isCorrect = false;
+                        $responseTime = microtime(true) - $queryStartTime;
+                        $verboseResponse = [];
+                        $timingData = [];
+                        $promptSpeed = 0;
+                        $genSpeed = 0;
+                        
+                        // Log the error and continue to the next question
+                        echo "\n\033[33mModel $modelId failed for question $currentQuestion. Continuing to next question...\033[0m\n";
+                        continue 2; // Skip to next question
+                    }
 
                     // Sleep for the specified number of seconds, if requested
                     if ($sleepSeconds > 0) {
@@ -1272,57 +1403,171 @@ SYSTEM_PROMPT;
                         sleep($sleepSeconds);
                     }
 
-                    if (FALSE === $response) {
+                    if (FALSE === $response || is_null($response)) {
                         $content = 'Guzzle timeout ERROR: ';
                         $reasoning = '';
                         $isCorrect = false;
-                        $responseTime = 0;
-                        $verboseResponse = '';
+                        $responseTime = microtime(true) - $queryStartTime;
+                        $verboseResponse = [];
                         $timingData = [];
-                        echo "\n\033[1;31mError during LLM query: Guzzle TIMEOUT!\033[0m\n";
-                        exit(1);
-                    } else {
-                        $content = trim($response->getLlmResponse());
-                        $rawContent = json_decode($llmConnection->getResponse()->getRawContent(), TRUE);
-                        $verboseResponse = $rawContent['__verbose'] ?? [];
-                        
-                        // Parse timing data
-                        $timingData = $llmConnection->getQuerytimings() ?? [];
-                        echo PHP_EOL . json_encode($timingData) . "\n";
-                        
-                        // Calculate token generation speeds
                         $promptSpeed = 0;
                         $genSpeed = 0;
-                        
-
-                        
-                        $reasoning = $llmConnection->getThinkContent();
-                        $isCorrect = validateResponse($entry, $content);
-                        $responseTime = $llmConnection->getLastQueryMicrotime();
-
-                        $promptSpeed = $timingData['prompt_per_second'] ?? 999;
-
-                        $genSpeed = $timingData['predicted_per_second'] ?? 999;
-
-
-                        $status = $isCorrect ? 'Correct! 👍' : 'INCORRECT! 🚫';
-                        echo "\n\t### $status \n";
-
-                        // Check speed limits after minimum attempts
-                        $attemptCount = count($existingAttempts) + 1;
-                        if ($attemptCount >= $minAnswersForEvaluation && !$ignoreSpeedLimits) {
-                            if ($promptSpeed < $minPromptSpeed || $genSpeed < $minTokenGeneration) {
-                                echo "\n\033[1;31mSpeed limit violation - prompt: {$promptSpeed}t/s, generation: {$genSpeed}t/s\033[0m\n";
-                                echo "Skipping to next model...\n";
-                                break 2; // Break out of both question and model loops
+                        echo "\n\033[1;31mError during LLM query: Guzzle TIMEOUT or NULL response!\033[0m\n";
+                        // Don't exit here, continue to the next question
+                        continue 2;
+                    } else {
+                        try {
+                            // Additional null check before calling methods on response object
+                            if (is_null($response)) {
+                                throw new Exception("Response object is null");
                             }
+                            
+                            // Check if response object has the required method
+                            if (!method_exists($response, 'getLlmResponse')) {
+                                throw new Exception("Response object does not have getLlmResponse method");
+                            }
+                            
+                            $content = trim($response->getLlmResponse());
+                            
+                            // Validate content before proceeding
+                            if (empty($content)) {
+                                echo "\n\033[33mWARNING: Empty content received from getLlmResponse()\033[0m\n";
+                                // Try to get raw content as fallback
+                                try {
+                                    $responseObj = $llmConnection->getResponse();
+                                    if ($responseObj && method_exists($responseObj, 'getRawContent')) {
+                                        $rawContent = $responseObj->getRawContent();
+                                        echo "\n\033[33mRaw content for debugging: " . substr($rawContent, 0, 200) . "...\033[0m\n";
+                                    }
+                                } catch (Exception $e) {
+                                    echo "\n\033[33mCould not get raw content for debugging: " . $e->getMessage() . "\033[0m\n";
+                                }
+                            }
+                            
+                            // Safely get raw content with null checks
+                            try {
+                                $responseObj = $llmConnection->getResponse();
+                                if ($responseObj && method_exists($responseObj, 'getRawContent')) {
+                                    $rawContent = json_decode($responseObj->getRawContent(), TRUE);
+                                    $verboseResponse = $rawContent['__verbose'] ?? [];
+                                } else {
+                                    $verboseResponse = [];
+                                }
+                            } catch (Exception $e) {
+                                echo "\n\033[33mWarning: Could not get raw content: " . $e->getMessage() . "\033[0m\n";
+                                $verboseResponse = [];
+                            }
+                            
+                            // Parse timing data with safe method calls
+                            try {
+                                $timingData = method_exists($llmConnection, 'getQuerytimings')
+                                    ? $llmConnection->getQuerytimings() ?? []
+                                    : [];
+                                echo PHP_EOL . json_encode($timingData) . "\n";
+                            } catch (Exception $e) {
+                                echo "\n\033[33mWarning: Could not get timing data: " . $e->getMessage() . "\033[0m\n";
+                                $timingData = [];
+                            }
+                            
+                            // Calculate token generation speeds
+                            $promptSpeed = 0;
+                            $genSpeed = 0;
+                            
+                            // Safely get think content
+                            try {
+                                $reasoning = method_exists($llmConnection, 'getThinkContent')
+                                    ? $llmConnection->getThinkContent()
+                                    : '';
+                            } catch (Exception $e) {
+                                echo "\n\033[33mWarning: Could not get think content: " . $e->getMessage() . "\033[0m\n";
+                                $reasoning = '';
+                            }
+                            
+                            // Validate content before processing
+                            if (empty($content)) {
+                                throw new Exception("Response content is empty");
+                            }
+                            
+                            $isCorrect = validateResponse($entry, $content);
+                            
+                            // Safely get response time
+                            try {
+                                $responseTime = method_exists($llmConnection, 'getLastQueryMicrotime')
+                                    ? $llmConnection->getLastQueryMicrotime()
+                                    : microtime(true) - $queryStartTime;
+                            } catch (Exception $e) {
+                                echo "\n\033[33mWarning: Could not get response time: " . $e->getMessage() . "\033[0m\n";
+                                $responseTime = microtime(true) - $queryStartTime;
+                            }
+
+                            $promptSpeed = $timingData['prompt_per_second'] ?? 999;
+                            $genSpeed = $timingData['predicted_per_second'] ?? 999;
+
+                            $status = $isCorrect ? 'Correct! 👍' : 'INCORRECT! 🚫';
+                            echo "\n\t### $status \n";
+
+                            // Check speed limits after minimum attempts
+                            $attemptCount = count($existingAttempts) + 1;
+                            if ($attemptCount >= $minAnswersForEvaluation && !$ignoreSpeedLimits) {
+                                if ($promptSpeed < $minPromptSpeed || $genSpeed < $minTokenGeneration) {
+                                    echo "\n\033[1;31mSpeed limit violation - prompt: {$promptSpeed}t/s, generation: {$genSpeed}t/s\033[0m\n";
+                                    echo "Skipping to next model...\n";
+                                    break 2; // Break out of both question and model loops
+                                }
+                            }
+                        } catch (Exception $e) {
+                            // Handle any exceptions that occur during response processing
+                            echo "\n\033[1;31mError processing LLM response: " . $e->getMessage() . "\033[0m\n";
+                            $content = 'Response processing ERROR: ' . $e->getMessage();
+                            $reasoning = '';
+                            $isCorrect = false;
+                            $responseTime = microtime(true) - $queryStartTime;
+                            $verboseResponse = [];
+                            $timingData = [];
+                            $promptSpeed = 0;
+                            $genSpeed = 0;
+                            
+                            // Log the error but still save the attempt
+                            echo "\n\033[33mSaving failed attempt for model $modelId, question $currentQuestion...\033[0m\n";
+                            
+                            // Still save the failed attempt to continue
+                            $existingAttempts[] = [
+                                'response' => $content,
+                                'correct' => $isCorrect,
+                                'reasoning' => empty($reasoning) ? '""' : $reasoning,
+                                'response_time' => $responseTime,
+                                "question_no" => $currentQuestion,
+                                'verbose' => json_encode($verboseResponse ?? ''),
+                            ];
+                            
+                            // Continue to next attempt/question
+                            continue;
                         }
                     }
 
                 } catch (Exception $e) {
-                    // Print the error and exit immediately
+                    // Print the error but continue instead of exiting
                     echo "\n\033[1;31mError during LLM query: " . $e->getMessage() . "\033[0m\n";
-                    exit(1);
+                    $content = 'Query ERROR: ' . $e->getMessage();
+                    $reasoning = '';
+                    $isCorrect = false;
+                    $responseTime = microtime(true) - $queryStartTime;
+                    $verboseResponse = [];
+                    $timingData = [];
+                    $promptSpeed = 0;
+                    $genSpeed = 0;
+                    
+                    // Still save the failed attempt to continue
+                    $existingAttempts[] = [
+                        'response' => $content,
+                        'correct' => $isCorrect,
+                        'reasoning' => empty($reasoning) ? '""' : $reasoning,
+                        'response_time' => $responseTime,
+                        "question_no" => $currentQuestion,
+                        'verbose' => json_encode($verboseResponse ?? ''),
+                    ];
+                    
+                    continue; // Continue to next attempt
                 }
 
                 $existingAttempts[] = [
@@ -1339,6 +1584,17 @@ SYSTEM_PROMPT;
                 try {
                     foreach ($existingAttempts as $attemptId => $attempt) {
                         $cleanResponse = extractCleanResponse($attempt['response']);
+                        
+                        // Safely extract timing parameters with proper validation
+                        $promptN = isset($timingData['prompt_n']) ? $timingData['prompt_n'] : null;
+                        $promptMs = isset($timingData['prompt_ms']) && is_numeric($timingData['prompt_ms'])
+                            ? floatval($timingData['prompt_ms']) / 1000  // Convert to seconds
+                            : null;
+                        $predictedN = isset($timingData['predicted_n']) ? $timingData['predicted_n'] : null;
+                        $predictedMs = isset($timingData['predicted_ms']) && is_numeric($timingData['predicted_ms'])
+                            ? floatval($timingData['predicted_ms']) / 1000  // Convert to seconds
+                            : null;
+                        
                         $db->saveBenchmarkRun(
                             $modelId,
                             $qIndex,
@@ -1349,18 +1605,16 @@ SYSTEM_PROMPT;
                             $attempt['response_time'],
                             $currentQuestion,
                             json_encode($attempt['verbose']),
-                            $timingData['prompt_n'] ?? null,
-                            $timingData['prompt_ms']  ?? 1 ? $timingData['prompt_ms'] ?? 1000 / 1000 : null,
-                            $timingData['predicted_n'] ?? null,
-                            $timingData['predicted_ms']  ?? 1 ? $timingData['predicted_ms'] ?? 1000 / 1000 : null,
-                            $timingData['predicted_per_second'] ?? $genSpeed ?? null,
+                            $promptN,
+                            $promptMs,
+                            $predictedN,
+                            $predictedMs,
+                            $genSpeed > 0 ? $genSpeed : null,
                             $questionString,
                             $options,
                             $expectedAnswer,
                             $cleanResponse,
-                            isset($timingData['prompt_per_second']) && $timingData['prompt_per_second'] > 0
-                                ? $timingData['prompt_per_second']
-                                : null,
+                            $promptSpeed > 0 ? $promptSpeed : null,
                             $benchmarkData[$qIndex]['category'] ?? null,
                             $benchmarkData[$qIndex]['subcategory'] ?? null
                         );
@@ -1377,18 +1631,24 @@ SYSTEM_PROMPT;
                     $db->commit();
                     
                     // Display updated stats after each question
-                    $currentStats = $db->getModelStats($modelId);
-                    if ($currentStats) {
-                        echo "\n\033[1;34mCurrent Stats: \033[0m";
-                        echo "\033[1;32mCorrect: {$currentStats['correct_answers']} (" . number_format($currentStats['percentage_correct'], 1) . "%)\033[0m, ";
-                        echo "\033[1;31mFailed: {$currentStats['incorrect_answers']}\033[0m, ";
-                        echo "\033[1;33mAvg Time: " . number_format($currentStats['avg_response_time'], 3) . "s, ";
-                        echo "Tokens/s: " . number_format($currentStats['avg_tokens_per_second'], 1) . "\033[0m\n";
+                    try {
+                        $currentStats = $db->getModelStats($modelId);
+                        if ($currentStats) {
+                            echo "\n\033[1;34mCurrent Stats: \033[0m";
+                            echo "\033[1;32mCorrect: {$currentStats['correct_answers']} (" . number_format($currentStats['percentage_correct'], 1) . "%)\033[0m, ";
+                            echo "\033[1;31mFailed: {$currentStats['incorrect_answers']}\033[0m, ";
+                            echo "\033[1;33mAvg Time: " . number_format($currentStats['avg_response_time'], 3) . "s, ";
+                            echo "Tokens/s: " . number_format($currentStats['avg_tokens_per_second'], 1) . "\033[0m\n";
+                        }
+                    } catch (Exception $e) {
+                        echo "\n\033[33mWarning: Could not retrieve current stats: " . $e->getMessage() . "\033[0m\n";
                     }
                 } catch (Exception $e) {
                     $db->rollback();
-                    echo "\nError saving benchmark data: " . $e->getMessage() . "\n";
-                    exit(2);
+                    echo "\n\033[1;31mError saving benchmark data: " . $e->getMessage() . "\033[0m\n";
+                    echo "\033[33mContinuing to next question despite database error...\033[0m\n";
+                    // Don't exit, continue to next question
+                    continue;
                 }
             }
         }

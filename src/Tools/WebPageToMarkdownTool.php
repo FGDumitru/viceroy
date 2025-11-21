@@ -12,6 +12,7 @@ use GuzzleHttp\Psr7\UriResolver;
 use League\HTMLToMarkdown\Converter\TextConverter;
 use League\HTMLToMarkdown\HtmlConverter;
 use Psr\Http\Message\UriInterface;
+use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 use Viceroy\Tools\Interfaces\ToolInterface;
 
 class WebPageToMarkdownTool implements ToolInterface
@@ -72,7 +73,7 @@ class WebPageToMarkdownTool implements ToolInterface
             'type' => 'function',
             'function' => [
                 'name' => 'visit_webpage',
-                'description' => 'Use the tool "visit_webpage" functionality to visit the page and browse its contents. This gives you url browsing and parsing capabilities in real-time. It prioritizes extracting the main readable content and converts it to pure Markdown text. Optionally, return the raw webpage content.',
+                'description' => 'Use the tool "visit_webpage" functionality to visit the page and browse its contents. This gives you url browsing and parsing capabilities in real-time. It prioritizes extracting the main readable content and converts it to pure Markdown text. Optionally, return the raw webpage content or generate a summary. Do not request a summary for JSON API calls, or for XML/RSS feeds.',
                 'parameters' => [
                     'type' => 'object',
                     'properties' => [
@@ -89,6 +90,22 @@ class WebPageToMarkdownTool implements ToolInterface
                             'type' => 'boolean',
                             'description' => 'If true, return the raw webpage content instead of converted Markdown. This is useful for API calls that may return JSON objects',
                             'default' => false
+                        ],
+                        'summary' => [
+                            'type' => 'boolean',
+                            'description' => 'Whether to generate a summary of the webpage content. This should be the default behavior for standard webpages (unless the user specifically called for not a summary), but should be false for JSON API calls or XML/RSS feeds.',
+                            'default' => false
+                        ],
+                        'summary_length' => [
+                            'type' => 'integer',
+                            'description' => 'Detail level for summary from 1-10 (1-2: very brief, 3-4: brief, 5-6: standard, 7-8: detailed, 9-10: very detailed)',
+                            'default' => 5,
+                            'minimum' => 1,
+                            'maximum' => 10
+                        ],
+                        'summary_focus' => [
+                            'type' => 'string',
+                            'description' => 'Specific focus area for the summary (optional, e.g., "main points", "technical details", "conclusions")'
                         ]
                     ],
                     'required' => ['url']
@@ -122,16 +139,29 @@ class WebPageToMarkdownTool implements ToolInterface
             return false;
         }
 
+        if (isset($arguments['summary']) && !is_bool($arguments['summary'])) {
+            return false;
+        }
+
+        if (isset($arguments['summary_length']) && (!is_int($arguments['summary_length']) || $arguments['summary_length'] < 1 || $arguments['summary_length'] > 10)) {
+            return false;
+        }
+
+        if (isset($arguments['summary_focus']) && !is_string($arguments['summary_focus'])) {
+            return false;
+        }
+
         return true;
     }
 
     public function execute(array $arguments, $configuration): array
     {
-
-        var_dump($arguments);
         $url = $arguments['url'];
         $timeout = $arguments['timeout'] ?? 10;
         $raw = $arguments['raw'] ?? false;
+        $summary = $arguments['summary'] ?? false;
+        $summaryLength = $arguments['summary_length'] ?? 5;
+        $summaryFocus = $arguments['summary_focus'] ?? null;
 
         if (!$this->validateArguments($arguments)) {
             return [
@@ -181,45 +211,69 @@ class WebPageToMarkdownTool implements ToolInterface
                 echo PHP_EOL . "Got Guzzle body of length " . strlen($body)  . PHP_EOL;
             }
             if ($raw) {
-                return [
-                    'content' => [
-                        [
-                            'type' => 'text',
-                            'text' => $body
-                        ]
-                    ],
-                    'isError' => false
+                $content = $body;
+            } else {
+                if (str_contains($contentType, 'text/html') || str_contains($contentType, 'application/xhtml+xml')) {
+                    $finalUri = (string)$response->getHeaderLine('X-Guzzle-Effective-Uri') ?: $url;
+                    $content = $this->extractAndConvertMainContent($body, $finalUri);
+                } elseif (str_contains($contentType, 'text/plain')) {
+                    $content = $body;
+                } elseif (str_contains($contentType, 'application/json') || str_contains($contentType, 'application/xml')) {
+                    $content = "```" . (str_contains($contentType, 'json') ? 'json' : 'xml') . "\n"
+                        . json_encode(json_decode($body, true), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+                        . "\n```";
+                } else {
+                  $content = $body;
+    //                $content = $this->textConverter->convert($body);
+                }
+            }
+
+            $content = trim($content);
+
+            if (empty($content) || preg_match('/^\s*Error:/', $content)) {
+                $content = "No significant content found at the URL: {$url}. Content-Type: {$contentType}";
+            }
+
+            // Generate summary if requested
+            $summaryData = null;
+            if ($summary && !$raw) {
+                $summaryData = $this->generateSummary($content, $summaryLength, $summaryFocus, $configuration);
+            }
+
+            // Build response content
+            $responseContent = [];
+            
+            // Add main content
+            $responseContent[] = [
+                'type' => 'text',
+                'text' => $content
+            ];
+
+            // Add summary if generated
+            if ($summaryData && !$summaryData['error']) {
+                $responseContent[] = [
+                    'type' => 'text',
+                    'text' => "\n\n--- Summary ---\n" . $summaryData['content']
+                ];
+
+                if (!empty($summaryData['key_points'])) {
+                    $keyPointsText = "\n\nKey Points:\n" . implode("\n", array_map(fn($point) => "• " . $point, $summaryData['key_points']));
+                    $responseContent[] = [
+                        'type' => 'text',
+                        'text' => $keyPointsText
+                    ];
+                }
+            } elseif ($summaryData && $summaryData['error']) {
+                $responseContent[] = [
+                    'type' => 'text',
+                    'text' => "\n\n--- Summary Error ---\n" . $summaryData['content']
                 ];
             }
 
-            if (str_contains($contentType, 'text/html') || str_contains($contentType, 'application/xhtml+xml')) {
-                $finalUri = (string)$response->getHeaderLine('X-Guzzle-Effective-Uri') ?: $url;
-                $markdownContent = $this->extractAndConvertMainContent($body, $finalUri);
-            } elseif (str_contains($contentType, 'text/plain')) {
-                $markdownContent = $body;
-            } elseif (str_contains($contentType, 'application/json') || str_contains($contentType, 'application/xml')) {
-                $markdownContent = "```" . (str_contains($contentType, 'json') ? 'json' : 'xml') . "\n"
-                    . json_encode(json_decode($body, true), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
-                    . "\n```";
-            } else {
-              $markdownContent = $body;
-//                $markdownContent = $this->textConverter->convert($body);
-            }
-
-            $markdownContent = trim($markdownContent);
-
-            if (empty($markdownContent) || preg_match('/^\s*Error:/', $markdownContent)) {
-                $markdownContent = "No significant content found at the URL: {$url}. Content-Type: {$contentType}";
-            }
-
             return [
-                'content' => [
-                    [
-                        'type' => 'text',
-                        'text' => $markdownContent
-                    ]
-                ],
-                'isError' => false
+                'content' => $responseContent,
+                'isError' => false,
+                'summary' => $summaryData
             ];
         } catch (GuzzleException $e) {
             if ($this->debugMode) {
@@ -251,12 +305,124 @@ class WebPageToMarkdownTool implements ToolInterface
     }
 
    /**
- * Extracts main content from HTML, resolves relative URLs, and converts to Markdown.
- *
- * @param string $html Input HTML content.
- * @param string $baseUrl The base URL of the page (after redirects).
- * @return string Markdown representation of the main content.
- */
+   * Generates a summary of the provided content using LLM
+   *
+   * @param string $content The content to summarize
+   * @param int $summaryLength Detail level from 1-10
+   * @param string|null $summaryFocus Optional focus area for the summary
+   * @param $configuration The configuration object for LLM connection
+   * @return array Summary data with content and metadata
+   */
+private function generateSummary(string $content, int $summaryLength, ?string $summaryFocus, $configuration): array
+{
+    try {
+        // Create a new connection for summarization
+        $summaryConnection = new OpenAICompatibleEndpointConnection($configuration);
+
+        // Determine summary scope based on length parameter
+        $scopeDescription = $this->getSummaryScopeDescription($summaryLength);
+        
+        // Build the focus part of the prompt
+        $focusPart = $summaryFocus ? " Focus particularly on: {$summaryFocus}." : '';
+
+        $prompt = "Please analyze the following webpage content and create a summary with the following characteristics:\n\n" .
+                 "Detail Level: {$summaryLength}/10 ({$scopeDescription})\n" .
+                 "Content to summarize:\n\n---\n{$content}\n---\n\n" .
+                 "Create a {$scopeDescription} summary that captures the essence and key information.{$focusPart}\n\n" .
+                 "Return a JSON object with the following structure:\n" .
+                 "{\n" .
+                 "  \"content\": \"Your summary here\",\n" .
+                 "  \"word_count\": approximate word count of your summary,\n" .
+                 "  \"key_points\": [\"key point 1\", \"key point 2\", \"key point 3\"]\n" .
+                 "}\n\n" .
+                 "Ensure your summary is well-structured, informative, and matches the requested detail level. " .
+                 "Always respond with valid JSON only, no markdown formatting or extra text.";
+
+        $systemMessage = "You are an expert content analyzer and summarizer. Create clear, concise, and accurate summaries based on the specified detail level. Always respond with valid JSON objects only, without any markdown formatting or additional text.";
+        $summaryConnection->setSystemMessage($systemMessage);
+
+        if ($this->debugMode) {
+            error_log("=== WEBPAGE TO MARKDOWN TOOL DEBUG: LLM PROMPT (generateSummary) ===");
+            error_log("System Message: " . $systemMessage);
+            error_log("Prompt: " . $prompt);
+            error_log("Content length: " . strlen($content) . " characters");
+        }
+
+        $response = $summaryConnection->queryPost($prompt);
+        $llmContent = $response->getLlmResponse();
+
+        if ($this->debugMode) {
+            error_log("=== WEBPAGE TO MARKDOWN TOOL DEBUG: LLM RESPONSE (generateSummary) ===");
+            error_log("LLM Response: " . $llmContent);
+        }
+
+        // Parse JSON response
+        $parsed = json_decode($llmContent, true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            // Try to extract JSON if it's wrapped in code blocks
+            $llmContent = preg_replace('/```json\s*|\s*```/', '', $llmContent);
+            $parsed = json_decode(trim($llmContent), true);
+        }
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return [
+                'content' => 'Error: Failed to parse summary response',
+                'word_count' => 0,
+                'key_points' => [],
+                'error' => 'JSON parsing failed: ' . json_last_error_msg()
+            ];
+        }
+
+        return [
+            'content' => $parsed['content'] ?? 'No summary available',
+            'word_count' => $parsed['word_count'] ?? 0,
+            'key_points' => $parsed['key_points'] ?? [],
+            'error' => null
+        ];
+
+    } catch (\Exception $e) {
+        if ($this->debugMode) {
+            error_log("WebPageToMarkdownTool summary generation error: " . $e->getMessage());
+        }
+        
+        return [
+            'content' => 'Error: Failed to generate summary - ' . $e->getMessage(),
+            'word_count' => 0,
+            'key_points' => [],
+            'error' => $e->getMessage()
+        ];
+    }
+}
+
+/**
+   * Get description for summary scope based on length parameter
+   *
+   * @param int $summaryLength Detail level from 1-10
+   * @return string Description of the summary scope
+   */
+private function getSummaryScopeDescription(int $summaryLength): string
+{
+    if ($summaryLength <= 2) {
+        return 'very brief (1-2 sentences)';
+    } elseif ($summaryLength <= 4) {
+        return 'brief (1 paragraph)';
+    } elseif ($summaryLength <= 6) {
+        return 'standard (2-3 paragraphs)';
+    } elseif ($summaryLength <= 8) {
+        return 'detailed (multiple paragraphs with key points)';
+    } else {
+        return 'very detailed (comprehensive overview with structure)';
+    }
+}
+
+   /**
+   * Extracts main content from HTML, resolves relative URLs, and converts to Markdown.
+   *
+   * @param string $html Input HTML content.
+   * @param string $baseUrl The base URL of the page (after redirects).
+   * @return string Markdown representation of the main content.
+   */
 private function extractAndConvertMainContent(string $html, string $baseUrl): string
 {
     if (empty($html)) {

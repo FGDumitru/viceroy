@@ -128,7 +128,6 @@ class Response
     {
         if (!$this->wasStreamed()) {
             $content = $this->getContent();
-            return $content;
             $contentArray = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
             $choices = $contentArray['choices'];
             return $choices[0]['message'];
