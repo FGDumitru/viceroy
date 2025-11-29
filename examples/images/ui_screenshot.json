@@ -1,0 +1,1399 @@
+[
+    {
+        "bbox_2d": [
+            95,
+            38,
+            331,
+            70
+        ],
+        "label": "Search Apps",
+        "app": "System",
+        "type": "input"
+    },
+    {
+        "bbox_2d": [
+            431,
+            44,
+            443,
+            66
+        ],
+        "label": "Menu Icon",
+        "app": "System",
+        "type": "button"
+    },
+    {
+        "bbox_2d": [
+            453,
+            45,
+            462,
+            64
+        ],
+        "label": "Minimize Button",
+        "app": "System",
+        "type": "window_control"
+    },
+    {
+        "bbox_2d": [
+            471,
+            45,
+            480,
+            64
+        ],
+        "label": "Maximize Button",
+        "app": "System",
+        "type": "window_control"
+    },
+    {
+        "bbox_2d": [
+            486,
+            45,
+            495,
+            64
+        ],
+        "label": "Close Button",
+        "app": "System",
+        "type": "window_control"
+    },
+    {
+        "bbox_2d": [
+            516,
+            41,
+            523,
+            55
+        ],
+        "label": "User Avatar",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            530,
+            40,
+            596,
+            59
+        ],
+        "label": "Yahoo | Mail, Weather, Search",
+        "app": "Chrome",
+        "type": "tab"
+    },
+    {
+        "bbox_2d": [
+            517,
+            80,
+            527,
+            97
+        ],
+        "label": "Back Button",
+        "app": "Chrome",
+        "type": "button"
+    },
+    {
+        "bbox_2d": [
+            534,
+            80,
+            544,
+            97
+        ],
+        "label": "Forward Button",
+        "app": "Chrome",
+        "type": "button"
+    },
+    {
+        "bbox_2d": [
+            548,
+            80,
+            557,
+            97
+        ],
+        "label": "Refresh Button",
+        "app": "Chrome",
+        "type": "button"
+    },
+    {
+        "bbox_2d": [
+            576,
+            78,
+            694,
+            98
+        ],
+        "label": "Address Bar",
+        "app": "Chrome",
+        "type": "input"
+    },
+    {
+        "bbox_2d": [
+            501,
+            152,
+            513,
+            172
+        ],
+        "label": "Bookmarks Icon",
+        "app": "Chrome",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            501,
+            186,
+            513,
+            207
+        ],
+        "label": "Downloads Icon",
+        "app": "Chrome",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            501,
+            220,
+            513,
+            240
+        ],
+        "label": "History Icon",
+        "app": "Chrome",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            501,
+            254,
+            513,
+            273
+        ],
+        "label": "Extensions Icon",
+        "app": "Chrome",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            501,
+            288,
+            513,
+            307
+        ],
+        "label": "Bookmarks Bar Icon",
+        "app": "Chrome",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            525,
+            152,
+            554,
+            182
+        ],
+        "label": "Yahoo!",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            576,
+            156,
+            769,
+            186
+        ],
+        "label": "Search the web",
+        "app": "Chrome",
+        "type": "input"
+    },
+    {
+        "bbox_2d": [
+            776,
+            155,
+            800,
+            187
+        ],
+        "label": "Search Icon",
+        "app": "Chrome",
+        "type": "button"
+    },
+    {
+        "bbox_2d": [
+            817,
+            159,
+            835,
+            179
+        ],
+        "label": "News",
+        "app": "Chrome",
+        "type": "tab"
+    },
+    {
+        "bbox_2d": [
+            841,
+            159,
+            862,
+            179
+        ],
+        "label": "Finance",
+        "app": "Chrome",
+        "type": "tab"
+    },
+    {
+        "bbox_2d": [
+            868,
+            159,
+            887,
+            179
+        ],
+        "label": "Sports",
+        "app": "Chrome",
+        "type": "tab"
+    },
+    {
+        "bbox_2d": [
+            892,
+            159,
+            911,
+            179
+        ],
+        "label": "More",
+        "app": "Chrome",
+        "type": "tab"
+    },
+    {
+        "bbox_2d": [
+            929,
+            155,
+            959,
+            187
+        ],
+        "label": "Mail",
+        "app": "Chrome",
+        "type": "button"
+    },
+    {
+        "bbox_2d": [
+            967,
+            155,
+            996,
+            187
+        ],
+        "label": "Sign in",
+        "app": "Chrome",
+        "type": "button"
+    },
+    {
+        "bbox_2d": [
+            740,
+            256,
+            862,
+            328
+        ],
+        "label": "Suspect faces murder charge in shooting of 2 National Guard members",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            740,
+            328,
+            862,
+            415
+        ],
+        "label": "Charges against the man accused of shooting two National Guard members have been upgraded to first-degree murder, the U.S. attorney for the District of Columbia announced Friday.",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            740,
+            415,
+            766,
+            427
+        ],
+        "label": "Read More",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            526,
+            547,
+            588,
+            567
+        ],
+        "label": "Hundreds of Black Friday deals are still live. These are the best ones worth...",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            596,
+            547,
+            658,
+            567
+        ],
+        "label": "Bears silence doubters with runaway win against defending Super Bowl...",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            666,
+            547,
+            728,
+            567
+        ],
+        "label": "Is rice water the secret to growing healthier, thicker hair? Experts weigh in.",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            736,
+            547,
+            798,
+            567
+        ],
+        "label": "The best nontoxic cooking utensils to replace your plastic spatulas and...",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            806,
+            547,
+            868,
+            567
+        ],
+        "label": "Frequent fliers name the carry-ons and checked bags worth every penny",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            526,
+            687,
+            564,
+            707
+        ],
+        "label": "Business",
+        "app": "Chrome",
+        "type": "tab"
+    },
+    {
+        "bbox_2d": [
+            640,
+            687,
+            663,
+            707
+        ],
+        "label": "Fortune",
+        "app": "Chrome",
+        "type": "tab"
+    },
+    {
+        "bbox_2d": [
+            640,
+            668,
+            843,
+            709
+        ],
+        "label": "Ford workers told their CEO 'none of the young people want to work here.' So Jim Farley took a page out of the founder's...",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            640,
+            709,
+            843,
+            750
+        ],
+        "label": "Ford founder Henry Ford decided in 1914 to more than double factory workers' wages to $5 a day, jump-starting the American middle class.",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            640,
+            750,
+            663,
+            766
+        ],
+        "label": "1.3K",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            672,
+            750,
+            695,
+            766
+        ],
+        "label": "5 min read",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            526,
+            818,
+            554,
+            837
+        ],
+        "label": "Lifestyle",
+        "app": "Chrome",
+        "type": "tab"
+    },
+    {
+        "bbox_2d": [
+            559,
+            818,
+            588,
+            837
+        ],
+        "label": "INSIDER",
+        "app": "Chrome",
+        "type": "tab"
+    },
+    {
+        "bbox_2d": [
+            640,
+            804,
+            843,
+            847
+        ],
+        "label": "I breed and train dogs that sell for $175,000 each. We place about 20 dogs a year, and it took us a while to be profitable.",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            640,
+            847,
+            843,
+            887
+        ],
+        "label": "Kim Greene, founder of Svalinn Dogs, shares how she turned her childhood fear of dogs into a successful business breeding protection dogs.",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            640,
+            887,
+            663,
+            903
+        ],
+        "label": "281",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            672,
+            887,
+            695,
+            903
+        ],
+        "label": "5 min read",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            889,
+            234,
+            927,
+            254
+        ],
+        "label": "Trending Now",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            889,
+            263,
+            935,
+            279
+        ],
+        "label": "1. What We Know A...",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            889,
+            285,
+            935,
+            301
+        ],
+        "label": "2. SEC Championship",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            889,
+            306,
+            935,
+            322
+        ],
+        "label": "3. Fuzzy Zoeller De...",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            889,
+            327,
+            935,
+            343
+        ],
+        "label": "4. Russia-Ukraine ...",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            889,
+            348,
+            935,
+            364
+        ],
+        "label": "5. Hong Kong Fire",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            941,
+            263,
+            981,
+            279
+        ],
+        "label": "6. Lane Kiffin News",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            941,
+            285,
+            974,
+            301
+        ],
+        "label": "7. Arch Manning",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            941,
+            306,
+            977,
+            322
+        ],
+        "label": "8. Donald Trump",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            941,
+            327,
+            979,
+            343
+        ],
+        "label": "9. Jennifer Garner",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            941,
+            348,
+            981,
+            364
+        ],
+        "label": "10. Heated Rivalry",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            889,
+            419,
+            915,
+            438
+        ],
+        "label": "Weather",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            956,
+            419,
+            985,
+            438
+        ],
+        "label": "Bucharest",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            889,
+            448,
+            902,
+            464
+        ],
+        "label": "Today",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            889,
+            471,
+            902,
+            507
+        ],
+        "label": "48\u00b0 40\u00b0",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            914,
+            448,
+            925,
+            464
+        ],
+        "label": "Sun",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            914,
+            471,
+            925,
+            507
+        ],
+        "label": "48\u00b0 38\u00b0",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            940,
+            448,
+            952,
+            464
+        ],
+        "label": "Mon",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            940,
+            471,
+            952,
+            507
+        ],
+        "label": "49\u00b0 38\u00b0",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            966,
+            448,
+            979,
+            464
+        ],
+        "label": "Tue",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            966,
+            471,
+            979,
+            507
+        ],
+        "label": "49\u00b0 37\u00b0",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            927,
+            547,
+            948,
+            563
+        ],
+        "label": "See more",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            958,
+            547,
+            991,
+            563
+        ],
+        "label": "AccuWeather",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            889,
+            608,
+            925,
+            627
+        ],
+        "label": "Scoreboard",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            949,
+            608,
+            979,
+            627
+        ],
+        "label": "Trending",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            894,
+            645,
+            915,
+            662
+        ],
+        "label": "Yesterday",
+        "app": "Chrome",
+        "type": "button"
+    },
+    {
+        "bbox_2d": [
+            927,
+            645,
+            944,
+            662
+        ],
+        "label": "Today",
+        "app": "Chrome",
+        "type": "button"
+    },
+    {
+        "bbox_2d": [
+            958,
+            645,
+            981,
+            662
+        ],
+        "label": "Tomorrow",
+        "app": "Chrome",
+        "type": "button"
+    },
+    {
+        "bbox_2d": [
+            895,
+            694,
+            903,
+            707
+        ],
+        "label": "UND",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            909,
+            693,
+            920,
+            717
+        ],
+        "label": "55",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            930,
+            693,
+            942,
+            707
+        ],
+        "label": "Final",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            966,
+            693,
+            981,
+            707
+        ],
+        "label": "HAW",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            966,
+            694,
+            971,
+            707
+        ],
+        "label": "H",
+        "app": "Chrome",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            895,
+            749,
+            903,
+            762
+        ],
+        "label": "CLE",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            909,
+            747,
+            920,
+            771
+        ],
+        "label": "123",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            930,
+            747,
+            942,
+            762
+        ],
+        "label": "Final",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            966,
+            747,
+            981,
+            762
+        ],
+        "label": "ATL",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            966,
+            749,
+            971,
+            762
+        ],
+        "label": "A",
+        "app": "Chrome",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            895,
+            803,
+            903,
+            816
+        ],
+        "label": "ORL",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            909,
+            801,
+            920,
+            825
+        ],
+        "label": "112",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            930,
+            801,
+            942,
+            816
+        ],
+        "label": "Final",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            966,
+            801,
+            981,
+            816
+        ],
+        "label": "DET",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            966,
+            803,
+            971,
+            816
+        ],
+        "label": "D",
+        "app": "Chrome",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            927,
+            856,
+            948,
+            872
+        ],
+        "label": "See more",
+        "app": "Chrome",
+        "type": "link"
+    },
+    {
+        "bbox_2d": [
+            889,
+            919,
+            937,
+            938
+        ],
+        "label": "Daily Horoscope",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            950,
+            919,
+            984,
+            938
+        ],
+        "label": "Sagittarius",
+        "app": "Chrome",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            67,
+            495,
+            117,
+            515
+        ],
+        "label": "Accessories",
+        "app": "System",
+        "type": "button"
+    },
+    {
+        "bbox_2d": [
+            220,
+            495,
+            270,
+            515
+        ],
+        "label": "Audio",
+        "app": "System",
+        "type": "button"
+    },
+    {
+        "bbox_2d": [
+            367,
+            495,
+            442,
+            515
+        ],
+        "label": "Communication",
+        "app": "System",
+        "type": "button"
+    },
+    {
+        "bbox_2d": [
+            41,
+            655,
+            123,
+            675
+        ],
+        "label": "Development",
+        "app": "System",
+        "type": "button"
+    },
+    {
+        "bbox_2d": [
+            220,
+            655,
+            270,
+            675
+        ],
+        "label": "Education",
+        "app": "System",
+        "type": "button"
+    },
+    {
+        "bbox_2d": [
+            390,
+            655,
+            442,
+            675
+        ],
+        "label": "Finance",
+        "app": "System",
+        "type": "button"
+    },
+    {
+        "bbox_2d": [
+            73,
+            806,
+            117,
+            826
+        ],
+        "label": "Fun & Games",
+        "app": "System",
+        "type": "button"
+    },
+    {
+        "bbox_2d": [
+            220,
+            814,
+            270,
+            834
+        ],
+        "label": "Graphics",
+        "app": "System",
+        "type": "button"
+    },
+    {
+        "bbox_2d": [
+            390,
+            814,
+            442,
+            834
+        ],
+        "label": "Internet",
+        "app": "System",
+        "type": "button"
+    },
+    {
+        "bbox_2d": [
+            417,
+            909,
+            486,
+            927
+        ],
+        "label": "Getting app information...",
+        "app": "System",
+        "type": "text"
+    },
+    {
+        "bbox_2d": [
+            503,
+            909,
+            513,
+            927
+        ],
+        "label": "Settings Gear",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            238,
+            954,
+            250,
+            980
+        ],
+        "label": "Search Icon",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            263,
+            954,
+            275,
+            980
+        ],
+        "label": "Files Icon",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            288,
+            954,
+            300,
+            980
+        ],
+        "label": "App Grid Icon",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            313,
+            954,
+            325,
+            980
+        ],
+        "label": "Application Icon",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            338,
+            954,
+            350,
+            980
+        ],
+        "label": "Photoshop Icon",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            363,
+            954,
+            375,
+            980
+        ],
+        "label": "VSCode Icon",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            388,
+            954,
+            400,
+            980
+        ],
+        "label": "PC Icon",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            413,
+            954,
+            425,
+            980
+        ],
+        "label": "Firefox Icon",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            438,
+            954,
+            450,
+            980
+        ],
+        "label": "Chrome Icon",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            463,
+            954,
+            475,
+            980
+        ],
+        "label": "Edge Icon",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            488,
+            954,
+            500,
+            980
+        ],
+        "label": "Files Icon",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            513,
+            954,
+            525,
+            980
+        ],
+        "label": "Terminal Icon",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            538,
+            954,
+            550,
+            980
+        ],
+        "label": "Settings Gear",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            563,
+            954,
+            575,
+            980
+        ],
+        "label": "Notes Icon",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            588,
+            954,
+            600,
+            980
+        ],
+        "label": "Document Icon",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            613,
+            954,
+            625,
+            980
+        ],
+        "label": "Media Player Icon",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            638,
+            954,
+            650,
+            980
+        ],
+        "label": "Music Icon",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            663,
+            954,
+            675,
+            980
+        ],
+        "label": "Video Icon",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            688,
+            954,
+            700,
+            980
+        ],
+        "label": "Image Icon",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            713,
+            954,
+            725,
+            980
+        ],
+        "label": "Archive Icon",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            738,
+            954,
+            750,
+            980
+        ],
+        "label": "Trash Icon",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            763,
+            954,
+            775,
+            980
+        ],
+        "label": "Download Icon",
+        "app": "System",
+        "type": "icon"
+    },
+    {
+        "bbox_2d": [
+            928,
+            44,
+            936,
+            64
+        ],
+        "label": "Minimize Button",
+        "app": "Chrome",
+        "type": "window_control"
+    },
+    {
+        "bbox_2d": [
+            950,
+            44,
+            958,
+            64
+        ],
+        "label": "Maximize Button",
+        "app": "Chrome",
+        "type": "window_control"
+    },
+    {
+        "bbox_2d": [
+            972,
+            44,
+            980,
+            64
+        ],
+        "label": "Close Button",
+        "app": "Chrome",
+        "type": "window_control"
+    }
+]
