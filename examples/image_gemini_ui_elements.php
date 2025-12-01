@@ -29,7 +29,8 @@ class ProductionUIDetector {
         $this->llmConnection->setConnectionTimeout(3600);
 
         // Parameters
-        $this->llmConnection->setParameter('temperature', 0.2);
+//        $this->llmConnection->setParameter('temperature', 0.2);
+//        $this->llmConnection->setParameter('top_k', 0.2);
         // $this->llmConnection->setParameter('max_tokens', 32768);
 
         $this->rolesManager = $this->llmConnection->getRolesManager();
@@ -207,7 +208,7 @@ EOT;
         $style = $this->enableSuccinct ? "CRITICAL: Be extremely brief. No explanation. Output JSON immediately." : "";
         $prompt = <<<EOT
 Analyze this {$w}x{$h} UI screenshot.
-TASK: Suggest the optimal Integer values for tile_width, tile_height, and overlap based on UI density.
+TASK: Suggest the optimal Integer values for tile_width (no less than 512), tile_height (no less than 512), and overlap (between 64 and 256) based on UI elements density.
 {$style}
 Return JSON ONLY: Example: {"tile_width": 1000, "tile_height": 1000, "overlap": 200}
 EOT;
@@ -606,10 +607,10 @@ $detector = new ProductionUIDetector();
 
 // ARGS: DynamicGrid, Verify, Succinct, DrawLabels, RecoverMissing
 $useDynamic = true;
-$useVerify = true;
+$useVerify = false;
 $useSuccinct = true;
-$drawLabels = true;     // NEW: Draw labels on output image?
-$recoverMissing = true; // NEW: Ask LLM to find what it missed?
+$drawLabels = false;     // NEW: Draw labels on output image?
+$recoverMissing = false; // NEW: Ask LLM to find what it missed?
 
 $detector->setOptions($useDynamic, $useVerify, $useSuccinct, $drawLabels, $recoverMissing);
 
