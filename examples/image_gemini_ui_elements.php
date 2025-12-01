@@ -4,25 +4,27 @@ require_once '../vendor/autoload.php';
 
 use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
 
-class DeepDiveUIDetector {
+class ProductionUIDetector {
     private $llmConnection;
     private $rolesManager;
 
-    // Configuration
-    private $leafTileSize = 1000; // Updated to 1000 to match Qwen optimal input
-    private $overlap = 100;
+    // CONFIGURATION
+    private $tileWidth = 1000;
+    private $tileHeight = 1000;
+    private $overlap = 200;
     private $nmsThreshold = 0.4;
 
     public function __construct() {
         $this->llmConnection = new OpenAICompatibleEndpointConnection();
-        $this->llmConnection->setConnectionTimeout(1200);
+        $this->llmConnection->setConnectionTimeout(2400); // 40 mins (large thinking models take time)
 
-        // Deterministic Settings for JSON Extraction
-        $this->llmConnection->setParameter('temperature', 0.0);
-        $this->llmConnection->setParameter('top_p', 0.1);
-        $this->llmConnection->setParameter('top_k', 20);
+        // Parameters optimized for Thinking Models + Extraction
+        $this->llmConnection->setParameter('temperature', 0.1);
+        $this->llmConnection->setParameter('top_p', 0.5);
+        $this->llmConnection->setParameter('top_k', 40);
         $this->llmConnection->setParameter('repetition_penalty', 1.05);
-        $this->llmConnection->setParameter('max_tokens', 8192);
+        // CRITICAL: Max out tokens to prevent JSON truncation after long thinking
+//        $this->llmConnection->setParameter('max_tokens', 32768);
 
         $this->rolesManager = $this->llmConnection->getRolesManager();
     }
@@ -47,10 +49,10 @@ class DeepDiveUIDetector {
             return;
         }
 
-        $this->runDeepInference($imagePath, $outputJsonPath, $outputImagePath);
+        $this->runInference($imagePath, $outputJsonPath, $outputImagePath);
     }
 
-    private function runDeepInference($imagePath, $outputJsonPath, $outputImagePath) {
+    private function runInference($imagePath, $outputJsonPath, $outputImagePath) {
         if (!file_exists($imagePath)) die("File not found");
 
         $currentModel = $this->llmConnection->getLLMmodelName();
@@ -61,16 +63,16 @@ class DeepDiveUIDetector {
         $startTime = microtime(true);
 
         // --- STEP 1: Global Context ---
-        echo ">> Step 1: Establishing Global Context...\n";
+        echo ">> Step 1: Global Context Analysis...\n";
         $globalContext = $this->getGlobalContext($imagePath);
         echo "   Context: " . $globalContext . "\n";
 
-        // --- STEP 2: Recursive Quad-Tree Decomposition ---
-        echo ">> Step 2: Recursive Quad-Tree Analysis...\n";
-        $allDetections = $this->processRecursively($imagePath, 0, 0, $fullW, $fullH, $globalContext);
+        // --- STEP 2: Deterministic Grid Sliding Window ---
+        echo ">> Step 2: High-Recall Grid Scan ({$this->tileWidth}x{$this->tileHeight})...\n";
+        $allDetections = $this->processGrid($imagePath, $fullW, $fullH, $globalContext);
 
         // --- STEP 3: Deduplication ---
-        echo ">> Step 3: Global Deduplication (NMS)...\n";
+        echo ">> Step 3: NMS Deduplication...\n";
         $finalDetections = $this->applyNMS($allDetections);
 
         $duration = round(microtime(true) - $startTime, 2);
@@ -91,82 +93,170 @@ class DeepDiveUIDetector {
         $this->drawHighFidelityBoxes($imagePath, $finalDetections, $outputImagePath, $currentModel);
     }
 
-    /**
-     * Recursive Logic:
-     * 1. If region is small enough, crop, resize if needed, and detect.
-     * 2. If region is too big, split into 4 and recurse.
-     */
-    private function processRecursively($fullImagePath, $x, $y, $w, $h, $parentContext) {
+    private function processGrid($imagePath, $fullW, $fullH, $parentContext) {
         $detections = [];
+        $source = $this->loadImage($imagePath);
 
-        // Base Case: Process if size is manageable
-        if ($w <= $this->leafTileSize && $h <= $this->leafTileSize) {
-            echo "   > Leaf Tile [{$w}x{$h}] at ($x, $y)... ";
+        $stepX = $this->tileWidth - $this->overlap;
+        $stepY = $this->tileHeight - $this->overlap;
+        $tilesToProcess = [];
 
-            // 1. Create Crop (Resize logic inside)
-            $crop = $this->cropImage($fullImagePath, [$x, $y, $x+$w, $y+$h]);
-            if (!$crop) return [];
+        // 1. Calculate Grid
+        for ($y = 0; $y < $fullH; $y += $stepY) {
+            for ($x = 0; $x < $fullW; $x += $stepX) {
+                $w = min($this->tileWidth, $fullW - $x);
+                $h = min($this->tileHeight, $fullH - $y);
+                // Skip small slivers unless it's the only tile
+                if (($w < 100 || $h < 100) && ($fullW > 200)) continue;
+                $tilesToProcess[] = ['x'=>$x, 'y'=>$y, 'w'=>$w, 'h'=>$h];
+                if ($x + $w >= $fullW) break;
+            }
+            if ($y + $h >= $fullH) break;
+        }
 
-            // 2. Identify Local Context
-            $localContext = $this->getLocalContext($crop['path'], $w, $h, $parentContext);
+        // 2. Process Tiles
+        $total = count($tilesToProcess);
+        foreach ($tilesToProcess as $i => $t) {
+            echo "   > Tile " . ($i+1) . "/$total at ({$t['x']}, {$t['y']}) [{$t['w']}x{$t['h']}]... ";
 
-            // 3. Detect Elements
-            $localResults = $this->detectInTile($crop['path'], $w, $h, $parentContext . " " . $localContext);
+            // Crop Physical Image
+            $cropPath = $this->createCropFile($source, $t['x'], $t['y'], $t['w'], $t['h']);
 
-            echo "Found " . count($localResults) . " items. ($localContext)\n";
+            // Detect
+            $localResults = $this->detectInTile($cropPath, $t['w'], $t['h'], $parentContext);
 
-            // 4. Transform Coordinates to Global
+            echo "Found " . count($localResults) . " items.\n";
+
+            // Normalize Coordinates
             foreach ($localResults as $item) {
                 if (!isset($item['bbox_2d'])) continue;
+
                 $b = $item['bbox_2d'];
 
-                // Qwen outputs 0-1000 relative to the image slice.
-                // We normalize (val/1000) then multiply by the LOGICAL width ($w/$h).
-                // This works even if cropImage() downscaled the physical JPG to 1000px.
+                // Use round() for better pixel precision
+                $tx1 = ($b[0] / 1000) * $t['w'];
+                $ty1 = ($b[1] / 1000) * $t['h'];
+                $tx2 = ($b[2] / 1000) * $t['w'];
+                $ty2 = ($b[3] / 1000) * $t['h'];
 
-                $tx1 = ($b[0] / 1000) * $w;
-                $ty1 = ($b[1] / 1000) * $h;
-                $tx2 = ($b[2] / 1000) * $w;
-                $ty2 = ($b[3] / 1000) * $h;
-
-                // Add Tile Offset to get Global Coordinates
-                $gx1 = $tx1 + $x;
-                $gy1 = $ty1 + $y;
-                $gx2 = $tx2 + $x;
-                $gy2 = $ty2 + $y;
+                $gx1 = $tx1 + $t['x'];
+                $gy1 = $ty1 + $t['y'];
+                $gx2 = $tx2 + $t['x'];
+                $gy2 = $ty2 + $t['y'];
 
                 $detections[] = [
                     'label' => $item['label'] ?? 'Unknown',
                     'type'  => $item['type'] ?? 'unknown',
-                    'parent_app' => $parentContext,
-                    'section' => $localContext,
-                    'bbox'  => [(int)$gx1, (int)$gy1, (int)$gx2, (int)$gy2],
+                    'bbox'  => [round($gx1), round($gy1), round($gx2), round($gy2)],
                     'area'  => ($gx2 - $gx1) * ($gy2 - $gy1)
                 ];
             }
-            @unlink($crop['path']);
-            return $detections;
+            @unlink($cropPath);
         }
 
-        // Recursive Step: Split into Quadrants
-        echo "   > Splitting Large Region [{$w}x{$h}]...\n";
-
-        $midX = floor($w / 2);
-        $midY = floor($h / 2);
-
-        $q1 = ['x' => $x, 'y' => $y, 'w' => $midX + $this->overlap, 'h' => $midY + $this->overlap];
-        $q2 = ['x' => $x + $midX - $this->overlap, 'y' => $y, 'w' => ($w - $midX) + $this->overlap, 'h' => $midY + $this->overlap];
-        $q3 = ['x' => $x, 'y' => $y + $midY - $this->overlap, 'w' => $midX + $this->overlap, 'h' => ($h - $midY) + $this->overlap];
-        $q4 = ['x' => $x + $midX - $this->overlap, 'y' => $y + $midY - $this->overlap, 'w' => ($w - $midX) + $this->overlap, 'h' => ($h - $midY) + $this->overlap];
-
-        $quadrants = [$q1, $q2, $q3, $q4];
-
-        foreach ($quadrants as $q) {
-            $subResults = $this->processRecursively($fullImagePath, $q['x'], $q['y'], $q['w'], $q['h'], $parentContext);
-            $detections = array_merge($detections, $subResults);
-        }
-
+        imagedestroy($source);
         return $detections;
+    }
+
+    private function detectInTile($path, $w, $h, $context) {
+        $this->rolesManager->clearMessages();
+
+        // Prompt designed to force the JSON to the end
+        $prompt = <<<EOT
+Analyze this UI crop ({$w}x{$h}).
+Context: {$context}
+
+TASK: Detect ALL interactive UI elements (buttons, inputs, icons, links, tabs, text labels).
+Be extremely thorough.
+
+Instructions:
+1. You may use a Chain of Thought to analyze the layout first.
+2. At the VERY END, output the JSON block.
+3. Use 0-1000 normalized coordinates.
+
+REQUIRED FINAL OUTPUT FORMAT:
+###JSON_START###
+[
+  {"bbox_2d": [x1,y1,x2,y2], "label": "name", "type": "button|input|icon|link|text"}
+]
+###JSON_END###
+EOT;
+
+        $this->rolesManager->addMessage('user', $prompt, $path);
+
+        $response = '';
+        try {
+            $this->llmConnection->queryPost(function ($c) use (&$response) { echo $c; $response .= $c; });
+        } catch (Exception $e) {}
+
+        return $this->extractJson($response);
+    }
+
+    /**
+     * ROBUST JSON EXTRACTION & REPAIR
+     * Handles cases where the model cuts off mid-stream.
+     */
+    private function extractJson($text) {
+        $jsonCandidate = null;
+
+        // 1. Explicit Delimiters (Complete)
+        if (preg_match_all('/###JSON_START###(.*?)###JSON_END###/s', $text, $matches)) {
+            $jsonCandidate = end($matches[1]);
+        }
+        // 2. Explicit Start (Truncated/Missing End)
+        elseif (preg_match('/###JSON_START###(.*)$/s', $text, $matches)) {
+            $jsonCandidate = $matches[1];
+        }
+        // 3. Fallback: Strip <think> and look for markdown or arrays
+        else {
+            $clean = preg_replace('/<think>.*?<\/think>/s', '', $text);
+            if (preg_match_all('/```json\s*(.*?)\s*```/s', $clean, $matches)) {
+                $jsonCandidate = end($matches[1]);
+            } elseif (preg_match_all('/\[\s*\{.*?\}\s*\]/s', $clean, $matches)) {
+                $jsonCandidate = end($matches[0]);
+            } elseif (preg_match('/\[\s*\{.*/s', $clean, $matches)) {
+                // Raw array start that got truncated
+                $jsonCandidate = $matches[0];
+            }
+        }
+
+        if (!$jsonCandidate) return [];
+        $jsonCandidate = trim($jsonCandidate);
+
+        // Try standard decode
+        $data = json_decode($jsonCandidate, true);
+        if ($data) return $data;
+
+        // Try to Repair Truncated JSON
+        return $this->repairTruncatedJson($jsonCandidate);
+    }
+
+    /**
+     * Repairs a JSON array that was cut off mid-stream.
+     * Strategy: Find the last valid object closure '}', cut off everything after, close the array.
+     */
+    private function repairTruncatedJson($str) {
+        // Find position of the last '}'
+        $lastBracket = strrpos($str, '}');
+        if ($lastBracket === false) return [];
+
+        // Substring up to that point
+        $validPart = substr($str, 0, $lastBracket + 1);
+
+        // Append closing bracket
+        $fixed = $validPart . ']';
+
+        $data = json_decode($fixed, true);
+        return $data ? $data : [];
+    }
+
+    private function createCropFile($source, $x, $y, $w, $h) {
+        $dest = imagecreatetruecolor($w, $h);
+        imagecopy($dest, $source, 0, 0, $x, $y, $w, $h);
+        $tmp = sys_get_temp_dir() . "/crop_" . uniqid() . ".jpg";
+        imagejpeg($dest, $tmp, 100);
+        imagedestroy($dest);
+        return $tmp;
     }
 
     private function getGlobalContext($path) {
@@ -182,102 +272,6 @@ class DeepDiveUIDetector {
         return trim(str_replace(["\n", '"', "{", "}"], " ", substr($response, 0, 200)));
     }
 
-    private function getLocalContext($path, $w, $h, $parentContext) {
-        $this->rolesManager->clearMessages();
-        $prompt = <<<EOT
-You are analyzing a crop ({$w}x{$h}) of a screen. 
-Global Context: {$parentContext}.
-Briefly describe WHAT functional part of the UI this is. 
-Examples: "File Explorer Sidebar", "Browser Tab Bar", "Code Editor Main View".
-Keep it under 10 words.
-EOT;
-        $this->rolesManager->addMessage('user', $prompt, $path);
-        $response = '';
-        try {
-            $this->llmConnection->queryPost(function($c) use (&$response){ echo $c; $response .= $c; });
-        } catch(Exception $e) {}
-
-        return trim(preg_replace('/\s+/', ' ', $response));
-    }
-
-    /**
-     * Detection Prompt
-     * UPDATED: Removed explicit "0-1000" instruction, relying on model defaults.
-     */
-    private function detectInTile($path, $w, $h, $context) {
-        $this->rolesManager->clearMessages();
-
-        $prompt = <<<EOT
-Analyze this UI crop ({$w}x{$h}).
-Context: {$context}
-
-TASK: Detect all clickable UI elements (buttons, inputs, icons, links, tabs).
-
-INSTRUCTIONS:
-1. First, think line-by-line what you see.
-2. Then, output the JSON.
-
-REQUIRED JSON FORMAT:
-###JSON_START###
-[
-  {"bbox_2d": [x1,y1,x2,y2], "label": "name", "type": "button|input|icon|link"}
-]
-###JSON_END###
-EOT;
-
-        $this->rolesManager->addMessage('user', $prompt, $path);
-
-        $response = '';
-        try {
-            $this->llmConnection->queryPost(function ($c) use (&$response) { echo $c; $response .= $c; });
-        } catch (Exception $e) {}
-
-        return $this->extractJson($response);
-    }
-
-    // --- Helpers ---
-
-    /**
-     * UPDATED: Resizes slice to max 1000px if it exceeds 1024px.
-     */
-    private function cropImage($sourcePath, $bbox) {
-        $src = $this->loadImage($sourcePath);
-        if (!$src) return null;
-        $x = (int)max(0, $bbox[0]); $y = (int)max(0, $bbox[1]);
-        $w = (int)($bbox[2] - $bbox[0]); $h = (int)($bbox[3] - $bbox[1]);
-
-        $realW = imagesx($src); $realH = imagesy($src);
-        if ($x + $w > $realW) $w = $realW - $x;
-        if ($y + $h > $realH) $h = $realH - $y;
-        if ($w <= 10 || $h <= 10) return null;
-
-        $dst = imagecreatetruecolor($w, $h);
-        imagecopy($dst, $src, 0, 0, $x, $y, $w, $h);
-
-        // --- RESIZE LOGIC ---
-        // If the slice is physically larger than 1024px, resize it to 1000px
-        // Qwen works best at ~1000x1000.
-        if ($w > 1024 || $h > 1024) {
-            $scale = 1000 / max($w, $h);
-            $newW = (int)($w * $scale);
-            $newH = (int)($h * $scale);
-
-            $resized = imagecreatetruecolor($newW, $newH);
-            imagecopyresampled($resized, $dst, 0, 0, 0, 0, $newW, $newH, $w, $h);
-            imagedestroy($dst);
-            $dst = $resized;
-        }
-
-        $tmp = sys_get_temp_dir() . "/deep_crop_" . uniqid() . ".jpg";
-        imagejpeg($dst, $tmp, 100);
-        imagedestroy($dst);
-        imagedestroy($src);
-
-        // Return path. Note: We return logical W/H (original crop size) upstream
-        // via processRecursively parameters, so math remains correct.
-        return ['path' => $tmp, 'width' => $w, 'height' => $h];
-    }
-
     private function applyNMS($detections) {
         if (empty($detections)) return [];
         usort($detections, fn($a, $b) => $a['area'] <=> $b['area']);
@@ -287,20 +281,20 @@ EOT;
         for ($i = 0; $i < count($detections); $i++) {
             if (!$active[$i]) continue;
             $base = $detections[$i];
-            $cluster = [
-                'x1' => [$base['bbox'][0]], 'y1' => [$base['bbox'][1]],
-                'x2' => [$base['bbox'][2]], 'y2' => [$base['bbox'][3]]
-            ];
+            $cluster = ['x1'=>[$base['bbox'][0]], 'y1'=>[$base['bbox'][1]], 'x2'=>[$base['bbox'][2]], 'y2'=>[$base['bbox'][3]]];
 
             for ($j = $i + 1; $j < count($detections); $j++) {
                 if (!$active[$j]) continue;
                 $cand = $detections[$j];
                 $iou = $this->calculateIoU($base['bbox'], $cand['bbox']);
 
-                $match = ($iou > 0.5) ||
-                    ($iou > 0.2 && $base['label'] == $cand['label'] && $base['type'] == $cand['type']);
+                $isSimilarLabel = false;
+                if ($iou > 0.2) {
+                    similar_text($base['label'], $cand['label'], $perc);
+                    if ($perc > 70) $isSimilarLabel = true;
+                }
 
-                if ($match) {
+                if ($iou > 0.5 || $isSimilarLabel) {
                     $cluster['x1'][] = $cand['bbox'][0]; $cluster['y1'][] = $cand['bbox'][1];
                     $cluster['x2'][] = $cand['bbox'][2]; $cluster['y2'][] = $cand['bbox'][3];
                     $active[$j] = false;
@@ -321,21 +315,6 @@ EOT;
         return $union == 0 ? 0 : $inter / $union;
     }
 
-    private function extractJson($text) {
-        if (preg_match('/###JSON_START###(.*?)###JSON_END###/s', $text, $m)) {
-            $json = json_decode(trim($m[1]), true);
-            if ($json) return $json;
-        }
-        $clean = preg_replace('/<think>.*?<\/think>/s', '', $text);
-        if (preg_match('/```json\s*(.*?)\s*```/s', $clean, $m)) {
-            $json = json_decode($m[1], true);
-            if ($json) return $json;
-        }
-        $start = strpos($clean, '['); $end = strrpos($clean, ']');
-        if ($start !== false && $end !== false) return json_decode(substr($clean, $start, ($end - $start) + 1), true) ?? [];
-        return [];
-    }
-
     private function loadImage($path) {
         return exif_imagetype($path) == IMAGETYPE_PNG ? imagecreatefrompng($path) : imagecreatefromjpeg($path);
     }
@@ -351,6 +330,7 @@ EOT;
             'link'   => [255, 140, 0],
             'icon'   => [255, 0, 255],
             'tab'    => [255, 215, 0],
+            'text'   => [200, 200, 200],
             'unknown'=> [128, 128, 128]
         ];
         $black = imagecolorallocate($img, 0, 0, 0);
@@ -361,15 +341,16 @@ EOT;
             $type = $d['type'] ?? 'unknown';
             $rgb = $colorDefs[$type] ?? $colorDefs['unknown'];
             $borderCol = imagecolorallocate($img, $rgb[0], $rgb[1], $rgb[2]);
-            $fillCol = imagecolorallocatealpha($img, $rgb[0], $rgb[1], $rgb[2], 90);
+            // 50% opacity
+            $fillCol = imagecolorallocatealpha($img, $rgb[0], $rgb[1], $rgb[2], 64);
 
             $b = $d['bbox'];
             imagefilledrectangle($img, $b[0], $b[1], $b[2], $b[3], $fillCol);
             imagerectangle($img, $b[0], $b[1], $b[2], $b[3], $borderCol);
 
-            $label = substr($d['section'], 0, 15) . " > " . $d['label'];
+            $label = substr($d['label'], 0, 20);
             $ly = ($b[1] - 16) < 0 ? $b[1] + 2 : $b[1] - 16;
-            imagefilledrectangle($img, $b[0], $ly, $b[0] + (strlen($label)*7), $ly + 16, $black);
+            imagefilledrectangle($img, $b[0], $ly, $b[0] + (strlen($label)*8), $ly + 16, $black);
             imagestring($img, 2, $b[0] + 2, $ly + 1, $label, $borderCol);
         }
 
@@ -385,7 +366,7 @@ EOT;
 
 // --- RUNNER ---
 
-$detector = new DeepDiveUIDetector();
+$detector = new ProductionUIDetector();
 
 $models = [
     'Qwen3-VL-30B-A3B-Instruct',
@@ -413,7 +394,7 @@ $pathInfo = pathinfo($inputImage);
 $baseName = $pathInfo['filename'];
 $dir = $pathInfo['dirname'];
 
-echo "Starting Deep Dive Benchmark on: $baseName\n";
+echo "Starting High-Recall Benchmark on: $baseName\n";
 
 foreach ($models as $modelName) {
     $safeName = str_replace(['/', ':', '\\', ' '], '_', $modelName);

@@ -12,7 +12,8 @@ class UIButtonDetector {
         $this->llmConnection = new OpenAICompatibleEndpointConnection();
         // Increase timeout for large image uploads or slow inference
         $this->llmConnection->setConnectionTimeout(600); 
-        $this->llmConnection->setLLMmodelName('Qwen3-VL-235B-A22B-Instruct-Q6');
+        $this->llmConnection->setLLMmodelName('Qwen3-VL-30B-A3B-Instruct');
+        $this->llmConnection->setParameter('temperature', 0);
         $this->rolesManager = $this->llmConnection->getRolesManager();
     }
     
