@@ -61,8 +61,9 @@ $prompt = 'Get the newest 20 localllama subreddit Reddit posts. order by the new
 
  $prompt = 'Visit the Hotnews website (here is the direct RSS feed: "https://www.hotnews.ro/rss") and get the top 20 news titles with their links. Filter out the ads that may appear as news. Create a summary of 2-3 paragraphs for each link/title. Send me the results (title, summary, link)  via telegram message. For each title, add a emoji prefix that is in relation with the news topic (for example a politics related news should have a 🗳️ emoji, a technology related news should have a 🤖 emoji, a health related news should have a 🏥 emoji etc.).';
 
-// $connection->setParameter('temp', 0.8);
-// $connection->setParameter('seed', 0);
+// Set parameters for consistent results
+$connection->setParameter('temp', 0.8);
+$connection->setParameter('seed', 0);
 $useStreaming = true;
 
 try {
