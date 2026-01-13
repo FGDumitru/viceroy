@@ -26,6 +26,8 @@
 require_once '../vendor/autoload.php';
 
 use Viceroy\Connections\Definitions\OpenAICompatibleEndpointConnection;
+use Viceroy\Tools\PlaywrightTool;
+
 
 $useColors = !in_array('-nocolor', $argv);
 $chatHistory = [];
@@ -84,6 +86,10 @@ function displayChatMessage(string $role, string $message, bool $useColors): voi
 try {
     // Initialize LLM connection and model configuration
     $connection = new OpenAICompatibleEndpointConnection();
+
+    $connection->enableToolSupport();
+    $connection->addToolDefinition(new PlaywrightTool(['debug' => true, 'headed' => true]));
+
     $currentModel = $connection->getLLMmodelName();
     
     // Show startup message with usage instructions

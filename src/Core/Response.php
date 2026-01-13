@@ -128,9 +128,32 @@ class Response
     {
         if (!$this->wasStreamed()) {
             $content = $this->getContent();
+            if (empty($content)) {
+                throw new \RuntimeException('Empty response content received from API');
+            }
+
             $contentArray = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+
+            // Check if this is an error response
+            if (isset($contentArray['error'])) {
+                $errorMsg = $contentArray['error']['message'] ?? $contentArray['error']['type'] ?? 'Unknown API error';
+                throw new \RuntimeException("API Error: {$errorMsg}");
+            }
+
+            // Check if choices exist (required field in successful responses)
+            if (!isset($contentArray['choices']) || !is_array($contentArray['choices'])) {
+                throw new \RuntimeException('Invalid response format: missing "choices" field');
+            }
+
+            if (empty($contentArray['choices'])) {
+                throw new \RuntimeException('Invalid response format: "choices" array is empty');
+            }
+
             $choices = $contentArray['choices'];
-            return $choices[0]['message'];
+            return $choices[0]['message'] ?? [
+                'role' => 'assistant',
+                'content' => ''
+            ];
         } else {
             return $this->getStreamedContent();
         }
@@ -164,10 +187,15 @@ class Response
     {
         if ($this->processedContent === null) {
             if (!$this->wasStreamed) {
-                $content = $this->getChoice();
-
+                $message = $this->getChoice();
+                $content = is_array($message) ? ($message['content'] ?? '') : $message;
             } else {
                 $content = $this->getStreamedContent();
+            }
+
+            // Ensure content is a string (avoid null/array)
+            if (!is_string($content)) {
+                $content = is_array($content) ? json_encode($content) : (string)$content;
             }
 
             // Extract think tags

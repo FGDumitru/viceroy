@@ -973,7 +973,15 @@ class OpenAICompatibleEndpointConnection implements OpenAICompatibleEndpointInte
                     $promptJson['messages'][$idx] = ['role' => 'user', 'content' => ''];
                 }
 
-                $promptJson['messages'][$idx]['content'] .= "\n" . $toolMessage;
+                // Handle both string and array content types
+                $content = $promptJson['messages'][$idx]['content'];
+                if (is_array($content)) {
+                    // For multimodal content, append toolMessage as a new text block
+                    $promptJson['messages'][$idx]['content'][] = ['type' => 'text', 'text' => "\n" . $toolMessage];
+                } else {
+                    // For string content, append normally
+                    $promptJson['messages'][$idx]['content'] .= "\n" . $toolMessage;
+                }
             }
         }
 

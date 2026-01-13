@@ -3,6 +3,7 @@
 /.idea/
 /*.api
 /*.env
+/.viceroy_playwright_server_*.js
 .vscode/
 examples/benchmark_*.json
 examples/benchmark_stats.csv
@@ -20,3 +21,6 @@ examples/build
 examples/dist
 examples/.bearer_token
 examples/.bearer_token
+node_modules/
+screenshots/
+.*.js
